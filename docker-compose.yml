@@ -1,0 +1,21 @@
+version: '3'
+services:
+    app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: xcheck
+        container_name: xcheck_be_service
+        restart: unless-stopped
+        tty: true
+        ports:
+            - '9052:8080'
+        working_dir: /app
+        networks:
+            - external-network
+
+#Docker Networks
+networks:
+    external-network:
+        external: true
+        name: external-network

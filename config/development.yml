@@ -1,0 +1,13 @@
+server:
+  address: localhost
+  port: 9052
+auth:
+  jwtSecret: bmok2024
+  jwtExpire: 24
+  jwtIssuer: xcheck
+database:
+  host: 127.0.0.1
+  port: 3306
+  user: root
+  password: bmok@2023
+  database: xcheck

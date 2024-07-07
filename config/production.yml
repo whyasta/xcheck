@@ -1,0 +1,13 @@
+server:
+  address: 0.0.0.0
+  port: 9052
+auth:
+  jwtSecret: bmok2024
+  jwtExpire: 1
+  jwtIssuer: xcheck
+database:
+  host: mysql_db
+  port: 3306
+  user: root
+  password: bmok@2023
+  database: xcheck
