@@ -29,34 +29,34 @@ func NewUserService(r repositories.UserRepository) *UserService {
 	}
 }
 
-func (s *UserService) GetAll() ([]*models.User, error) {
+func (s *UserService) GetAll() ([]models.User, error) {
 	return s.repo.GetAll()
 }
 
-func (s *UserService) Create(user *models.User) (*models.User, error) {
+func (s *UserService) Create(user *models.User) (models.User, error) {
 	hash, _ := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
 	user.PasswordHash = string(hash)
 	return s.repo.Create(user)
 }
 
-func (s *UserService) Signin(username string, password string) (*models.User, error) {
+func (s *UserService) Signin(username string, password string) (models.User, error) {
 	user, err := s.repo.Signin(username, password)
 	if err != nil {
-		return nil, errors.New("invalid username or password")
+		return models.User{}, errors.New("invalid username or password")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
 	if err != nil {
-		return nil, errors.New("invalid username or password")
+		return models.User{}, errors.New("invalid username or password")
 	}
 	user.PasswordHash = ""
 	return user, nil
 }
 
-func (s *UserService) GetByUsername(uname string) (*models.User, error) {
+func (s *UserService) GetByUsername(uname string) (models.User, error) {
 	return s.repo.GetByUsername(uname)
 }
 
-func (s *UserService) GetByID(uid int) (*models.User, error) {
+func (s *UserService) GetByID(uid int64) (models.User, error) {
 	return s.repo.GetByID(uid)
 }

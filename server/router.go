@@ -55,6 +55,14 @@ func NewRouter(services *services.Service) *gin.Engine {
 			userGroup.POST("/", user.Create)
 			userGroup.GET("/:id", user.GetByID)
 		}
+
+		userRoleGroup := authorized.Group("roles")
+		{
+			userRoleGroup.GET("/", user.GetAll)
+			userRoleGroup.POST("/", user.Create)
+			userRoleGroup.GET("/:id", user.GetByID)
+		}
+
 	}
 
 	//router.Use(middlewares.AuthMiddleware())

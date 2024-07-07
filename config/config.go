@@ -2,10 +2,12 @@ package config
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/spf13/viper"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 var config *viper.Viper
@@ -31,7 +33,7 @@ func Init(env string) {
 	}
 }
 
-func ConnectToDB() (*sql.DB, error) {
+func ConnectToDBOld() (*sql.DB, error) {
 	// var err error
 	// dsn := os.Getenv("DB_DSN")
 
@@ -48,6 +50,21 @@ func ConnectToDB() (*sql.DB, error) {
 		return nil, err
 	}
 	return db, nil
+}
+
+func ConnectToDB() (*gorm.DB, error) {
+	var err error
+	configEnv := GetConfig()
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", configEnv.GetString("database.user"), configEnv.GetString("database.password"), configEnv.GetString("database.host"), configEnv.GetString("database.port"), configEnv.GetString("database.database"))
+
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatal("Error connecting to database. Error: ", err)
+		return nil, err
+	}
+
+	return db, err
+	// "user:password@tcp(127.0.0.1:3306)/database_name"
 }
 
 // func relativePath(basedir string, path *string) {

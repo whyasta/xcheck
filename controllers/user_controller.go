@@ -66,12 +66,12 @@ func (u UserController) Create(c *gin.Context) {
 		return
 	}
 
-	user, err = u.service.Create(user)
+	result, err := u.service.Create(user)
 	if err != nil {
 		utils.PanicException(constant.InvalidRequest, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", user))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", result))
 }
 
 // @Summary		Signin
@@ -102,7 +102,7 @@ func (u UserController) Signin(c *gin.Context) {
 		return
 	}
 
-	var user *models.User
+	var user models.User
 	user, err = u.service.Signin(userLogin.Username, userLogin.Password)
 	if err != nil {
 		utils.PanicException(constant.Unauthorized, err.Error())
@@ -142,8 +142,8 @@ func (u UserController) GetByID(c *gin.Context) {
 		return
 	}
 
-	var user *models.User
-	user, err = u.service.GetByID(uid)
+	var user models.User
+	user, err = u.service.GetByID(int64(uid))
 	if err != nil {
 		utils.PanicException(constant.DataNotFound, errors.New("user not found").Error())
 		return
@@ -172,7 +172,7 @@ func (u UserController) CurrentUser(c *gin.Context) {
 		return
 	}
 
-	var user *models.User
+	var user models.User
 	user, err = u.service.GetByUsername(username)
 
 	if err != nil {
