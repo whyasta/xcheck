@@ -11,36 +11,39 @@ import (
 // var once sync.Once
 
 type UserService struct {
-	repo repositories.UserRepository
+	u repositories.UserRepository
+	r repositories.RoleRepository
 }
 
 // var instance *UserService
 
 // NewUserService: construction function, injected by user repository
-func NewUserService(r repositories.UserRepository) *UserService {
+func NewUserService(u repositories.UserRepository, r repositories.RoleRepository) *UserService {
 	// once.Do(func() {
 	// 	instance = &UserService{
-	// 		repo: r,
+	// 		r: r,
 	// 	}
 	// })
 	// return instance
 	return &UserService{
-		repo: r,
+		u: u,
+		r: r,
 	}
 }
 
 func (s *UserService) GetAll() ([]models.User, error) {
-	return s.repo.GetAll()
+	return s.u.GetAll()
 }
 
-func (s *UserService) Create(user *models.User) (models.User, error) {
+func (s *UserService) CreateUser(user *models.User) (models.User, error) {
 	hash, _ := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
+	user.Password = ""
 	user.PasswordHash = string(hash)
-	return s.repo.Create(user)
+	return s.u.Create(user)
 }
 
 func (s *UserService) Signin(username string, password string) (models.User, error) {
-	user, err := s.repo.Signin(username, password)
+	user, err := s.u.Signin(username, password)
 	if err != nil {
 		return models.User{}, errors.New("invalid username or password")
 	}
@@ -53,10 +56,10 @@ func (s *UserService) Signin(username string, password string) (models.User, err
 	return user, nil
 }
 
-func (s *UserService) GetByUsername(uname string) (models.User, error) {
-	return s.repo.GetByUsername(uname)
+func (s *UserService) GetUserByUsername(uname string) (models.User, error) {
+	return s.u.GetByUsername(uname)
 }
 
-func (s *UserService) GetByID(uid int64) (models.User, error) {
-	return s.repo.GetByID(uid)
+func (s *UserService) GetUserByID(uid int64) (models.User, error) {
+	return s.u.GetByID(uid)
 }

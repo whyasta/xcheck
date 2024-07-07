@@ -31,7 +31,7 @@ func NewUserRepository(db *gorm.DB) *userRepository {
 func (repo *userRepository) GetAll() ([]models.User, error) {
 	var users []models.User
 
-	err := repo.db.Find(&users).Error
+	err := repo.db.Preload("Role").Find(&users).Error
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +39,7 @@ func (repo *userRepository) GetAll() ([]models.User, error) {
 }
 
 func (repo *userRepository) Create(user *models.User) (models.User, error) {
-	var err = repo.db.Save(user).Error
+	var err = repo.db.Omit("password").Create(user).Error
 	if err != nil {
 		return models.User{}, err
 	}
@@ -50,7 +50,7 @@ func (repo *userRepository) GetByUsername(username string) (models.User, error) 
 	user := models.User{
 		Username: username,
 	}
-	err := repo.db.First(&user).Error
+	err := repo.db.Preload("Role").First(&user).Error
 	if err != nil {
 		return models.User{}, err
 	}
@@ -61,7 +61,7 @@ func (repo *userRepository) GetByID(id int64) (models.User, error) {
 	user := models.User{
 		ID: id,
 	}
-	err := repo.db.First(&user).Error
+	err := repo.db.Preload("Role").First(&user).Error
 	if err != nil {
 		return models.User{}, err
 	}
@@ -72,7 +72,7 @@ func (repo *userRepository) Signin(username string, password string) (models.Use
 	user := models.User{
 		Username: username,
 	}
-	err := repo.db.First(&user, "username = ?", username).Error
+	err := repo.db.Preload("Role").First(&user, "username = ?", username).Error
 	if err != nil {
 		return models.User{}, err
 	}

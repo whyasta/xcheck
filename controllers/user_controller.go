@@ -66,7 +66,7 @@ func (u UserController) Create(c *gin.Context) {
 		return
 	}
 
-	result, err := u.service.Create(user)
+	result, err := u.service.CreateUser(user)
 	if err != nil {
 		utils.PanicException(constant.InvalidRequest, err.Error())
 		return
@@ -143,7 +143,7 @@ func (u UserController) GetByID(c *gin.Context) {
 	}
 
 	var user models.User
-	user, err = u.service.GetByID(int64(uid))
+	user, err = u.service.GetUserByID(int64(uid))
 	if err != nil {
 		utils.PanicException(constant.DataNotFound, errors.New("user not found").Error())
 		return
@@ -173,7 +173,7 @@ func (u UserController) CurrentUser(c *gin.Context) {
 	}
 
 	var user models.User
-	user, err = u.service.GetByUsername(username)
+	user, err = u.service.GetUserByUsername(username)
 
 	if err != nil {
 		utils.PanicException(constant.InvalidRequest, err.Error())

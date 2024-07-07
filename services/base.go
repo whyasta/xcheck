@@ -10,6 +10,6 @@ func NewService(
 	repositories *repositories.Repository,
 ) *Service {
 	return &Service{
-		UserService: NewUserService(repositories.User),
+		UserService: NewUserService(repositories.User, repositories.Role),
 	}
 }
