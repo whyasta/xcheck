@@ -9,7 +9,7 @@ services:
         restart: unless-stopped
         tty: true
         ports:
-            - '9052:8080'
+            - '9052:9052'
         working_dir: /app
         networks:
             - external-network

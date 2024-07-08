@@ -63,8 +63,6 @@ func NewRouter(services *services.Service) *gin.Engine {
 			userRoleGroup.POST("/", controllers.RoleController.CreateRole)
 			userRoleGroup.GET("/", controllers.RoleController.GetAllRole)
 			userRoleGroup.GET("/:id", controllers.RoleController.GetRoleByID)
-			// userRoleGroup.POST("/", user.Create)
-			// userRoleGroup.GET("/:id", user.GetByID)
 		}
 
 	}

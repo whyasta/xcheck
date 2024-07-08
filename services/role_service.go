@@ -25,8 +25,8 @@ func (s *RoleService) CreateRole(role *models.UserRole) (models.UserRole, error)
 	return s.r.SaveRole(role)
 }
 
-func (s *RoleService) GetAllRole() ([]models.UserRole, error) {
-	return s.r.FindAllRole()
+func (s *RoleService) GetAllRole(params map[string]interface{}) ([]models.UserRole, error) {
+	return s.r.FindAllRoles(params)
 }
 
 func (s *RoleService) GetRoleByID(uid int64) (models.UserRole, error) {

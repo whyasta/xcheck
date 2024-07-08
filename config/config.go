@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
@@ -62,6 +63,14 @@ func ConnectToDB() (*gorm.DB, error) {
 		log.Fatal("Error connecting to database. Error: ", err)
 		return nil, err
 	}
+	sqlDB, err := db.DB()
+
+	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
+	sqlDB.SetMaxIdleConns(10)
+	// SetMaxOpenConns sets the maximum number of open connections to the database.
+	sqlDB.SetMaxOpenConns(100)
+	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
+	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	return db, err
 	// "user:password@tcp(127.0.0.1:3306)/database_name"

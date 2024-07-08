@@ -38,15 +38,12 @@ func NewUserController(service *services.UserService) *UserController {
 // @Security	 BearerAuth
 // @Router       /users [get]
 func (u UserController) GetAllUser(c *gin.Context) {
-	allUsers, err := u.service.GetAllUser()
+	params := MakeQueryParams(c.Request.URL.Query(), []string{"role_id"})
+	allUsers, err := u.service.GetAllUser(params)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
-
-	// fmt.Println("MySQL All Users:", allUsers)
-
-	// c.JSON(http.StatusOK, gin.H{"message": "pong"})
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", allUsers))
 }
 
@@ -69,13 +66,6 @@ func (u UserController) CreateUser(c *gin.Context) {
 
 	c.Next()
 	c.BindJSON(&user)
-
-	// log.Println(user.Password)
-
-	// if user.Password == "" {
-	// 	utils.PanicException(constant.InvalidRequest, errors.New("password is required").Error())
-	// 	return
-	// }
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	err := validate.Struct(user)

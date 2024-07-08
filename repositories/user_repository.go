@@ -8,7 +8,7 @@ import (
 
 type UserRepository interface {
 	// GetByID(id int) (*models.User, error)
-	FindAllUser() ([]models.User, error)
+	FindAllUsers(params map[string]interface{}) ([]models.User, error)
 	SaveUser(user *models.User) (models.User, error)
 	FindUserByUsername(username string) (models.User, error)
 	FindUserByID(uid int64) (models.User, error)
@@ -26,55 +26,58 @@ func NewUserRepository(db *gorm.DB) *userRepository {
 	}
 }
 
-func (repo *userRepository) FindAllUser() ([]models.User, error) {
+func (repo *userRepository) FindAllUsers(params map[string]interface{}) ([]models.User, error) {
 	var users []models.User
 
-	err := repo.db.Omit("Password").Preload("Role").Find(&users).Error
+	err := repo.db.
+		Preload("Role").
+		Where(params).
+		Find(&users).
+		Error
+
 	if err != nil {
 		return nil, err
 	}
+
+	for i := range users {
+		users[i].Password = ""
+	}
+
 	return users, nil
 }
 
 func (repo *userRepository) SaveUser(user *models.User) (models.User, error) {
-	var err = repo.db.Create(user).Error
-	if err != nil {
+	if err := repo.db.Create(user).Error; err != nil {
 		return models.User{}, err
 	}
 	user.Password = ""
 	return *user, nil
 }
 
-func (repo *userRepository) FindUserByUsername(username string) (models.User, error) {
-	user := models.User{
-		Username: username,
-	}
-	err := repo.db.Omit("Password").Preload("Role").First(&user).Error
-	if err != nil {
-		return models.User{}, err
-	}
-	user.Password = ""
-	return user, nil
+func (repo *userRepository) FindUserByUsername(username string) (user models.User, err error) {
+	err = repo.db.
+		Omit("Password").
+		Preload("Role").
+		Where("username = ?", username).
+		First(&user).
+		Error
+
+	return user, err
 }
 
-func (repo *userRepository) FindUserByID(id int64) (models.User, error) {
-	user := models.User{
-		ID: id,
-	}
-	err := repo.db.Omit("Password").Preload("Role").First(&user).Error
-	if err != nil {
-		return models.User{}, err
-	}
-	return user, nil
+func (repo *userRepository) FindUserByID(id int64) (user models.User, err error) {
+	err = repo.db.Omit("Password").Preload("Role").First(&user, "id = ?", id).Error
+	return
 }
 
-func (repo *userRepository) Signin(username string, password string) (models.User, error) {
-	user := models.User{
-		Username: username,
-	}
-	err := repo.db.Preload("Role").First(&user, "username = ?", username).Error
-	if err != nil {
+func (repo *userRepository) Signin(username, password string) (models.User, error) {
+	user := models.User{}
+	if err := repo.db.
+		Preload("Role").
+		Where("username = ?", username).
+		First(&user).Error; err != nil {
 		return models.User{}, err
 	}
+
 	return user, nil
 }

@@ -28,8 +28,8 @@ func NewUserService(u repositories.UserRepository) *UserService {
 	}
 }
 
-func (s *UserService) GetAllUser() ([]models.User, error) {
-	result, err := s.u.FindAllUser()
+func (s *UserService) GetAllUser(params map[string]interface{}) ([]models.User, error) {
+	result, err := s.u.FindAllUsers(params)
 	return result, err
 }
 

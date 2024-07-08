@@ -2,13 +2,14 @@ package repositories
 
 import (
 	"bigmind/xcheck-be/models"
+	"log"
 
 	"gorm.io/gorm"
 )
 
 type RoleRepository interface {
 	SaveRole(role *models.UserRole) (models.UserRole, error)
-	FindAllRole() ([]models.UserRole, error)
+	FindAllRoles(params map[string]interface{}) ([]models.UserRole, error)
 	FindRoleByID(uid int64) (models.UserRole, error)
 }
 
@@ -30,10 +31,10 @@ func (repo *roleRepository) SaveRole(role *models.UserRole) (models.UserRole, er
 	return *role, nil
 }
 
-func (repo *roleRepository) FindAllRole() ([]models.UserRole, error) {
+func (repo *roleRepository) FindAllRoles(params map[string]interface{}) ([]models.UserRole, error) {
 	var roles []models.UserRole
-
-	err := repo.db.Find(&roles).Error
+	log.Println(params)
+	err := repo.db.Where(params).Find(&roles).Error
 	if err != nil {
 		return nil, err
 	}

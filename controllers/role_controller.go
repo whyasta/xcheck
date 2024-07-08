@@ -72,7 +72,8 @@ func (r RoleController) CreateRole(c *gin.Context) {
 // @Security	 BearerAuth
 // @Router       /roles [get]
 func (r RoleController) GetAllRole(c *gin.Context) {
-	rows, err := r.service.GetAllRole()
+	params := MakeQueryParams(c.Request.URL.Query(), []string{"role_name"})
+	rows, err := r.service.GetAllRole(params)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
