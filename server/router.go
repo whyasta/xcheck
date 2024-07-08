@@ -34,16 +34,18 @@ func NewRouter(services *services.Service) *gin.Engine {
 	// router.Use(utils.ResponseHandler())
 
 	health := new(controllers.HealthController)
-	user := controllers.NewUserController(services.UserService)
+	// user := controllers.NewUserController(services.UserService)
+
+	controllers := controllers.NewController(services)
 
 	router.GET("/", health.Init)
 	router.GET("/healthcheck", health.Status)
 
 	auth := router.Group("/auth")
 	{
-		auth.POST("/signin", user.Signin)
-		auth.POST("/signout", middlewares.AuthMiddleware(), user.Signout)
-		auth.GET("/me", middlewares.AuthMiddleware(), user.CurrentUser)
+		auth.POST("/signin", controllers.UserController.Signin)
+		auth.POST("/signout", middlewares.AuthMiddleware(), controllers.UserController.Signout)
+		auth.GET("/me", middlewares.AuthMiddleware(), controllers.UserController.CurrentUser)
 	}
 
 	authorized := router.Group("/")
@@ -51,16 +53,18 @@ func NewRouter(services *services.Service) *gin.Engine {
 	{
 		userGroup := authorized.Group("users")
 		{
-			userGroup.GET("/", user.GetAll)
-			userGroup.POST("/", user.Create)
-			userGroup.GET("/:id", user.GetByID)
+			userGroup.POST("/", controllers.UserController.CreateUser)
+			userGroup.GET("/", controllers.UserController.GetAllUser)
+			userGroup.GET("/:id", controllers.UserController.GetUserByID)
 		}
 
 		userRoleGroup := authorized.Group("roles")
 		{
-			userRoleGroup.GET("/", user.GetAll)
-			userRoleGroup.POST("/", user.Create)
-			userRoleGroup.GET("/:id", user.GetByID)
+			userRoleGroup.POST("/", controllers.RoleController.CreateRole)
+			userRoleGroup.GET("/", controllers.RoleController.GetAllRole)
+			userRoleGroup.GET("/:id", controllers.RoleController.GetRoleByID)
+			// userRoleGroup.POST("/", user.Create)
+			// userRoleGroup.GET("/:id", user.GetByID)
 		}
 
 	}

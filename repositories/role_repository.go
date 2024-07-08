@@ -7,9 +7,9 @@ import (
 )
 
 type RoleRepository interface {
-	CreateRole(role *models.UserRole) (models.UserRole, error)
-	GetAllRole() ([]models.UserRole, error)
-	// GetRoleById(uid int) (*models.UserRole, error)
+	SaveRole(role *models.UserRole) (models.UserRole, error)
+	FindAllRole() ([]models.UserRole, error)
+	FindRoleByID(uid int64) (models.UserRole, error)
 }
 
 type roleRepository struct {
@@ -22,7 +22,7 @@ func NewRoleRepository(db *gorm.DB) *roleRepository {
 	}
 }
 
-func (repo *roleRepository) CreateRole(role *models.UserRole) (models.UserRole, error) {
+func (repo *roleRepository) SaveRole(role *models.UserRole) (models.UserRole, error) {
 	var err = repo.db.Create(role).Error
 	if err != nil {
 		return models.UserRole{}, err
@@ -30,7 +30,7 @@ func (repo *roleRepository) CreateRole(role *models.UserRole) (models.UserRole, 
 	return *role, nil
 }
 
-func (repo *roleRepository) GetAllRole() ([]models.UserRole, error) {
+func (repo *roleRepository) FindAllRole() ([]models.UserRole, error) {
 	var roles []models.UserRole
 
 	err := repo.db.Find(&roles).Error
@@ -38,4 +38,15 @@ func (repo *roleRepository) GetAllRole() ([]models.UserRole, error) {
 		return nil, err
 	}
 	return roles, nil
+}
+
+func (repo *roleRepository) FindRoleByID(id int64) (models.UserRole, error) {
+	role := models.UserRole{
+		ID: id,
+	}
+	err := repo.db.First(&role).Error
+	if err != nil {
+		return models.UserRole{}, err
+	}
+	return role, nil
 }

@@ -8,38 +8,43 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// var once sync.Once
-
 type UserService struct {
 	u repositories.UserRepository
-	r repositories.RoleRepository
 }
 
-// var instance *UserService
+// var roleInstance *RoleService
 
 // NewUserService: construction function, injected by user repository
-func NewUserService(u repositories.UserRepository, r repositories.RoleRepository) *UserService {
-	// once.Do(func() {
+func NewUserService(u repositories.UserRepository) *UserService {
+	// sync.Once.Do(func() {
 	// 	instance = &UserService{
+	// 		u: u,
 	// 		r: r,
 	// 	}
 	// })
 	// return instance
 	return &UserService{
 		u: u,
-		r: r,
 	}
 }
 
-func (s *UserService) GetAll() ([]models.User, error) {
-	return s.u.GetAll()
+func (s *UserService) GetAllUser() ([]models.User, error) {
+	result, err := s.u.FindAllUser()
+	return result, err
 }
 
 func (s *UserService) CreateUser(user *models.User) (models.User, error) {
 	hash, _ := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
-	user.Password = ""
-	user.PasswordHash = string(hash)
-	return s.u.Create(user)
+	user.Password = string(hash)
+	return s.u.SaveUser(user)
+}
+
+func (s *UserService) GetUserByID(uid int64) (models.User, error) {
+	return s.u.FindUserByID(uid)
+}
+
+func (s *UserService) GetUserByUsername(uname string) (models.User, error) {
+	return s.u.FindUserByUsername(uname)
 }
 
 func (s *UserService) Signin(username string, password string) (models.User, error) {
@@ -48,18 +53,10 @@ func (s *UserService) Signin(username string, password string) (models.User, err
 		return models.User{}, errors.New("invalid username or password")
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		return models.User{}, errors.New("invalid username or password")
 	}
-	user.PasswordHash = ""
+	user.Password = ""
 	return user, nil
-}
-
-func (s *UserService) GetUserByUsername(uname string) (models.User, error) {
-	return s.u.GetByUsername(uname)
-}
-
-func (s *UserService) GetUserByID(uid int64) (models.User, error) {
-	return s.u.GetByID(uid)
 }

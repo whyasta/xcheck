@@ -12,7 +12,7 @@ import (
 	"os"
 )
 
-var newServer = server.Server{}
+// var newServer = server.{}
 
 // @securityDefinitions.apikey  BearerAuth
 // @in							header
@@ -41,5 +41,5 @@ func main() {
 	docs.SwaggerInfo.BasePath = "/"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
-	newServer.Init()
+	server.Init()
 }

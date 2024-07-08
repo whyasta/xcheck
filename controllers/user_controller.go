@@ -37,8 +37,8 @@ func NewUserController(service *services.UserService) *UserController {
 // @Failure      500
 // @Security	 BearerAuth
 // @Router       /users [get]
-func (u UserController) GetAll(c *gin.Context) {
-	allUsers, err := u.service.GetAll()
+func (u UserController) GetAllUser(c *gin.Context) {
+	allUsers, err := u.service.GetAllUser()
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -50,13 +50,32 @@ func (u UserController) GetAll(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", allUsers))
 }
 
-func (u UserController) Create(c *gin.Context) {
+// @Summary      Create user
+// @Tags         users
+// @ID			 user-create
+// @Produce      json
+// @Param		 user	body		models.UserRequest	true	"User"
+// @Success      200
+// @Failure      400
+// @Failure      401
+// @Failure      404
+// @Failure      500
+// @Security	 BearerAuth
+// @Router       /users [post]
+func (u UserController) CreateUser(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
 	var user *models.User
 
 	c.Next()
 	c.BindJSON(&user)
+
+	// log.Println(user.Password)
+
+	// if user.Password == "" {
+	// 	utils.PanicException(constant.InvalidRequest, errors.New("password is required").Error())
+	// 	return
+	// }
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	err := validate.Struct(user)
@@ -134,7 +153,7 @@ func (u UserController) Signout(c *gin.Context) {
 // @Failure      500
 // @Security		BearerAuth
 // @Router       /users/{id} [get]
-func (u UserController) GetByID(c *gin.Context) {
+func (u UserController) GetUserByID(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -145,7 +164,7 @@ func (u UserController) GetByID(c *gin.Context) {
 	var user models.User
 	user, err = u.service.GetUserByID(int64(uid))
 	if err != nil {
-		utils.PanicException(constant.DataNotFound, errors.New("user not found").Error())
+		utils.PanicException(constant.DataNotFound, errors.New("data not found").Error())
 		return
 	}
 

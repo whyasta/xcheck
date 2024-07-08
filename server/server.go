@@ -7,17 +7,15 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"gorm.io/gorm"
 )
 
-type Server struct {
-	DB     *gorm.DB
-	Router *gin.Engine
-}
+// type Server struct {
+// 	DB     *gorm.DB
+// 	Router *gin.Engine
+// }
 
-func (server *Server) Init() {
+func Init() {
 	configEnv := config.GetConfig()
 
 	// setup db connection
@@ -47,7 +45,4 @@ func (server *Server) Init() {
 	r := NewRouter(services)
 	log.Printf("Starting server at port :" + configEnv.GetString("server.port") + "\n")
 	r.Run(configEnv.GetString("server.address") + ":" + configEnv.GetString("server.port"))
-
-	server.Router = r
-	server.DB = db
 }
