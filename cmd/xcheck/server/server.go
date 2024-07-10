@@ -2,8 +2,8 @@ package server
 
 import (
 	"bigmind/xcheck-be/config"
-	"bigmind/xcheck-be/repositories"
-	"bigmind/xcheck-be/services"
+	"bigmind/xcheck-be/internal/repositories"
+	"bigmind/xcheck-be/internal/services"
 	"fmt"
 	"log"
 
@@ -43,6 +43,6 @@ func Init() {
 	services := services.NewService(repositories)
 
 	r := NewRouter(services)
-	log.Printf("Starting server at port :" + configEnv.GetString("server.port") + "\n")
-	r.Run(configEnv.GetString("server.address") + ":" + configEnv.GetString("server.port"))
+	log.Printf("Starting server at port :" + configEnv.GetString("SERVER_PORT") + "\n")
+	r.Run(configEnv.GetString("SERVER_ADDRESS") + ":" + configEnv.GetString("SERVER_PORT"))
 }

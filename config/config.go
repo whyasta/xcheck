@@ -18,16 +18,23 @@ var config *viper.Viper
 func Init(env string) {
 	var err error
 	config = viper.New()
-	config.SetConfigType("yml")
-	config.SetConfigName(env)
-	config.AddConfigPath("../config/")
-	config.AddConfigPath("config/")
+	// config.SetConfigType("yml")
+	// config.SetConfigName(env)
+	// config.AddConfigPath("../config/")
+	// config.AddConfigPath("config/")
+
 	// dbConn, err := ConnectToDB()
 	// if err != nil {
 	// 	log.Fatal("Error connecting to database. Error: ", err)
 	// 	return
 	// }
 	// config.Set("db", dbConn)
+
+	config.SetConfigType("env")
+	config.SetConfigName(".env")
+	config.AddConfigPath("../config/")
+	config.AddConfigPath("config/")
+
 	err = config.ReadInConfig()
 	if err != nil {
 		log.Fatal("error on parsing configuration file")
@@ -56,7 +63,7 @@ func ConnectToDBOld() (*sql.DB, error) {
 func ConnectToDB() (*gorm.DB, error) {
 	var err error
 	configEnv := GetConfig()
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", configEnv.GetString("database.user"), configEnv.GetString("database.password"), configEnv.GetString("database.host"), configEnv.GetString("database.port"), configEnv.GetString("database.database"))
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", configEnv.GetString("DATABASE_USER"), configEnv.GetString("DATABASE_PASSWORD"), configEnv.GetString("DATABASE_HOST"), configEnv.GetString("DATABASE_PORT"), configEnv.GetString("DATABASE_NAME"))
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {

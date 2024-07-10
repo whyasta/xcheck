@@ -1,8 +1,8 @@
 package services
 
 import (
-	"bigmind/xcheck-be/models"
-	"bigmind/xcheck-be/repositories"
+	"bigmind/xcheck-be/internal/models"
+	"bigmind/xcheck-be/internal/repositories"
 	"errors"
 
 	"golang.org/x/crypto/bcrypt"
@@ -29,22 +29,22 @@ func NewUserService(u repositories.UserRepository) *UserService {
 }
 
 func (s *UserService) GetAllUser(params map[string]interface{}) ([]models.User, error) {
-	result, err := s.u.FindAllUsers(params)
+	result, err := s.u.FindAll(params)
 	return result, err
 }
 
 func (s *UserService) CreateUser(user *models.User) (models.User, error) {
 	hash, _ := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
 	user.Password = string(hash)
-	return s.u.SaveUser(user)
+	return s.u.Save(user)
 }
 
 func (s *UserService) GetUserByID(uid int64) (models.User, error) {
-	return s.u.FindUserByID(uid)
+	return s.u.FindByID(uid)
 }
 
 func (s *UserService) GetUserByUsername(uname string) (models.User, error) {
-	return s.u.FindUserByUsername(uname)
+	return s.u.FindByUsername(uname)
 }
 
 func (s *UserService) Signin(username string, password string) (models.User, error) {

@@ -7,7 +7,7 @@ type User struct {
 	Email    string   `gorm:"column:email" json:"email" validate:"required,email"`
 	RoleID   int64    `gorm:"column:role_id" json:"role_id" validate:"required"`
 	Role     UserRole `gorm:"foreignKey:RoleID;references:ID" json:"role"`
-	BaseModel
+	CommonModel
 }
 
 type UserLogin struct {

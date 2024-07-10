@@ -1,9 +1,9 @@
 package server
 
 import (
-	"bigmind/xcheck-be/controllers"
-	"bigmind/xcheck-be/middlewares"
-	"bigmind/xcheck-be/services"
+	"bigmind/xcheck-be/internal/controllers"
+	"bigmind/xcheck-be/internal/middlewares"
+	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
 	"net/http"
 

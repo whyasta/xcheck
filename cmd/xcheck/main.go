@@ -1,9 +1,9 @@
 package main
 
 import (
+	"bigmind/xcheck-be/cmd/xcheck/server"
 	"bigmind/xcheck-be/config"
 	"bigmind/xcheck-be/docs"
-	"bigmind/xcheck-be/server"
 	"bigmind/xcheck-be/utils"
 
 	// "bigmind/xcheck-be/utils"
@@ -37,7 +37,7 @@ func main() {
 	docs.SwaggerInfo.Title = "Swagger XCheck API"
 	docs.SwaggerInfo.Description = "XCheck API."
 	docs.SwaggerInfo.Version = "1.0"
-	docs.SwaggerInfo.Host = config.GetConfig().GetString("server.address") + ":" + config.GetConfig().GetString("server.port")
+	docs.SwaggerInfo.Host = config.GetConfig().GetString("SERVER_ADDRESS") + ":" + config.GetConfig().GetString("SERVER_PORT")
 	docs.SwaggerInfo.BasePath = "/"
 	docs.SwaggerInfo.Schemes = []string{"http", "https"}
 

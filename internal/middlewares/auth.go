@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"bigmind/xcheck-be/constant"
-	"bigmind/xcheck-be/token"
 	"bigmind/xcheck-be/utils"
 	"net/http"
 
@@ -11,7 +10,7 @@ import (
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		err := token.TokenValid(c)
+		err := utils.TokenValid(c)
 		if err != nil {
 			//c.String(http.StatusUnauthorized, "Unauthorized")
 			c.JSON(http.StatusUnauthorized, utils.BuildResponse(http.StatusUnauthorized, constant.Unauthorized, err.Error(), utils.Null()))

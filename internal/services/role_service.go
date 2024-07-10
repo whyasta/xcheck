@@ -1,8 +1,8 @@
 package services
 
 import (
-	"bigmind/xcheck-be/models"
-	"bigmind/xcheck-be/repositories"
+	"bigmind/xcheck-be/internal/models"
+	"bigmind/xcheck-be/internal/repositories"
 )
 
 type RoleService struct {
@@ -22,13 +22,13 @@ func NewRoleService(r repositories.RoleRepository) *RoleService {
 }
 
 func (s *RoleService) CreateRole(role *models.UserRole) (models.UserRole, error) {
-	return s.r.SaveRole(role)
+	return s.r.Save(role)
 }
 
 func (s *RoleService) GetAllRole(params map[string]interface{}) ([]models.UserRole, error) {
-	return s.r.FindAllRoles(params)
+	return s.r.FindAll(params)
 }
 
 func (s *RoleService) GetRoleByID(uid int64) (models.UserRole, error) {
-	return s.r.FindRoleByID(uid)
+	return s.r.BaseFindByID(uid)
 }

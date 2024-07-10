@@ -50,7 +50,7 @@ func getJsonEncoder() zapcore.Encoder {
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 	encoderConfig.MessageKey = "message"
-	encoderConfig.TimeKey = "timestamps"
+	encoderConfig.TimeKey = "timestamp"
 	encoderConfig.StacktraceKey = "stacktrace"
 
 	return zapcore.NewJSONEncoder(encoderConfig)

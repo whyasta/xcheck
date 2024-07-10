@@ -1,17 +1,17 @@
 package repositories
 
 import (
-	"bigmind/xcheck-be/models"
+	"bigmind/xcheck-be/internal/models"
 
 	"gorm.io/gorm"
 )
 
 type UserRepository interface {
 	// GetByID(id int) (*models.User, error)
-	FindAllUsers(params map[string]interface{}) ([]models.User, error)
-	SaveUser(user *models.User) (models.User, error)
-	FindUserByUsername(username string) (models.User, error)
-	FindUserByID(uid int64) (models.User, error)
+	FindAll(params map[string]interface{}) ([]models.User, error)
+	Save(user *models.User) (models.User, error)
+	FindByUsername(username string) (models.User, error)
+	FindByID(uid int64) (models.User, error)
 
 	Signin(username string, password string) (models.User, error)
 }
@@ -26,7 +26,7 @@ func NewUserRepository(db *gorm.DB) *userRepository {
 	}
 }
 
-func (repo *userRepository) FindAllUsers(params map[string]interface{}) ([]models.User, error) {
+func (repo *userRepository) FindAll(params map[string]interface{}) ([]models.User, error) {
 	var users []models.User
 
 	err := repo.db.
@@ -46,7 +46,7 @@ func (repo *userRepository) FindAllUsers(params map[string]interface{}) ([]model
 	return users, nil
 }
 
-func (repo *userRepository) SaveUser(user *models.User) (models.User, error) {
+func (repo *userRepository) Save(user *models.User) (models.User, error) {
 	if err := repo.db.Create(user).Error; err != nil {
 		return models.User{}, err
 	}
@@ -54,7 +54,7 @@ func (repo *userRepository) SaveUser(user *models.User) (models.User, error) {
 	return *user, nil
 }
 
-func (repo *userRepository) FindUserByUsername(username string) (user models.User, err error) {
+func (repo *userRepository) FindByUsername(username string) (user models.User, err error) {
 	err = repo.db.
 		Omit("Password").
 		Preload("Role").
@@ -65,7 +65,7 @@ func (repo *userRepository) FindUserByUsername(username string) (user models.Use
 	return user, err
 }
 
-func (repo *userRepository) FindUserByID(id int64) (user models.User, err error) {
+func (repo *userRepository) FindByID(id int64) (user models.User, err error) {
 	err = repo.db.Omit("Password").Preload("Role").First(&user, "id = ?", id).Error
 	return
 }

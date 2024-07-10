@@ -1,10 +1,9 @@
-package token
+package utils
 
 import (
 	"bigmind/xcheck-be/config"
 	"errors"
 	"fmt"
-	"log"
 	"strings"
 	"time"
 
@@ -13,8 +12,7 @@ import (
 )
 
 func GenerateToken(username string) (string, error) {
-	tokenLifespan := config.GetConfig().GetInt("auth.jwtExpire")
-	log.Println(tokenLifespan)
+	tokenLifespan := config.GetConfig().GetInt("AUTH_JWT_EXPIRE")
 
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
@@ -22,7 +20,7 @@ func GenerateToken(username string) (string, error) {
 	claims["exp"] = time.Now().Add(time.Hour * time.Duration(tokenLifespan)).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return token.SignedString([]byte(config.GetConfig().GetString("auth.jwtSecret")))
+	return token.SignedString([]byte(config.GetConfig().GetString("AUTH_JWT_SECRET")))
 
 }
 
@@ -38,9 +36,9 @@ func TokenValid(c *gin.Context) error {
 
 	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(config.GetConfig().GetString("auth.jwtSecret")), nil
+		return []byte(config.GetConfig().GetString("AUTH_JWT_SECRET")), nil
 	})
 	if err != nil {
 		return err
@@ -65,9 +63,9 @@ func ExtractTokenID(c *gin.Context) (string, error) {
 	tokenString := ExtractToken(c)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return []byte(config.GetConfig().GetString("auth.jwtSecret")), nil
+		return []byte(config.GetConfig().GetString("AUTH_JWT_SECRET")), nil
 	})
 	if err != nil {
 		return "", err

@@ -7,9 +7,8 @@ import (
 	"strconv"
 
 	"bigmind/xcheck-be/constant"
-	"bigmind/xcheck-be/models"
-	"bigmind/xcheck-be/services"
-	"bigmind/xcheck-be/token"
+	"bigmind/xcheck-be/internal/models"
+	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
 
 	"github.com/gin-gonic/gin"
@@ -118,7 +117,7 @@ func (u UserController) Signin(c *gin.Context) {
 		return
 	}
 
-	tokenStr, err := token.GenerateToken(user.Username)
+	tokenStr, err := utils.GenerateToken(user.Username)
 	if err != nil {
 		utils.PanicException(constant.InvalidRequest, err.Error())
 		return
@@ -174,7 +173,7 @@ func (u UserController) GetUserByID(c *gin.Context) {
 // @Router       /auth/me [get]
 func (u UserController) CurrentUser(c *gin.Context) {
 	defer utils.ResponseHandler(c)
-	username, err := token.ExtractTokenID(c)
+	username, err := utils.ExtractTokenID(c)
 
 	if err != nil {
 		utils.PanicException(constant.InvalidRequest, err.Error())

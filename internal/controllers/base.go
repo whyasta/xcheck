@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"bigmind/xcheck-be/services"
+	"bigmind/xcheck-be/internal/services"
 
 	"gorm.io/gorm/utils"
 )

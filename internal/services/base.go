@@ -1,6 +1,6 @@
 package services
 
-import "bigmind/xcheck-be/repositories"
+import "bigmind/xcheck-be/internal/repositories"
 
 type Service struct {
 	UserService *UserService
