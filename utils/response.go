@@ -14,7 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type ApiResponse[T any] struct {
+type APIResponse[T any] struct {
 	Code         int         `json:"code"`
 	Status       string      `json:"status"`
 	Message      string      `json:"message,omitempty"`
@@ -27,16 +27,16 @@ func Null() interface{} {
 	return nil
 }
 
-func BuildResponse[T any](code int, responseStatus constant.ResponseStatus, message string, data T) ApiResponse[T] {
+func BuildResponse[T any](code int, responseStatus constant.ResponseStatus, message string, data T) APIResponse[T] {
 	return BuildResponse_(code, responseStatus.GetResponseStatus(), message, data)
 }
 
-func BuildResponseWithToken[T any](code int, responseStatus constant.ResponseStatus, token string, message string, data T) ApiResponse[T] {
+func BuildResponseWithToken[T any](code int, responseStatus constant.ResponseStatus, token string, message string, data T) APIResponse[T] {
 	return BuildResponseWithToken_(code, responseStatus.GetResponseStatus(), token, message, data)
 }
 
-func BuildResponse_[T any](code int, status string, message string, data T) ApiResponse[T] {
-	return ApiResponse[T]{
+func BuildResponse_[T any](code int, status string, message string, data T) APIResponse[T] {
+	return APIResponse[T]{
 		Code:    code,
 		Status:  status,
 		Message: message,
@@ -44,8 +44,8 @@ func BuildResponse_[T any](code int, status string, message string, data T) ApiR
 	}
 }
 
-func BuildResponseWithToken_[T any](code int, status string, token string, message string, data T) ApiResponse[T] {
-	return ApiResponse[T]{
+func BuildResponseWithToken_[T any](code int, status string, token string, message string, data T) APIResponse[T] {
+	return APIResponse[T]{
 		Code:    code,
 		Status:  status,
 		Message: message,
@@ -109,6 +109,7 @@ func WriterHandler(c *gin.Context) {
 	w.body = &bytes.Buffer{}
 	var body map[string]interface{}
 	json.Unmarshal(originalBody.Bytes(), &body)
+	body["code"] = c.Writer.Status()
 	body["response_time"] = latency
 	newBody, _ := json.Marshal(body)
 

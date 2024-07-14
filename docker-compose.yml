@@ -13,6 +13,8 @@ services:
         working_dir: /app
         networks:
             - external-network
+        volumes:
+            - ./config:/app/config
 
 #Docker Networks
 networks:

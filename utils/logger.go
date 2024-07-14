@@ -10,9 +10,12 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-// var lock = &sync.Mutex{}
 var Logger *zap.SugaredLogger
 
+// InitLogger initializes the logger based on the environment.
+//
+// It takes in a string parameter `env` which represents the environment.
+// It does not return any values.
 func InitLogger(env string) {
 	// writerSyncer := getLogWriter()
 
@@ -21,13 +24,13 @@ func InitLogger(env string) {
 	if env == "development" {
 		core = zapcore.NewTee(
 			// zapcore.NewCore(getConsoleEncoder(), zapcore.AddSync(os.Stdout), zapcore.DebugLevel),
-			zapcore.NewCore(getJsonEncoder(), zapcore.AddSync(os.Stdout), zapcore.DebugLevel),
+			zapcore.NewCore(getJSONEncoder(), zapcore.AddSync(os.Stdout), zapcore.DebugLevel),
 			// zapcore.NewCore(getFileEncoder(), writerSyncer, zapcore.DebugLevel),
 		)
 	} else {
 		core = zapcore.NewTee(
 			// zapcore.NewCore(getConsoleEncoder(), zapcore.AddSync(os.Stdout), zapcore.DebugLevel),
-			zapcore.NewCore(getJsonEncoder(), zapcore.AddSync(os.Stdout), zapcore.DebugLevel),
+			zapcore.NewCore(getJSONEncoder(), zapcore.AddSync(os.Stdout), zapcore.DebugLevel),
 			// zapcore.NewCore(getFileEncoder(), writerSyncer, zapcore.DebugLevel),
 		)
 	}
@@ -45,7 +48,7 @@ func getConsoleEncoder() zapcore.Encoder {
 	return zapcore.NewConsoleEncoder(encoderConfig)
 }
 
-func getJsonEncoder() zapcore.Encoder {
+func getJSONEncoder() zapcore.Encoder {
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder

@@ -11,7 +11,7 @@ RUN \
 WORKDIR /app
 COPY . .
 
-RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o main ./.
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o main ./cmd/xcheck
 # ================
 
 # ================ Start running app
@@ -28,6 +28,6 @@ RUN mkdir /app/config
 COPY config/development.yml config/development.yml
 COPY config/production.yml config/production.yml
 COPY start.sh .
-EXPOSE 8080
+EXPOSE 9052
 CMD ["/app/main", "-e", "production"]
 # ================ End running app

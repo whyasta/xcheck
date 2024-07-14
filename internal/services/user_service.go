@@ -14,7 +14,15 @@ type UserService struct {
 
 // var roleInstance *RoleService
 
-// NewUserService: construction function, injected by user repository
+// NewUserService constructs a new UserService using the provided UserRepository.
+//
+// Parameter:
+//
+//	u - UserRepository: the user repository to be injected into the UserService.
+//
+// Return type:
+//
+//	*UserService: the newly created UserService instance.
 func NewUserService(u repositories.UserRepository) *UserService {
 	// sync.Once.Do(func() {
 	// 	instance = &UserService{

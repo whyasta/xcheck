@@ -30,5 +30,5 @@ func (s *RoleService) GetAllRole(params map[string]interface{}) ([]models.UserRo
 }
 
 func (s *RoleService) GetRoleByID(uid int64) (models.UserRole, error) {
-	return s.r.BaseFindByID(uid)
+	return s.r.FindByID(uid)
 }

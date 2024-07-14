@@ -1,3 +1,4 @@
+//lint:file-ignore ST1016 empty block comments are valid in this file
 package utils
 
 import (

@@ -43,6 +43,6 @@ func Init() {
 	services := services.NewService(repositories)
 
 	r := NewRouter(services)
-	log.Printf("Starting server at port :" + configEnv.GetString("SERVER_PORT") + "\n")
+	log.Printf("Starting server " + configEnv.GetString("SERVER_ADDRESS") + " at port :" + configEnv.GetString("SERVER_PORT") + "\n")
 	r.Run(configEnv.GetString("SERVER_ADDRESS") + ":" + configEnv.GetString("SERVER_PORT"))
 }

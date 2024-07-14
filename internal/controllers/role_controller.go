@@ -24,6 +24,11 @@ func NewRoleController(service *services.RoleService) *RoleController {
 	}
 }
 
+// CreateRole creates a new role based on the input User Role and returns the result.
+//
+// Parameters:
+// - c: The gin Context for handling HTTP request and response.
+// Returns: None
 // @Summary      Create role
 // @Tags         roles
 // @ID			 role-create
@@ -60,6 +65,13 @@ func (r RoleController) CreateRole(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", result))
 }
 
+// GetAllRole retrieves all roles based on the specified parameters.
+//
+// Parameter(s):
+//
+//	c *gin.Context: Gin context
+//
+// Return type(s): None
 // @Summary      Get All roles
 // @Tags         roles
 // @ID			 role-get-all
@@ -81,6 +93,12 @@ func (r RoleController) GetAllRole(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", rows))
 }
 
+// GetRoleByID retrieves a role by its ID from the database and returns it as a JSON response.
+//
+// Parameters:
+// - c: The gin Context for handling HTTP request and response.
+//
+// Return: None.
 // @Summary      Get by ID
 // @ID			 role-get-by-id
 // @Tags         roles

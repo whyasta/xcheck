@@ -64,7 +64,6 @@ func NewRouter(services *services.Service) *gin.Engine {
 			userRoleGroup.GET("/", controllers.RoleController.GetAllRole)
 			userRoleGroup.GET("/:id", controllers.RoleController.GetRoleByID)
 		}
-
 	}
 
 	//router.Use(middlewares.AuthMiddleware())

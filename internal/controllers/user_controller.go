@@ -25,6 +25,10 @@ func NewUserController(service *services.UserService) *UserController {
 	}
 }
 
+// GetAllUser retrieves all users based on the specified parameters.
+//
+// c *gin.Context: Gin context
+// Return type(s): None
 // @Summary      Get All users
 // @Tags         users
 // @ID			 user-get-all
@@ -46,6 +50,13 @@ func (u UserController) GetAllUser(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", allUsers))
 }
 
+// CreateUser creates a new user.
+//
+// It takes a Gin context as a parameter.
+// It binds the JSON request body to a User struct.
+// It validates the User struct.
+// It calls the CreateUser method of the UserService.
+// It returns the created User as a JSON response.
 // @Summary      Create user
 // @Tags         users
 // @ID			 user-create
@@ -82,6 +93,8 @@ func (u UserController) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", result))
 }
 
+// Signin signs in a user based on the provided credentials.
+// It takes a Gin context as a parameter.
 // @Summary		Signin
 // @Tags			auth
 // @Accept			json
@@ -130,6 +143,11 @@ func (u UserController) Signout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "pong"})
 }
 
+// GetUserByID retrieves a user by their ID and returns it as a JSON response.
+//
+// Parameters:
+// - c: The gin Context for handling HTTP request and response.
+// Returns: None
 // @Summary      Get user by ID
 // @ID			 user-get-by-id
 // @Tags         users
@@ -160,6 +178,12 @@ func (u UserController) GetUserByID(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", user))
 }
 
+// CurrentUser retrieves the current user based on the token provided in the context.
+//
+// Parameters:
+// c *gin.Context: Gin context containing the token information.
+// Returns:
+// None
 // @Summary      Get current user
 // @ID			 user-current
 // @Tags         auth

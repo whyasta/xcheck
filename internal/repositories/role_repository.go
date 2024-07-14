@@ -10,8 +10,8 @@ import (
 type RoleRepository interface {
 	Save(role *models.UserRole) (models.UserRole, error)
 	FindAll(params map[string]interface{}) ([]models.UserRole, error)
-	// FindByID(uid int64) (models.UserRole, error)
-	BaseFindByID(id int64) (models.UserRole, error)
+	FindByID(uid int64) (models.UserRole, error)
+	// BaseFindByID(id int64) (models.UserRole, error)
 }
 
 type roleRepository struct {
