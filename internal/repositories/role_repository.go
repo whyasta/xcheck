@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"bigmind/xcheck-be/internal/models"
+	"bigmind/xcheck-be/utils"
 	"log"
 
 	"gorm.io/gorm"
@@ -12,6 +13,8 @@ type RoleRepository interface {
 	FindAll(params map[string]interface{}) ([]models.UserRole, error)
 	FindByID(uid int64) (models.UserRole, error)
 	// BaseFindByID(id int64) (models.UserRole, error)
+
+	Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.UserRole, int64, error)
 }
 
 type roleRepository struct {
@@ -53,4 +56,27 @@ func (repo *roleRepository) FindByID(id int64) (models.UserRole, error) {
 	// }
 	// return role, nil
 	return BaseFindByID[models.UserRole](*repo.db, id)
+}
+
+func (repo *roleRepository) Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.UserRole, int64, error) {
+	var roles []models.UserRole
+	var count int64
+
+	// log.Println(paginate)
+
+	tx := repo.db.
+		Scopes(paginate.PaginatedResult).
+		Where(params).
+		Find(&roles)
+
+	err := tx.Error
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	tx.Limit(-1).Offset(-1)
+	tx.Count(&count)
+
+	return roles, count, nil
 }

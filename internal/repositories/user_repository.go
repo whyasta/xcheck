@@ -2,12 +2,16 @@ package repositories
 
 import (
 	"bigmind/xcheck-be/internal/models"
+	"bigmind/xcheck-be/utils"
+	"log"
 
 	"gorm.io/gorm"
 )
 
 type UserRepository interface {
 	// GetByID(id int) (*models.User, error)
+	Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.User, int64, error)
+
 	FindAll(params map[string]interface{}) ([]models.User, error)
 	Save(user *models.User) (models.User, error)
 	FindByUsername(username string) (models.User, error)
@@ -28,8 +32,9 @@ func NewUserRepository(db *gorm.DB) *userRepository {
 
 func (repo *userRepository) FindAll(params map[string]interface{}) ([]models.User, error) {
 	var users []models.User
-
+	log.Println(params)
 	err := repo.db.
+		// Scopes(NewPaginate(params["limit"], params["page"]).PaginatedResult).
 		Preload("Role").
 		Where(params).
 		Find(&users).
@@ -44,6 +49,34 @@ func (repo *userRepository) FindAll(params map[string]interface{}) ([]models.Use
 	}
 
 	return users, nil
+}
+
+func (repo *userRepository) Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.User, int64, error) {
+	var users []models.User
+	var count int64
+
+	log.Println(paginate)
+
+	tx := repo.db.
+		Scopes(paginate.PaginatedResult).
+		Preload("Role").
+		Where(params).
+		Find(&users)
+
+	err := tx.Error
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	for i := range users {
+		users[i].Password = ""
+	}
+
+	tx.Limit(-1).Offset(-1)
+	tx.Count(&count)
+
+	return users, count, nil
 }
 
 func (repo *userRepository) Save(user *models.User) (models.User, error) {

@@ -41,13 +41,23 @@ func NewUserController(service *services.UserService) *UserController {
 // @Security	 BearerAuth
 // @Router       /users [get]
 func (u UserController) GetAllUser(c *gin.Context) {
-	params := MakeQueryParams(c.Request.URL.Query(), []string{"role_id"})
-	allUsers, err := u.service.GetAllUser(params)
+	// params := MakeQueryParams(c.Request.URL.Query(), []string{"role_id"})
+	pageParams, params := MakePaginationQueryParams(c.Request.URL.Query(), []string{"role_id"})
+	// log.Println(pageParams)
+	// allUsers, err := u.service.GetAllUser(params)
+	allUsers, count, err := u.service.GetPaginateAllUser(pageParams, params)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", allUsers))
+
+	meta := utils.MetaResponse{
+		Page:  pageParams.Page(count),
+		Limit: pageParams.Limit(count),
+		Total: int(count),
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, constant.Success, "", allUsers, &meta))
 }
 
 // CreateUser creates a new user.

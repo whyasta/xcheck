@@ -3,6 +3,7 @@ package services
 import (
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/repositories"
+	"bigmind/xcheck-be/utils"
 	"errors"
 
 	"golang.org/x/crypto/bcrypt"
@@ -39,6 +40,11 @@ func NewUserService(u repositories.UserRepository) *UserService {
 func (s *UserService) GetAllUser(params map[string]interface{}) ([]models.User, error) {
 	result, err := s.u.FindAll(params)
 	return result, err
+}
+
+func (s *UserService) GetPaginateAllUser(pageParams *utils.Paginate, params map[string]interface{}) ([]models.User, int64, error) {
+	result, count, err := s.u.Paginate(pageParams, params)
+	return result, count, err
 }
 
 func (s *UserService) CreateUser(user *models.User) (models.User, error) {

@@ -84,13 +84,23 @@ func (r RoleController) CreateRole(c *gin.Context) {
 // @Security	 BearerAuth
 // @Router       /roles [get]
 func (r RoleController) GetAllRole(c *gin.Context) {
-	params := MakeQueryParams(c.Request.URL.Query(), []string{"role_name"})
-	rows, err := r.service.GetAllRole(params)
+	// params := MakeQueryParams(c.Request.URL.Query(), []string{"role_name"})
+	// rows, err := r.service.GetAllRole(params)
+
+	pageParams, params := MakePaginationQueryParams(c.Request.URL.Query(), []string{"role_id"})
+	rows, count, err := r.service.GetPaginateAllRole(pageParams, params)
+
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", rows))
+	meta := utils.MetaResponse{
+		Page:  pageParams.Page(count),
+		Limit: pageParams.Limit(count),
+		Total: int(count),
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, constant.Success, "", rows, &meta))
 }
 
 // GetRoleByID retrieves a role by its ID from the database and returns it as a JSON response.

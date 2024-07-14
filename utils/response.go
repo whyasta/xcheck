@@ -14,13 +14,20 @@ import (
 	"go.uber.org/zap"
 )
 
+type MetaResponse struct {
+	Total int `json:"total"`
+	Limit int `json:"limit"`
+	Page  int `json:"page"`
+}
+
 type APIResponse[T any] struct {
-	Code         int         `json:"code"`
-	Status       string      `json:"status"`
-	Message      string      `json:"message,omitempty"`
-	Token        string      `json:"token,omitempty"`
-	Data         interface{} `json:"data,omitempty"`
-	ResponseTime float64     `json:"response_time,omitempty"`
+	Code         int           `json:"code"`
+	Status       string        `json:"status"`
+	Message      string        `json:"message,omitempty"`
+	Token        string        `json:"token,omitempty"`
+	Data         interface{}   `json:"data,omitempty"`
+	ResponseTime float64       `json:"response_time,omitempty"`
+	Meta         *MetaResponse `json:"meta,omitempty"`
 }
 
 func Null() interface{} {
@@ -28,19 +35,24 @@ func Null() interface{} {
 }
 
 func BuildResponse[T any](code int, responseStatus constant.ResponseStatus, message string, data T) APIResponse[T] {
-	return BuildResponse_(code, responseStatus.GetResponseStatus(), message, data)
+	return BuildResponse_(code, responseStatus.GetResponseStatus(), message, data, nil)
+}
+
+func BuildResponseWithPaginate[T any](code int, responseStatus constant.ResponseStatus, message string, data T, meta *MetaResponse) APIResponse[T] {
+	return BuildResponse_(code, responseStatus.GetResponseStatus(), message, data, meta)
 }
 
 func BuildResponseWithToken[T any](code int, responseStatus constant.ResponseStatus, token string, message string, data T) APIResponse[T] {
 	return BuildResponseWithToken_(code, responseStatus.GetResponseStatus(), token, message, data)
 }
 
-func BuildResponse_[T any](code int, status string, message string, data T) APIResponse[T] {
+func BuildResponse_[T any](code int, status string, message string, data T, meta *MetaResponse) APIResponse[T] {
 	return APIResponse[T]{
 		Code:    code,
 		Status:  status,
 		Message: message,
 		Data:    data,
+		Meta:    meta,
 	}
 }
 
@@ -77,18 +89,18 @@ func ResponseHandler(c *gin.Context) {
 		switch key {
 		case
 			constant.DataNotFound.GetResponseStatus():
-			c.JSON(http.StatusNotFound, BuildResponse_(http.StatusNotFound, key, msg, Null()))
+			c.JSON(http.StatusNotFound, BuildResponse_(http.StatusNotFound, key, msg, Null(), nil))
 			c.Abort()
 		case
 			constant.InvalidRequest.GetResponseStatus():
-			c.JSON(http.StatusBadRequest, BuildResponse_(http.StatusBadRequest, key, msg, Null()))
+			c.JSON(http.StatusBadRequest, BuildResponse_(http.StatusBadRequest, key, msg, Null(), nil))
 			c.Abort()
 		case
 			constant.Unauthorized.GetResponseStatus():
-			c.JSON(http.StatusUnauthorized, BuildResponse_(http.StatusUnauthorized, key, msg, Null()))
+			c.JSON(http.StatusUnauthorized, BuildResponse_(http.StatusUnauthorized, key, msg, Null(), nil))
 			c.Abort()
 		default:
-			c.JSON(http.StatusInternalServerError, BuildResponse_(http.StatusInternalServerError, key, msg, Null()))
+			c.JSON(http.StatusInternalServerError, BuildResponse_(http.StatusInternalServerError, key, msg, Null(), nil))
 			c.Abort()
 		}
 	}
