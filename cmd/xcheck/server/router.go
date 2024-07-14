@@ -8,8 +8,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/go-openapi/runtime/middleware"
 )
 
 func NewRouter(services *services.Service) *gin.Engine {
@@ -27,7 +26,12 @@ func NewRouter(services *services.Service) *gin.Engine {
 	// 	httpSwagger.DomID("swagger-ui"),
 	// )).Methods(http.MethodGet)
 
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	router.StaticFile("/swagger.yml", "./docs/swagger.yml")
+	opts := middleware.SwaggerUIOpts{SpecURL: "swagger.yml"}
+	sh := middleware.SwaggerUI(opts, nil)
+	router.GET("/docs", gin.WrapH(sh))
 
 	router.Use(utils.WriterHandler)
 	// router.Use(utils.ResponseLogger())
@@ -68,6 +72,11 @@ func NewRouter(services *services.Service) *gin.Engine {
 			userRoleGroup.GET("/", controllers.RoleController.GetAllRole)
 			userRoleGroup.GET("/:id", controllers.RoleController.GetRoleByID)
 		}
+
+		authorized.POST("/events", controllers.EventController.CreateEvent)
+		authorized.DELETE("/events/:id", controllers.EventController.DeleteEvent)
+		authorized.GET("/events", controllers.EventController.GetAllEvents)
+		authorized.GET("/events/:id", controllers.EventController.GetEventByID)
 	}
 
 	//router.Use(middlewares.AuthMiddleware())
@@ -85,9 +94,9 @@ func NewRouter(services *services.Service) *gin.Engine {
 		c.JSON(http.StatusMethodNotAllowed, gin.H{"code": 405, "message": "405 method not allowed"})
 	})
 
-	router.NoRoute(func(c *gin.Context) {
-		c.JSON(http.StatusNotFound, gin.H{"code": 404, "message": "404 page not found"})
-	})
+	// router.NoRoute(func(c *gin.Context) {
+	// 	c.JSON(http.StatusNotFound, gin.H{"code": 404, "message": "404 page not found"})
+	// })
 
 	router.Use(middlewares.ErrorMiddleware())
 

@@ -20,6 +20,7 @@ type MetaResponse struct {
 	Page  int `json:"page"`
 }
 
+// swagger:response APIResponse
 type APIResponse[T any] struct {
 	Code         int           `json:"code"`
 	Status       string        `json:"status"`
@@ -29,6 +30,15 @@ type APIResponse[T any] struct {
 	RefreshToken string        `json:"refresh_token,omitempty"`
 	Meta         *MetaResponse `json:"meta,omitempty"`
 	ResponseTime float64       `json:"response_time,omitempty"`
+}
+
+// swagger:parameters  IDParam
+type IDParam struct {
+	// The ID of the order
+	//
+	// in: path
+	// required: true
+	ID int64 `json:"id"`
 }
 
 func Null() interface{} {

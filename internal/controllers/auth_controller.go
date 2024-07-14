@@ -22,20 +22,12 @@ func NewAuthController(service *services.AuthService) *AuthController {
 	}
 }
 
-// Signin signs in a user based on the provided credentials.
-// It takes a Gin context as a parameter.
-// @Summary		Signin
-// @Tags			auth
-// @Accept			json
-// @Produce		json
-// @Param			account	body		models.UserLogin	true	"User Login"
-// @Success		200
-// @Failure		400
-// @Failure		401
-// @Failure		404
-// @Failure		500
-// @Security		BearerAuth
-// @Router			/auth/signin [post]
+// swagger:route POST /auth/signin Auth authSignin
+// Signin
+//
+// responses:
+//
+// 200:
 func (u AuthController) Signin(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
@@ -61,6 +53,14 @@ func (u AuthController) Signin(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseWithToken(http.StatusOK, constant.Success, tokenPair["token"], tokenPair["refresh_token"], "", utils.Null()))
 }
 
+// swagger:route POST /auth/token Auth authRefreshToken
+// Refresh token
+// security:
+//   - Bearer: []
+//
+// responses:
+//
+// 200:
 func (u AuthController) Refresh(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	type tokenReqBody struct {
@@ -78,27 +78,26 @@ func (u AuthController) Refresh(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseWithToken(http.StatusOK, constant.Success, tokenPair["token"], tokenPair["refresh_token"], "", utils.Null()))
 }
 
+// swagger:route POST /auth/signout Auth signout
+// Signout
+// security:
+//   - Bearer: []
+//
+// responses:
+//
+// 200:
 func (u AuthController) Signout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "pong"})
 }
 
-// CurrentUser retrieves the current user based on the token provided in the context.
+// swagger:route GET /auth/me Auth authMe
+// Get current user
+// security:
+//   - Bearer: []
 //
-// Parameters:
-// c *gin.Context: Gin context containing the token information.
-// Returns:
-// None
-// @Summary      Get current user
-// @ID			 user-current
-// @Tags         auth
-// @Produce      json
-// @Success      200
-// @Failure      400
-// @Failure      401
-// @Failure      404
-// @Failure      500
-// @Security		BearerAuth
-// @Router       /auth/me [get]
+// responses:
+//
+// 200:
 func (u AuthController) CurrentUser(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	username, err := utils.ExtractTokenID(c)

@@ -6,27 +6,30 @@ import (
 	"gorm.io/gorm"
 )
 
+// swagger:parameters getUserList getEventList
 type Paginate struct {
-	limit int
-	page  int
+	// required: true
+	Limit int `json:"limit"`
+	// required: true
+	Page int `json:"page"`
 }
 
 func NewPaginate(limit int, page int) *Paginate {
-	return &Paginate{limit: limit, page: page}
+	return &Paginate{Limit: limit, Page: page}
 }
 
 func (p *Paginate) PaginatedResult(db *gorm.DB) *gorm.DB {
-	offset := (p.page - 1) * p.limit
+	offset := (p.Page - 1) * p.Limit
 	log.Println("offset: ", offset)
 
 	return db.Offset(offset).
-		Limit(p.limit)
+		Limit(p.Limit)
 }
 
-func (p *Paginate) Limit(count int64) int {
-	return p.limit
+func (p *Paginate) GetLimit(count int64) int {
+	return p.Limit
 }
 
-func (p *Paginate) Page(count int64) int {
-	return p.page
+func (p *Paginate) GetPage(count int64) int {
+	return p.Page
 }

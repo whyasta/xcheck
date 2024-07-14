@@ -7,14 +7,16 @@ import (
 )
 
 type Repository struct {
-	User *userRepository
-	Role *roleRepository
+	User  *userRepository
+	Role  *roleRepository
+	Event *eventRepository
 }
 
 func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{
-		User: NewUserRepository(db),
-		Role: NewRoleRepository(db),
+		User:  NewUserRepository(db),
+		Role:  NewRoleRepository(db),
+		Event: NewEventRepository(db),
 	}
 }
 
@@ -46,6 +48,37 @@ func NewRepository(db *gorm.DB) *Repository {
 // 	return nil
 // }
 
+type baseRepository struct {
+	db *gorm.DB
+}
+
+type BaseRepository interface {
+	GetDB() *gorm.DB
+	BeginTx()
+	CommitTx()
+	RollbackTx()
+}
+
+func NewBaseRepository(db *gorm.DB) BaseRepository {
+	return &baseRepository{db}
+}
+
+func (br *baseRepository) GetDB() *gorm.DB {
+	return br.db
+}
+
+func (br *baseRepository) BeginTx() {
+	br.db = br.GetDB().Begin()
+}
+
+func (br *baseRepository) CommitTx() {
+	br.GetDB().Commit()
+}
+
+func (br *baseRepository) RollbackTx() {
+	br.GetDB().Rollback()
+}
+
 func BaseInsert[M any](db gorm.DB, item M) (M, error) {
 	var result = reflect.ValueOf(item).Interface().(M)
 	var err = db.Create(&result).Error
@@ -55,5 +88,11 @@ func BaseInsert[M any](db gorm.DB, item M) (M, error) {
 func BaseFindByID[M any](db gorm.DB, id int64) (M, error) {
 	var result M
 	err := db.First(&result, "id = ?", id).Error
+	return result, err
+}
+
+func BaseSoftDelete[M any](db gorm.DB, id int64) (M, error) {
+	var result M
+	err := db.Where("id = ?", id).Delete(result).Error
 	return result, err
 }

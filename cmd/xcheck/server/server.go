@@ -2,7 +2,6 @@ package server
 
 import (
 	"bigmind/xcheck-be/config"
-	"bigmind/xcheck-be/internal/repositories"
 	"bigmind/xcheck-be/internal/services"
 	"fmt"
 	"log"
@@ -39,8 +38,8 @@ func Init() {
 		fmt.Printf("Connected to %s database successfully"+"\n", "mysql")
 	}
 
-	repositories := repositories.NewRepository(db)
-	services := services.NewService(repositories)
+	// setup services
+	services := services.RegisterServices(db)
 
 	r := NewRouter(services)
 	log.Printf("Starting server " + configEnv.GetString("SERVER_ADDRESS") + " at port :" + configEnv.GetString("SERVER_PORT") + "\n")

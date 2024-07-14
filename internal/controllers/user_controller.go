@@ -25,21 +25,15 @@ func NewUserController(service *services.UserService) *UserController {
 	}
 }
 
-// GetAllUser retrieves all users based on the specified parameters.
+// swagger:route GET /users User getUserList
+// Get User list
 //
-// c *gin.Context: Gin context
-// Return type(s): None
-// @Summary      Get All users
-// @Tags         users
-// @ID			 user-get-all
-// @Produce      json
-// @Success      200
-// @Failure      400
-// @Failure      401
-// @Failure      404
-// @Failure      500
-// @Security	 BearerAuth
-// @Router       /users [get]
+// security:
+//   - Bearer: []
+//
+// responses:
+//
+// 200:
 func (u UserController) GetAllUser(c *gin.Context) {
 	// params := MakeQueryParams(c.Request.URL.Query(), []string{"role_id"})
 	pageParams, params := MakePaginationQueryParams(c.Request.URL.Query(), []string{"role_id"})
@@ -52,33 +46,23 @@ func (u UserController) GetAllUser(c *gin.Context) {
 	}
 
 	meta := utils.MetaResponse{
-		Page:  pageParams.Page(count),
-		Limit: pageParams.Limit(count),
+		Page:  pageParams.GetPage(count),
+		Limit: pageParams.GetLimit(count),
 		Total: int(count),
 	}
 
 	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, constant.Success, "", allUsers, &meta))
 }
 
-// CreateUser creates a new user.
+// swagger:route POST /users User createUser
+// Create User
 //
-// It takes a Gin context as a parameter.
-// It binds the JSON request body to a User struct.
-// It validates the User struct.
-// It calls the CreateUser method of the UserService.
-// It returns the created User as a JSON response.
-// @Summary      Create user
-// @Tags         users
-// @ID			 user-create
-// @Produce      json
-// @Param		 user	body		models.UserRequest	true	"User"
-// @Success      200
-// @Failure      400
-// @Failure      401
-// @Failure      404
-// @Failure      500
-// @Security	 BearerAuth
-// @Router       /users [post]
+// security:
+//   - Bearer: []
+//
+// responses:
+//
+// 200:
 func (u UserController) CreateUser(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
@@ -103,23 +87,15 @@ func (u UserController) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", result))
 }
 
-// GetUserByID retrieves a user by their ID and returns it as a JSON response.
+// swagger:route GET /users/{id} User getUser
+// Get User by id
 //
-// Parameters:
-// - c: The gin Context for handling HTTP request and response.
-// Returns: None
-// @Summary      Get user by ID
-// @ID			 user-get-by-id
-// @Tags         users
-// @Param id   path int true "User ID"
-// @Produce      json
-// @Success      200
-// @Failure      400
-// @Failure      401
-// @Failure      404
-// @Failure      500
-// @Security		BearerAuth
-// @Router       /users/{id} [get]
+// security:
+//   - Bearer: []
+//
+// responses:
+//
+// 200:
 func (u UserController) GetUserByID(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	uid, err := strconv.Atoi(c.Param("id"))

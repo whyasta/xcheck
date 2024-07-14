@@ -10,18 +10,20 @@ import (
 )
 
 type Controller struct {
-	AuthController *AuthController
-	UserController *UserController
-	RoleController *RoleController
+	AuthController  *AuthController
+	UserController  *UserController
+	RoleController  *RoleController
+	EventController *EventController
 }
 
 func NewController(
 	services *services.Service,
 ) *Controller {
 	return &Controller{
-		AuthController: NewAuthController(services.AuthService),
-		UserController: NewUserController(services.UserService),
-		RoleController: NewRoleController(services.RoleService),
+		AuthController:  NewAuthController(services.AuthService),
+		UserController:  NewUserController(services.UserService),
+		RoleController:  NewRoleController(services.RoleService),
+		EventController: NewEventController(services.EventService),
 	}
 }
 

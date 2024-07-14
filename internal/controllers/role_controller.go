@@ -95,8 +95,8 @@ func (r RoleController) GetAllRole(c *gin.Context) {
 		return
 	}
 	meta := utils.MetaResponse{
-		Page:  pageParams.Page(count),
-		Limit: pageParams.Limit(count),
+		Page:  pageParams.GetPage(count),
+		Limit: pageParams.GetLimit(count),
 		Total: int(count),
 	}
 
