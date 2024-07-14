@@ -10,6 +10,7 @@ import (
 )
 
 type Controller struct {
+	AuthController *AuthController
 	UserController *UserController
 	RoleController *RoleController
 }
@@ -18,6 +19,7 @@ func NewController(
 	services *services.Service,
 ) *Controller {
 	return &Controller{
+		AuthController: NewAuthController(services.AuthService),
 		UserController: NewUserController(services.UserService),
 		RoleController: NewRoleController(services.RoleService),
 	}

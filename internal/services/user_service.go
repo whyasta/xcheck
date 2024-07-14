@@ -4,7 +4,6 @@ import (
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/repositories"
 	"bigmind/xcheck-be/utils"
-	"errors"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -57,20 +56,6 @@ func (s *UserService) GetUserByID(uid int64) (models.User, error) {
 	return s.u.FindByID(uid)
 }
 
-func (s *UserService) GetUserByUsername(uname string) (models.User, error) {
-	return s.u.FindByUsername(uname)
-}
-
-func (s *UserService) Signin(username string, password string) (models.User, error) {
-	user, err := s.u.Signin(username, password)
-	if err != nil {
-		return models.User{}, errors.New("invalid username or password")
-	}
-
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
-	if err != nil {
-		return models.User{}, errors.New("invalid username or password")
-	}
-	user.Password = ""
-	return user, nil
-}
+// func (s *UserService) GetUserByUsername(uname string) (models.User, error) {
+// 	return s.u.FindByUsername(uname)
+// }

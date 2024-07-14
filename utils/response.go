@@ -24,10 +24,11 @@ type APIResponse[T any] struct {
 	Code         int           `json:"code"`
 	Status       string        `json:"status"`
 	Message      string        `json:"message,omitempty"`
-	Token        string        `json:"token,omitempty"`
 	Data         interface{}   `json:"data,omitempty"`
-	ResponseTime float64       `json:"response_time,omitempty"`
+	Token        string        `json:"token,omitempty"`
+	RefreshToken string        `json:"refresh_token,omitempty"`
 	Meta         *MetaResponse `json:"meta,omitempty"`
+	ResponseTime float64       `json:"response_time,omitempty"`
 }
 
 func Null() interface{} {
@@ -42,8 +43,8 @@ func BuildResponseWithPaginate[T any](code int, responseStatus constant.Response
 	return BuildResponse_(code, responseStatus.GetResponseStatus(), message, data, meta)
 }
 
-func BuildResponseWithToken[T any](code int, responseStatus constant.ResponseStatus, token string, message string, data T) APIResponse[T] {
-	return BuildResponseWithToken_(code, responseStatus.GetResponseStatus(), token, message, data)
+func BuildResponseWithToken[T any](code int, responseStatus constant.ResponseStatus, token string, refreshToken string, message string, data T) APIResponse[T] {
+	return BuildResponseWithToken_(code, responseStatus.GetResponseStatus(), token, refreshToken, message, data)
 }
 
 func BuildResponse_[T any](code int, status string, message string, data T, meta *MetaResponse) APIResponse[T] {
@@ -56,13 +57,14 @@ func BuildResponse_[T any](code int, status string, message string, data T, meta
 	}
 }
 
-func BuildResponseWithToken_[T any](code int, status string, token string, message string, data T) APIResponse[T] {
+func BuildResponseWithToken_[T any](code int, status string, token string, refreshToken string, message string, data T) APIResponse[T] {
 	return APIResponse[T]{
-		Code:    code,
-		Status:  status,
-		Message: message,
-		Data:    data,
-		Token:   token,
+		Code:         code,
+		Status:       status,
+		Message:      message,
+		Data:         data,
+		Token:        token,
+		RefreshToken: refreshToken,
 	}
 }
 

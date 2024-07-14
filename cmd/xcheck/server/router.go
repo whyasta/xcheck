@@ -43,9 +43,13 @@ func NewRouter(services *services.Service) *gin.Engine {
 
 	auth := router.Group("/auth")
 	{
-		auth.POST("/signin", controllers.UserController.Signin)
-		auth.POST("/signout", middlewares.AuthMiddleware(), controllers.UserController.Signout)
-		auth.GET("/me", middlewares.AuthMiddleware(), controllers.UserController.CurrentUser)
+		auth.POST("/signin", controllers.AuthController.Signin)
+		auth.Use(middlewares.AuthMiddleware())
+		{
+			auth.GET("/me", controllers.AuthController.CurrentUser)
+			auth.POST("/token", controllers.AuthController.Refresh)
+			auth.POST("/signout", controllers.AuthController.Signout)
+		}
 	}
 
 	authorized := router.Group("/")

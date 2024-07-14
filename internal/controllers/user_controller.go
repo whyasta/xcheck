@@ -103,56 +103,6 @@ func (u UserController) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", result))
 }
 
-// Signin signs in a user based on the provided credentials.
-// It takes a Gin context as a parameter.
-// @Summary		Signin
-// @Tags			auth
-// @Accept			json
-// @Produce		json
-// @Param			account	body		models.UserLogin	true	"User Login"
-// @Success		200
-// @Failure		400
-// @Failure		401
-// @Failure		404
-// @Failure		500
-// @Security		BearerAuth
-// @Router			/auth/signin [post]
-func (u UserController) Signin(c *gin.Context) {
-	defer utils.ResponseHandler(c)
-
-	var userLogin *models.UserLogin
-
-	c.Next()
-	c.BindJSON(&userLogin)
-
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	err := validate.Struct(userLogin)
-	if err != nil {
-		errors := err.(validator.ValidationErrors)
-		utils.PanicException(constant.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
-		return
-	}
-
-	var user models.User
-	user, err = u.service.Signin(userLogin.Username, userLogin.Password)
-	if err != nil {
-		utils.PanicException(constant.Unauthorized, err.Error())
-		return
-	}
-
-	tokenStr, err := utils.GenerateToken(user.Username)
-	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
-		return
-	}
-
-	c.JSON(http.StatusOK, utils.BuildResponseWithToken(http.StatusOK, constant.Success, tokenStr, "", utils.Null()))
-}
-
-func (u UserController) Signout(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "pong"})
-}
-
 // GetUserByID retrieves a user by their ID and returns it as a JSON response.
 //
 // Parameters:
@@ -182,43 +132,6 @@ func (u UserController) GetUserByID(c *gin.Context) {
 	user, err = u.service.GetUserByID(int64(uid))
 	if err != nil {
 		utils.PanicException(constant.DataNotFound, errors.New("data not found").Error())
-		return
-	}
-
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", user))
-}
-
-// CurrentUser retrieves the current user based on the token provided in the context.
-//
-// Parameters:
-// c *gin.Context: Gin context containing the token information.
-// Returns:
-// None
-// @Summary      Get current user
-// @ID			 user-current
-// @Tags         auth
-// @Produce      json
-// @Success      200
-// @Failure      400
-// @Failure      401
-// @Failure      404
-// @Failure      500
-// @Security		BearerAuth
-// @Router       /auth/me [get]
-func (u UserController) CurrentUser(c *gin.Context) {
-	defer utils.ResponseHandler(c)
-	username, err := utils.ExtractTokenID(c)
-
-	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
-		return
-	}
-
-	var user models.User
-	user, err = u.service.GetUserByUsername(username)
-
-	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
 		return
 	}
 

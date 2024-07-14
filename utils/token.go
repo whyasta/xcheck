@@ -11,7 +11,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateToken(username string) (string, error) {
+func GenerateToken(username string) (map[string]string, error) {
 	tokenLifespan := config.GetConfig().GetInt("AUTH_JWT_EXPIRE")
 
 	claims := jwt.MapClaims{}
@@ -19,8 +19,24 @@ func GenerateToken(username string) (string, error) {
 	claims["username"] = username
 	claims["exp"] = time.Now().Add(time.Hour * time.Duration(tokenLifespan)).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	t, err := token.SignedString([]byte(config.GetConfig().GetString("AUTH_JWT_SECRET")))
+	if err != nil {
+		return nil, err
+	}
 
-	return token.SignedString([]byte(config.GetConfig().GetString("AUTH_JWT_SECRET")))
+	rtClaims := jwt.MapClaims{}
+	rtClaims["sub"] = username
+	rtClaims["exp"] = time.Now().Add(time.Hour * 24).Unix()
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
+	rt, err := refreshToken.SignedString([]byte(config.GetConfig().GetString("AUTH_JWT_SECRET")))
+	if err != nil {
+		return nil, err
+	}
+
+	return map[string]string{
+		"token":         t,
+		"refresh_token": rt,
+	}, nil
 
 }
 
