@@ -12,6 +12,10 @@ type Event struct {
 	CommonModel
 }
 
+func (Event) TableName() string {
+	return "events"
+}
+
 // swagger:model
 type EventRequest struct {
 	EventName string    `gorm:"column:event_name" json:"event_name" validate:"required,min=5,max=20"`

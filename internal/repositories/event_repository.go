@@ -3,6 +3,8 @@ package repositories
 import (
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/utils"
+	"encoding/json"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -15,28 +17,44 @@ type EventRepository interface {
 }
 
 type eventRepository struct {
-	db *gorm.DB
+	base BaseRepository
 }
 
 func NewEventRepository(db *gorm.DB) *eventRepository {
 	return &eventRepository{
-		db: db,
+		base: NewBaseRepository(db, models.Event{}),
 	}
 }
 
 func (repo *eventRepository) Save(role *models.Event) (models.Event, error) {
-	return BaseInsert(*repo.db, *role)
+	return BaseInsert(*repo.base.GetDB(), *role)
 }
 
 func (repo *eventRepository) FindByID(id int64) (models.Event, error) {
-	return BaseFindByID[models.Event](*repo.db, id)
+	//return BaseFindByID[models.Event](*repo.base.GetDB(), id)
+	data, err := repo.base.CommonFindByID("events", id)
+	if err != nil {
+		return models.Event{}, err
+	}
+
+	jsonStr, err := json.Marshal(data)
+	if err != nil {
+		fmt.Println(err)
+		return models.Event{}, err
+	}
+	var event models.Event
+	if err := json.Unmarshal(jsonStr, &event); err != nil {
+		fmt.Println(err)
+		return models.Event{}, err
+	}
+	return event, nil
 }
 
 func (repo *eventRepository) Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.Event, int64, error) {
 	var events []models.Event
 	var count int64
 
-	tx := repo.db.
+	tx := repo.base.GetDB().
 		Scopes(paginate.PaginatedResult).
 		Where(params).
 		Find(&events)
@@ -54,5 +72,5 @@ func (repo *eventRepository) Paginate(paginate *utils.Paginate, params map[strin
 }
 
 func (repo *eventRepository) Delete(id int64) (models.Event, error) {
-	return BaseSoftDelete[models.Event](*repo.db, id)
+	return BaseSoftDelete[models.Event](*repo.base.GetDB(), id)
 }

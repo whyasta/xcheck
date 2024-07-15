@@ -11,9 +11,7 @@ type EventService struct {
 }
 
 func NewEventService(r repositories.EventRepository) *EventService {
-	return &EventService{
-		r: r,
-	}
+	return &EventService{r}
 }
 
 func (s *EventService) CreateEvent(role *models.Event) (models.Event, error) {

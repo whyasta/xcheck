@@ -10,6 +10,7 @@ type Repository struct {
 	User  *userRepository
 	Role  *roleRepository
 	Event *eventRepository
+	Base  *baseRepository
 }
 
 func NewRepository(db *gorm.DB) *Repository {
@@ -49,7 +50,8 @@ func NewRepository(db *gorm.DB) *Repository {
 // }
 
 type baseRepository struct {
-	db *gorm.DB
+	db    *gorm.DB
+	model interface{}
 }
 
 type BaseRepository interface {
@@ -57,10 +59,12 @@ type BaseRepository interface {
 	BeginTx()
 	CommitTx()
 	RollbackTx()
+	CommonInsert(table string, item interface{}) (interface{}, error)
+	CommonFindByID(table string, uid int64) (interface{}, error)
 }
 
-func NewBaseRepository(db *gorm.DB) BaseRepository {
-	return &baseRepository{db}
+func NewBaseRepository(db *gorm.DB, model interface{}) BaseRepository {
+	return &baseRepository{db, model}
 }
 
 func (br *baseRepository) GetDB() *gorm.DB {
@@ -77,6 +81,17 @@ func (br *baseRepository) CommitTx() {
 
 func (br *baseRepository) RollbackTx() {
 	br.GetDB().Rollback()
+}
+
+func (br *baseRepository) CommonInsert(table string, item interface{}) (interface{}, error) {
+	var err = br.GetDB().Table(table).Create(&item).Error
+	return item, err
+}
+
+func (br *baseRepository) CommonFindByID(table string, id int64) (interface{}, error) {
+	result := make(map[string]interface{})
+	err := br.GetDB().Model(br.model).Table(table).First(&result, "id = ?", id).Error
+	return result, err
 }
 
 func BaseInsert[M any](db gorm.DB, item M) (M, error) {

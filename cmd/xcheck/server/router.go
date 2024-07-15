@@ -74,9 +74,9 @@ func NewRouter(services *services.Service) *gin.Engine {
 		}
 
 		authorized.POST("/events", controllers.EventController.CreateEvent)
-		authorized.DELETE("/events/:id", controllers.EventController.DeleteEvent)
-		authorized.GET("/events", controllers.EventController.GetAllEvents)
 		authorized.GET("/events/:id", controllers.EventController.GetEventByID)
+		authorized.GET("/events", controllers.EventController.GetAllEvents)
+		// authorized.DELETE("/events/:id", controllers.EventController.DeleteEvent)
 	}
 
 	//router.Use(middlewares.AuthMiddleware())
