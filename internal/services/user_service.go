@@ -10,6 +10,7 @@ import (
 
 type UserService struct {
 	u repositories.UserRepository
+	b repositories.BaseRepository
 }
 
 // var roleInstance *RoleService
@@ -23,7 +24,7 @@ type UserService struct {
 // Return type:
 //
 //	*UserService: the newly created UserService instance.
-func NewUserService(u repositories.UserRepository) *UserService {
+func NewUserService(u repositories.UserRepository, b repositories.BaseRepository) *UserService {
 	// sync.Once.Do(func() {
 	// 	instance = &UserService{
 	// 		u: u,
@@ -31,9 +32,7 @@ func NewUserService(u repositories.UserRepository) *UserService {
 	// 	}
 	// })
 	// return instance
-	return &UserService{
-		u: u,
-	}
+	return &UserService{u, b}
 }
 
 func (s *UserService) GetAllUser(params map[string]interface{}) ([]models.User, error) {
@@ -59,3 +58,7 @@ func (s *UserService) GetUserByID(uid int64) (models.User, error) {
 // func (s *UserService) GetUserByUsername(uname string) (models.User, error) {
 // 	return s.u.FindByUsername(uname)
 // }
+
+func (s *UserService) UpdateUser(id int64, data *map[string]interface{}) (models.User, error) {
+	return s.u.Update(id, data)
+}

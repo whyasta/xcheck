@@ -64,6 +64,7 @@ func NewRouter(services *services.Service) *gin.Engine {
 			userGroup.POST("/", controllers.UserController.CreateUser)
 			userGroup.GET("/", controllers.UserController.GetAllUser)
 			userGroup.GET("/:id", controllers.UserController.GetUserByID)
+			userGroup.POST("/:id", controllers.UserController.UpdateUser)
 		}
 
 		userRoleGroup := authorized.Group("roles")
@@ -71,6 +72,7 @@ func NewRouter(services *services.Service) *gin.Engine {
 			userRoleGroup.POST("/", controllers.RoleController.CreateRole)
 			userRoleGroup.GET("/", controllers.RoleController.GetAllRole)
 			userRoleGroup.GET("/:id", controllers.RoleController.GetRoleByID)
+			userRoleGroup.POST("/:id", controllers.EventController.UpdateEvent)
 		}
 
 		authorized.POST("/events", controllers.EventController.CreateEvent)
@@ -85,6 +87,7 @@ func NewRouter(services *services.Service) *gin.Engine {
 
 		authorized.POST("/ticket-types", controllers.TicketTypeController.CreateTicketType)
 		authorized.GET("/ticket-types/:id", controllers.TicketTypeController.GetTicketTypeByID)
+		authorized.POST("/ticket-types/:id", controllers.TicketTypeController.UpdateTicketType)
 		authorized.GET("/ticket-types", controllers.TicketTypeController.GetAllTicketTypes)
 
 	}

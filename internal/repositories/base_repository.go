@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"bigmind/xcheck-be/utils"
+	"log"
 	"reflect"
 
 	"gorm.io/gorm"
@@ -64,6 +65,7 @@ type BaseRepository interface {
 	CommitTx()
 	RollbackTx()
 	CommonInsert(table string, item interface{}) (interface{}, error)
+	CommonUpdate(table string, params map[string]interface{}, data interface{}) (interface{}, error)
 	CommonFindByID(table string, uid int64) (interface{}, error)
 }
 
@@ -98,6 +100,24 @@ func (br *baseRepository) CommonFindByID(table string, id int64) (interface{}, e
 	return result, err
 }
 
+func (br *baseRepository) CommonUpdate(table string, params map[string]interface{}, data interface{}) (interface{}, error) {
+	result := make(map[string]interface{})
+
+	log.Println(br.model)
+	// var err = br.GetDB().
+	// 	Table(table).
+	// 	Clauses(clause.Returning{}).
+	// 	Where(params).
+	// 	Updates(data).
+	// 	First(&result).
+	// 	Error
+	err := br.GetDB().Model(br.model).Table(table).First(&result, "id = ?", 1).Error
+	return result, err
+
+	// var err = br.GetDB().Table(table).Create(&item).Error
+	// return item, err
+}
+
 func BaseInsert[M any](db gorm.DB, item M) (M, error) {
 	var result = reflect.ValueOf(item).Interface().(M)
 	var err = db.Create(&result).Error
@@ -120,14 +140,13 @@ func BaseUpdate[M any](db gorm.DB, id int64, updated *map[string]interface{}) (M
 	var result M
 
 	var err = db.Model(&result).
-		Table("events").
+		// Table("events").
 		Clauses(clause.Returning{}).
 		Where("id = ?", id).
 		Updates(updated).
 		First(&result).
 		Error
 	return result, err
-
 }
 
 func BasePaginate[M any](db gorm.DB, paginate *utils.Paginate, params map[string]interface{}) (M, int64, error) {

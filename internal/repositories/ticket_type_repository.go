@@ -9,6 +9,7 @@ import (
 
 type TicketTypeRepository interface {
 	Save(role *models.TicketType) (models.TicketType, error)
+	Update(id int64, data *map[string]interface{}) (models.TicketType, error)
 	Delete(uid int64) (models.TicketType, error)
 	FindAll(paginate *utils.Paginate, filter []utils.Filter) ([]models.TicketType, int64, error)
 	FindByID(uid int64) (models.TicketType, error)
@@ -38,4 +39,8 @@ func (repo *ticketTypeRepository) FindAll(paginate *utils.Paginate, filters []ut
 
 func (repo *ticketTypeRepository) Delete(id int64) (models.TicketType, error) {
 	return BaseSoftDelete[models.TicketType](*repo.base.GetDB(), id)
+}
+
+func (repo *ticketTypeRepository) Update(id int64, data *map[string]interface{}) (models.TicketType, error) {
+	return BaseUpdate[models.TicketType](*repo.base.GetDB(), id, data)
 }

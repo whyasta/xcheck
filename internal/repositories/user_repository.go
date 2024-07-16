@@ -16,6 +16,7 @@ type UserRepository interface {
 	Save(user *models.User) (models.User, error)
 	FindByUsername(username string) (models.User, error)
 	FindByID(uid int64) (models.User, error)
+	Update(id int64, event *map[string]interface{}) (models.User, error)
 
 	Signin(username string, password string) (models.User, error)
 }
@@ -116,4 +117,8 @@ func (repo *userRepository) Signin(username, password string) (models.User, erro
 	}
 
 	return user, nil
+}
+
+func (repo *userRepository) Update(id int64, data *map[string]interface{}) (models.User, error) {
+	return BaseUpdate[models.User](*repo.db, id, data)
 }

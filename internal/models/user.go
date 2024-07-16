@@ -24,10 +24,17 @@ type SignedResponse struct {
 
 // swagger:model
 type UserRequest struct {
-	Username string `gorm:"column:username" json:"username" validate:"required,min=5,max=20"`
-	Password string `gorm:"column:password" json:"password" validate:"required,min=2,max=32"`
-	Email    string `gorm:"column:email" json:"email" validate:"required,email"`
-	RoleID   int64  `gorm:"column:role_id" json:"role_id" validate:"required"`
+	Username string `gorm:"column:username" mapstructure:"username" json:"username" validate:"required,min=5,max=20"`
+	Password string `gorm:"column:password" mapstructure:"password" json:"password" validate:"required,min=2,max=32"`
+	Email    string `gorm:"column:email" mapstructure:"email" json:"email" validate:"required,email"`
+	RoleID   int64  `gorm:"column:role_id" mapstructure:"role_id" json:"role_id" validate:"required"`
+}
+
+type UserUpdateRequest struct {
+	Username string `gorm:"column:username" mapstructure:"username" json:"username,omitempty" validate:"omitempty"`
+	Password string `gorm:"column:password" mapstructure:"password" json:"password,omitempty" validate:"omitempty"`
+	Email    string `gorm:"column:email" mapstructure:"email" json:"email,omitempty" validate:"email,omitempty"`
+	RoleID   int64  `gorm:"column:role_id" mapstructure:"role_id" json:"role_id,omitempty"`
 }
 
 // swagger:parameters getUser deleteUser

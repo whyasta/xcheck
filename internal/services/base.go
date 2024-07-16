@@ -25,9 +25,9 @@ func NewService(
 ) *Service {
 	return &Service{
 		AuthService:       NewAuthService(repositories.User),
-		UserService:       NewUserService(repositories.User),
+		UserService:       NewUserService(repositories.User, repositories.Base),
 		RoleService:       NewRoleService(repositories.Role),
 		EventService:      NewEventService(repositories.Event),
-		TicketTypeService: NewTicketTypeService(repositories.TicketType),
+		TicketTypeService: NewTicketTypeService(repositories.TicketType, repositories.Base),
 	}
 }

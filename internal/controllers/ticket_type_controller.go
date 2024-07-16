@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/mitchellh/mapstructure"
 )
 
 type TicketTypeController struct {
@@ -134,4 +135,36 @@ func (r TicketTypeController) DeleteTicketType(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", utils.Null()))
+}
+
+func (r TicketTypeController) UpdateTicketType(c *gin.Context) {
+	defer utils.ResponseHandler(c)
+
+	uid, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		utils.PanicException(constant.InvalidRequest, err.Error())
+		return
+	}
+
+	var event *models.TicketType
+	var request = make(map[string]interface{})
+
+	c.Next()
+	c.BindJSON(&request)
+	mapstructure.Decode(request, &event)
+
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	err = validate.Struct(event)
+	if err != nil {
+		errors := err.(validator.ValidationErrors)
+		utils.PanicException(constant.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+		return
+	}
+
+	result, err := r.service.UpdateTicketType(int64(uid), &request)
+	if err != nil {
+		utils.PanicException(constant.InvalidRequest, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", result))
 }
