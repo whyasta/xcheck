@@ -12,21 +12,20 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/mitchellh/mapstructure"
 )
 
-type EventController struct {
-	service *services.EventService
+type TicketTypeController struct {
+	service *services.TicketTypeService
 }
 
-func NewEventController(service *services.EventService) *EventController {
-	return &EventController{
+func NewTicketTypeController(service *services.TicketTypeService) *TicketTypeController {
+	return &TicketTypeController{
 		service: service,
 	}
 }
 
-// swagger:route POST /events Event createEvent
-// Create Event
+// swagger:route POST /ticket-types TicketType createTicketType
+// Create TicketType
 //
 // security:
 //   - Bearer: []
@@ -34,10 +33,10 @@ func NewEventController(service *services.EventService) *EventController {
 // responses:
 //
 // 200:
-func (r EventController) CreateEvent(c *gin.Context) {
+func (r TicketTypeController) CreateTicketType(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	var event *models.Event
+	var event *models.TicketType
 
 	c.Next()
 	c.BindJSON(&event)
@@ -50,7 +49,7 @@ func (r EventController) CreateEvent(c *gin.Context) {
 		return
 	}
 
-	result, err := r.service.CreateEvent(event)
+	result, err := r.service.CreateTicketType(event)
 	if err != nil {
 		utils.PanicException(constant.InvalidRequest, err.Error())
 		return
@@ -58,40 +57,8 @@ func (r EventController) CreateEvent(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", result))
 }
 
-func (r EventController) UpdateEvent(c *gin.Context) {
-	defer utils.ResponseHandler(c)
-
-	uid, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
-		return
-	}
-
-	var event *models.EventRequest
-	var request = make(map[string]interface{})
-
-	c.Next()
-	c.BindJSON(&request)
-	mapstructure.Decode(request, &event)
-
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	err = validate.Struct(event)
-	if err != nil {
-		errors := err.(validator.ValidationErrors)
-		utils.PanicException(constant.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
-		return
-	}
-
-	result, err := r.service.UpdateEvent(int64(uid), &request)
-	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
-		return
-	}
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", result))
-}
-
-// swagger:route GET /events Event getEventList
-// Get Event list
+// swagger:route GET /ticket-types TicketType getTicketTypeList
+// Get TicketType list
 //
 // security:
 //   - Bearer: []
@@ -99,10 +66,9 @@ func (r EventController) UpdateEvent(c *gin.Context) {
 // responses:
 //
 // 200:
-func (r EventController) GetAllEvents(c *gin.Context) {
-	//pageParams, params := MakePaginationQueryParams(c.Request.URL.Query(), []string{"event_id"})
+func (r TicketTypeController) GetAllTicketTypes(c *gin.Context) {
 	pageParams, filter := MakePageFilterQueryParams(c.Request.URL.Query(), []string{"event_id"})
-	rows, count, err := r.service.GetFilteredEvents(pageParams, filter)
+	rows, count, err := r.service.GetAllTicketTypes(pageParams, filter)
 
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -117,8 +83,8 @@ func (r EventController) GetAllEvents(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, constant.Success, "", rows, &meta))
 }
 
-// swagger:route GET /events/{id} Event getEvent
-// Get Event by id
+// swagger:route GET /ticket-types/{id} TicketType getTicketType
+// Get TicketType by id
 //
 // security:
 //   - Bearer: []
@@ -126,7 +92,7 @@ func (r EventController) GetAllEvents(c *gin.Context) {
 // responses:
 //
 // 200:
-func (r EventController) GetEventByID(c *gin.Context) {
+func (r TicketTypeController) GetTicketTypeByID(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -134,8 +100,8 @@ func (r EventController) GetEventByID(c *gin.Context) {
 		return
 	}
 
-	var user models.Event
-	user, err = r.service.GetEventByID(int64(uid))
+	var user models.TicketType
+	user, err = r.service.GetTicketTypeByID(int64(uid))
 	if err != nil {
 		utils.PanicException(constant.DataNotFound, errors.New("data not found").Error())
 		return
@@ -144,8 +110,8 @@ func (r EventController) GetEventByID(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", user))
 }
 
-// DeleteEvent swagger:route DELETE /events/{id} Event deleteEvent
-// Delete Event by id
+// DeleteTicketType swagger:route DELETE /ticket-types/{id} TicketType deleteTicketType
+// Delete TicketType by id
 //
 // security:
 //   - Bearer: []
@@ -153,7 +119,7 @@ func (r EventController) GetEventByID(c *gin.Context) {
 // responses:
 //
 // 200:
-func (r EventController) DeleteEvent(c *gin.Context) {
+func (r TicketTypeController) DeleteTicketType(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {

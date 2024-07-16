@@ -9,8 +9,8 @@ import (
 
 type TicketTypeRepository interface {
 	Save(role *models.TicketType) (models.TicketType, error)
-	Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.TicketType, int64, error)
 	Delete(uid int64) (models.TicketType, error)
+	FindAll(paginate *utils.Paginate, filter []utils.Filter) ([]models.TicketType, int64, error)
 	FindByID(uid int64) (models.TicketType, error)
 }
 
@@ -32,25 +32,8 @@ func (repo *ticketTypeRepository) FindByID(id int64) (models.TicketType, error) 
 	return BaseFindByID[models.TicketType](*repo.base.GetDB(), id)
 }
 
-func (repo *ticketTypeRepository) Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.TicketType, int64, error) {
-	var ticketTypes []models.TicketType
-	var count int64
-
-	tx := repo.base.GetDB().
-		Scopes(paginate.PaginatedResult).
-		Where(params).
-		Find(&ticketTypes)
-
-	err := tx.Error
-
-	if err != nil {
-		return nil, 0, err
-	}
-
-	tx.Limit(-1).Offset(-1)
-	tx.Count(&count)
-
-	return ticketTypes, count, nil
+func (repo *ticketTypeRepository) FindAll(paginate *utils.Paginate, filters []utils.Filter) ([]models.TicketType, int64, error) {
+	return BasePaginateWithFilter[[]models.TicketType](*repo.base.GetDB(), []string{}, paginate, filters)
 }
 
 func (repo *ticketTypeRepository) Delete(id int64) (models.TicketType, error) {

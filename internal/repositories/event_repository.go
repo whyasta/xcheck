@@ -10,7 +10,8 @@ import (
 )
 
 type EventRepository interface {
-	Save(role *models.Event) (models.Event, error)
+	Save(event *models.Event) (models.Event, error)
+	Update(id int64, event *map[string]interface{}) (models.Event, error)
 	Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.Event, int64, error)
 	GetFiltered(paginate *utils.Paginate, filters []utils.Filter) ([]models.Event, int64, error)
 	Delete(uid int64) (models.Event, error)
@@ -27,8 +28,28 @@ func NewEventRepository(db *gorm.DB) *eventRepository {
 	}
 }
 
-func (repo *eventRepository) Save(role *models.Event) (models.Event, error) {
-	return BaseInsert(*repo.base.GetDB(), *role)
+func (repo *eventRepository) Save(event *models.Event) (models.Event, error) {
+	if event.ID != 0 {
+		var result = models.Event{}
+		var err = repo.base.GetDB().Save(&event).First(&result).Error
+		return result, err
+	}
+	return BaseInsert(*repo.base.GetDB(), *event)
+}
+
+func (repo *eventRepository) Update(id int64, event *map[string]interface{}) (models.Event, error) {
+	// var result = models.Event{}
+	// var result models.Event
+
+	// var err = repo.base.GetDB().Model(&result).
+	// 	Table("events").
+	// 	Clauses(clause.Returning{}).
+	// 	Where("id = ?", id).
+	// 	Updates(event).
+	// 	First(&result).
+	// 	Error
+	// return result, err
+	return BaseUpdate[models.Event](*repo.base.GetDB(), id, event)
 }
 
 func (repo *eventRepository) FindByID(id int64) (models.Event, error) {
@@ -106,5 +127,5 @@ func (repo *eventRepository) GetFiltered(paginate *utils.Paginate, filters []uti
 	}
 
 	return events, count, nil*/
-	return BasePaginateWithFilter[[]models.Event](*repo.base.GetDB(), paginate, filters)
+	return BasePaginateWithFilter[[]models.Event](*repo.base.GetDB(), []string{"Gates", "Schedules"}, paginate, filters)
 }

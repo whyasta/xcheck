@@ -7,10 +7,11 @@ import (
 )
 
 type Service struct {
-	AuthService  *AuthService
-	UserService  *UserService
-	RoleService  *RoleService
-	EventService *EventService
+	AuthService       *AuthService
+	UserService       *UserService
+	RoleService       *RoleService
+	EventService      *EventService
+	TicketTypeService *TicketTypeService
 }
 
 func RegisterServices(db *gorm.DB) *Service {
@@ -23,9 +24,10 @@ func NewService(
 	repositories *repositories.Repository,
 ) *Service {
 	return &Service{
-		AuthService:  NewAuthService(repositories.User),
-		UserService:  NewUserService(repositories.User),
-		RoleService:  NewRoleService(repositories.Role),
-		EventService: NewEventService(repositories.Event),
+		AuthService:       NewAuthService(repositories.User),
+		UserService:       NewUserService(repositories.User),
+		RoleService:       NewRoleService(repositories.Role),
+		EventService:      NewEventService(repositories.Event),
+		TicketTypeService: NewTicketTypeService(repositories.TicketType),
 	}
 }

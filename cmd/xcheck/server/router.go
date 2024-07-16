@@ -75,8 +75,18 @@ func NewRouter(services *services.Service) *gin.Engine {
 
 		authorized.POST("/events", controllers.EventController.CreateEvent)
 		authorized.GET("/events/:id", controllers.EventController.GetEventByID)
+		authorized.POST("/events/:id", controllers.EventController.UpdateEvent)
 		authorized.GET("/events", controllers.EventController.GetAllEvents)
 		// authorized.DELETE("/events/:id", controllers.EventController.DeleteEvent)
+
+		// authorized.POST("/events/:event_id/gates", controllers.EventController.CreateEvent)
+		// authorized.GET("/events/:event_id/gates/:id", controllers.EventController.GetEventByID)
+		// authorized.GET("/events/:event_id", controllers.EventController.GetAllEvents)
+
+		authorized.POST("/ticket-types", controllers.TicketTypeController.CreateTicketType)
+		authorized.GET("/ticket-types/:id", controllers.TicketTypeController.GetTicketTypeByID)
+		authorized.GET("/ticket-types", controllers.TicketTypeController.GetAllTicketTypes)
+
 	}
 
 	//router.Use(middlewares.AuthMiddleware())
@@ -94,9 +104,9 @@ func NewRouter(services *services.Service) *gin.Engine {
 		c.JSON(http.StatusMethodNotAllowed, gin.H{"code": 405, "message": "405 method not allowed"})
 	})
 
-	// router.NoRoute(func(c *gin.Context) {
-	// 	c.JSON(http.StatusNotFound, gin.H{"code": 404, "message": "404 page not found"})
-	// })
+	router.NoRoute(func(c *gin.Context) {
+		c.JSON(http.StatusNotFound, gin.H{"code": 404, "message": "404 page not found"})
+	})
 
 	router.Use(middlewares.ErrorMiddleware())
 

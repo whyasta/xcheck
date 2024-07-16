@@ -4,11 +4,13 @@ import "time"
 
 // swagger:model
 type Event struct {
-	ID        int64     `gorm:"column:id; primary_key; not null" json:"id"`
-	EventName string    `gorm:"column:event_name" json:"event_name" validate:"required,min=5,max=20"`
-	Status    int       `gorm:"column:status;default:0" json:"status"`
-	StartDate time.Time `gorm:"column:start_date" json:"start_date"`
-	EndDate   time.Time `gorm:"column:end_date" json:"end_date"`
+	ID        int64      `gorm:"column:id; primary_key; not null" json:"id"`
+	EventName string     `gorm:"column:event_name" json:"event_name" validate:"required,min=5,max=100"`
+	Status    int        `gorm:"column:status;default:0" json:"status"`
+	StartDate time.Time  `gorm:"column:start_date" json:"start_date"`
+	EndDate   time.Time  `gorm:"column:end_date" json:"end_date"`
+	Gates     []Gate     `gorm:"foreignKey:event_id;references:id" json:"gates"`
+	Schedules []Schedule `gorm:"foreignKey:event_id;references:id" json:"schedules"`
 	CommonModel
 }
 
@@ -18,10 +20,11 @@ func (Event) TableName() string {
 
 // swagger:model
 type EventRequest struct {
-	EventName string    `gorm:"column:event_name" json:"event_name" validate:"required,min=5,max=20"`
-	Status    int       `gorm:"column:status;default:0" json:"status"`
-	StartDate time.Time `gorm:"column:start_date" json:"start_date"`
-	EndDate   time.Time `gorm:"column:end_date" json:"end_date"`
+	ID        int       `gorm:"column:id" mapstructure:"id" json:"id,omitempty"`
+	EventName string    `gorm:"column:event_name" mapstructure:"event_name" json:"event_name" validate:"required,min=5,max=100"`
+	Status    int       `gorm:"column:status;default:0" mapstructure:"status" json:"status,omitempty"`
+	StartDate time.Time `gorm:"column:start_date" mapstructure:"start_date" json:"start_date,omitempty"`
+	EndDate   time.Time `gorm:"column:end_date" mapstructure:"end_date" json:"end_date,omitempty"`
 }
 
 // swagger:parameters getEvent deleteEvent

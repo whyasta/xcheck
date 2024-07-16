@@ -5,20 +5,23 @@ import (
 	"reflect"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Repository struct {
-	User  *userRepository
-	Role  *roleRepository
-	Event *eventRepository
-	Base  *baseRepository
+	User       *userRepository
+	Role       *roleRepository
+	Event      *eventRepository
+	TicketType *ticketTypeRepository
+	Base       *baseRepository
 }
 
 func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{
-		User:  NewUserRepository(db),
-		Role:  NewRoleRepository(db),
-		Event: NewEventRepository(db),
+		User:       NewUserRepository(db),
+		Role:       NewRoleRepository(db),
+		Event:      NewEventRepository(db),
+		TicketType: NewTicketTypeRepository(db),
 	}
 }
 
@@ -113,6 +116,20 @@ func BaseSoftDelete[M any](db gorm.DB, id int64) (M, error) {
 	return result, err
 }
 
+func BaseUpdate[M any](db gorm.DB, id int64, updated *map[string]interface{}) (M, error) {
+	var result M
+
+	var err = db.Model(&result).
+		Table("events").
+		Clauses(clause.Returning{}).
+		Where("id = ?", id).
+		Updates(updated).
+		First(&result).
+		Error
+	return result, err
+
+}
+
 func BasePaginate[M any](db gorm.DB, paginate *utils.Paginate, params map[string]interface{}) (M, int64, error) {
 	var records M
 	var count int64
@@ -130,12 +147,16 @@ func BasePaginate[M any](db gorm.DB, paginate *utils.Paginate, params map[string
 	return records, count, err
 }
 
-func BasePaginateWithFilter[M any](db gorm.DB, paginate *utils.Paginate, filters []utils.Filter) (M, int64, error) {
+func BasePaginateWithFilter[M any](db gorm.DB, joins []string, paginate *utils.Paginate, filters []utils.Filter) (M, int64, error) {
 	var records M
 	var count int64
 
 	tx := db.
 		Scopes(paginate.PaginatedResult)
+
+	for _, join := range joins {
+		tx = tx.Preload(join)
+	}
 
 	if len(filters) > 0 {
 		for _, filter := range filters {
