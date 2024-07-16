@@ -23,6 +23,11 @@ func (s *EventService) GetAllEvents(pageParams *utils.Paginate, params map[strin
 	return result, count, err
 }
 
+func (s *EventService) GetFilteredEvents(pageParams *utils.Paginate, filters []utils.Filter) ([]models.Event, int64, error) {
+	result, count, err := s.r.GetFiltered(pageParams, filters)
+	return result, count, err
+}
+
 func (s *EventService) GetEventByID(uid int64) (models.Event, error) {
 	return s.r.FindByID(uid)
 }

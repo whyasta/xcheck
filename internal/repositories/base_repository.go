@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"bigmind/xcheck-be/utils"
 	"reflect"
 
 	"gorm.io/gorm"
@@ -110,4 +111,47 @@ func BaseSoftDelete[M any](db gorm.DB, id int64) (M, error) {
 	var result M
 	err := db.Where("id = ?", id).Delete(result).Error
 	return result, err
+}
+
+func BasePaginate[M any](db gorm.DB, paginate *utils.Paginate, params map[string]interface{}) (M, int64, error) {
+	var records M
+	var count int64
+
+	tx := db.
+		Scopes(paginate.PaginatedResult).
+		Where(params).
+		Find(&records)
+
+	tx.Limit(-1).Offset(-1)
+	tx.Count(&count)
+
+	err := tx.Error
+
+	return records, count, err
+}
+
+func BasePaginateWithFilter[M any](db gorm.DB, paginate *utils.Paginate, filters []utils.Filter) (M, int64, error) {
+	var records M
+	var count int64
+
+	tx := db.
+		Scopes(paginate.PaginatedResult)
+
+	if len(filters) > 0 {
+		for _, filter := range filters {
+			newFilter := utils.NewFilter(filter.Property, filter.Operation, filter.Collation, filter.Value, filter.Items)
+			tx = tx.Where(newFilter.FilterResult("", &db))
+		}
+	}
+
+	tx = tx.Find(&records)
+
+	if len(filters) <= 0 {
+		tx.Limit(-1).Offset(-1)
+	}
+	tx.Count(&count)
+
+	err := tx.Error
+
+	return records, count, err
 }

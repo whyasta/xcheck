@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bigmind/xcheck-be/config"
 	"bigmind/xcheck-be/constant"
 	"bytes"
 	"encoding/json"
@@ -155,7 +156,7 @@ func WriterHandler(c *gin.Context) {
 			"body":    json.RawMessage(newBody),
 		},
 	}
-	Logger.
+	config.Logger.
 		WithOptions(zap.Fields(zap.Any("context", logData))).
 		Info(fmt)
 

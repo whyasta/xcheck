@@ -12,6 +12,7 @@ import (
 type EventRepository interface {
 	Save(role *models.Event) (models.Event, error)
 	Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.Event, int64, error)
+	GetFiltered(paginate *utils.Paginate, filters []utils.Filter) ([]models.Event, int64, error)
 	Delete(uid int64) (models.Event, error)
 	FindByID(uid int64) (models.Event, error)
 }
@@ -51,13 +52,47 @@ func (repo *eventRepository) FindByID(id int64) (models.Event, error) {
 }
 
 func (repo *eventRepository) Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.Event, int64, error) {
-	var events []models.Event
+	// var events []models.Event
+	// var count int64
+
+	// tx := repo.base.GetDB().
+	// 	Scopes(paginate.PaginatedResult).
+	// 	Where(params).
+	// 	Find(&events)
+
+	// err := tx.Error
+
+	// if err != nil {
+	// 	return nil, 0, err
+	// }
+
+	// tx.Limit(-1).Offset(-1)
+	// tx.Count(&count)
+
+	// return events, count, nil
+	return BasePaginate[[]models.Event](*repo.base.GetDB(), paginate, params)
+}
+
+func (repo *eventRepository) Delete(id int64) (models.Event, error) {
+	return BaseSoftDelete[models.Event](*repo.base.GetDB(), id)
+}
+
+func (repo *eventRepository) GetFiltered(paginate *utils.Paginate, filters []utils.Filter) ([]models.Event, int64, error) {
+	/*var events []models.Event
 	var count int64
+	// log.Println(filters)
 
 	tx := repo.base.GetDB().
-		Scopes(paginate.PaginatedResult).
-		Where(params).
-		Find(&events)
+		Scopes(paginate.PaginatedResult)
+
+	if len(filters) > 0 {
+		for _, filter := range filters {
+			newFilter := utils.NewFilter(filter.Property, filter.Operation, filter.Collation, filter.Value, filter.Items)
+			tx = tx.Where(newFilter.FilterResult("", repo.base.GetDB()))
+		}
+	}
+
+	tx = tx.Find(&events)
 
 	err := tx.Error
 
@@ -65,12 +100,11 @@ func (repo *eventRepository) Paginate(paginate *utils.Paginate, params map[strin
 		return nil, 0, err
 	}
 
-	tx.Limit(-1).Offset(-1)
-	tx.Count(&count)
+	if len(filters) <= 0 {
+		tx.Limit(-1).Offset(-1)
+		tx.Count(&count)
+	}
 
-	return events, count, nil
-}
-
-func (repo *eventRepository) Delete(id int64) (models.Event, error) {
-	return BaseSoftDelete[models.Event](*repo.base.GetDB(), id)
+	return events, count, nil*/
+	return BasePaginateWithFilter[[]models.Event](*repo.base.GetDB(), paginate, filters)
 }

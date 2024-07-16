@@ -6,8 +6,11 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"moul.io/zapgorm2"
 )
 
 var config *viper.Viper
@@ -31,7 +34,14 @@ func ConnectToDB() (*gorm.DB, error) {
 	configEnv := GetConfig()
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", configEnv.GetString("DATABASE_USER"), configEnv.GetString("DATABASE_PASSWORD"), configEnv.GetString("DATABASE_HOST"), configEnv.GetString("DATABASE_PORT"), configEnv.GetString("DATABASE_NAME"))
 
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	dbLogger := zapgorm2.New(zap.L())
+	dbLogger.SetAsDefault()
+	dbLogger.LogMode(logger.Info)
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		// Logger: logger.Default.LogMode(logger.Info),
+		Logger: dbLogger,
+	})
+	db = db.Debug()
 	if err != nil {
 		log.Fatal("Error connecting to database. Error: ", err)
 		return nil, err
@@ -46,7 +56,6 @@ func ConnectToDB() (*gorm.DB, error) {
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	return db, err
-	// "user:password@tcp(127.0.0.1:3306)/database_name"
 }
 
 func GetConfig() *viper.Viper {

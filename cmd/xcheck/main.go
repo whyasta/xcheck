@@ -4,7 +4,6 @@ import (
 	"bigmind/xcheck-be/cmd/xcheck/server"
 	"bigmind/xcheck-be/config"
 	"bigmind/xcheck-be/docs"
-	"bigmind/xcheck-be/utils"
 
 	// "bigmind/xcheck-be/utils"
 	"flag"
@@ -22,7 +21,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	utils.InitLogger(*environment)
+	config.InitLogger(*environment)
 	config.Init(*environment)
 	// utils.Init()
 

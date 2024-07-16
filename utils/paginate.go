@@ -1,8 +1,6 @@
 package utils
 
 import (
-	"log"
-
 	"gorm.io/gorm"
 )
 
@@ -20,7 +18,7 @@ func NewPaginate(limit int, page int) *Paginate {
 
 func (p *Paginate) PaginatedResult(db *gorm.DB) *gorm.DB {
 	offset := (p.Page - 1) * p.Limit
-	log.Println("offset: ", offset)
+	// log.Println("offset: ", offset)
 
 	return db.Offset(offset).
 		Limit(p.Limit)

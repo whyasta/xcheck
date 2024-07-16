@@ -1,4 +1,4 @@
-package utils
+package config
 
 import (
 	"os"
@@ -36,7 +36,7 @@ func InitLogger(env string) {
 	}
 
 	logger := zap.New(core, zap.AddCaller())
-
+	zap.ReplaceGlobals(logger)
 	Logger = logger.Sugar()
 }
 

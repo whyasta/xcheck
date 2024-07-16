@@ -35,11 +35,15 @@ func NewAuthService(u repositories.UserRepository) *AuthService {
 }
 
 func (s *AuthService) GetUserByUsername(uname string) (models.User, error) {
-	return s.u.FindByUsername(uname)
+	result, err := s.u.FindByUsername(uname)
+	if err == nil {
+		result.Password = ""
+	}
+	return result, err
 }
 
 func (s *AuthService) Signin(username string, password string) (models.User, map[string]string, error) {
-	user, err := s.u.Signin(username, password)
+	user, err := s.u.FindByUsername(username)
 	if err != nil {
 		return models.User{}, nil, errors.New("invalid username or password")
 	}

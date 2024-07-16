@@ -32,10 +32,11 @@ func NewUserRepository(db *gorm.DB) *userRepository {
 
 func (repo *userRepository) FindAll(params map[string]interface{}) ([]models.User, error) {
 	var users []models.User
-	log.Println(params)
+	// log.Println(params)
 	err := repo.db.
 		// Scopes(NewPaginate(params["limit"], params["page"]).PaginatedResult).
-		Preload("Role").
+		// Preload("Role").
+		Joins("Role").
 		Where(params).
 		Find(&users).
 		Error
@@ -89,8 +90,9 @@ func (repo *userRepository) Save(user *models.User) (models.User, error) {
 
 func (repo *userRepository) FindByUsername(username string) (user models.User, err error) {
 	err = repo.db.
-		Omit("Password").
-		Preload("Role").
+		// Omit("Password").
+		// Preload("Role").
+		Joins("Role").
 		Where("username = ?", username).
 		First(&user).
 		Error
@@ -106,8 +108,9 @@ func (repo *userRepository) FindByID(id int64) (user models.User, err error) {
 func (repo *userRepository) Signin(username, password string) (models.User, error) {
 	user := models.User{}
 	if err := repo.db.
-		Preload("Role").
+		// Preload("Role").
 		Where("username = ?", username).
+		Joins("Role").
 		First(&user).Error; err != nil {
 		return models.User{}, err
 	}
