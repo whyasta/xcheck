@@ -4,6 +4,8 @@ import (
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/repositories"
 	"bigmind/xcheck-be/utils"
+	"errors"
+	"strconv"
 )
 
 type TicketTypeService struct {
@@ -19,7 +21,25 @@ func (s *TicketTypeService) CreateTicketType(data *models.TicketType) (models.Ti
 	return s.r.Save(data)
 }
 
-func (s *TicketTypeService) UpdateTicketType(id int64, data *map[string]interface{}) (models.TicketType, error) {
+func (s *TicketTypeService) UpdateTicketType(eventId int64, id int64, data *map[string]interface{}) (models.TicketType, error) {
+	var filters = []utils.Filter{
+		{
+			Property:  "event_id",
+			Operation: "=",
+			Value:     strconv.Itoa(int(eventId)),
+		},
+		{
+			Property:  "id",
+			Operation: "=",
+			Value:     strconv.Itoa(int(id)),
+		},
+	}
+	rows, _, _ := s.r.FindAll(utils.NewPaginate(1, 0), filters)
+
+	if len(rows) == 0 {
+		return models.TicketType{}, errors.New("record not found")
+	}
+
 	return s.r.Update(id, data)
 	// log.Println("dsadas")
 	// _, err := s.b.CommonUpdate("ticket_types", map[string]interface{}{"id": id}, data)

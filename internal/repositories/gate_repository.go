@@ -9,6 +9,7 @@ import (
 
 type GateRepository interface {
 	Save(role *models.Gate) (models.Gate, error)
+	Update(id int64, data *map[string]interface{}) (models.Gate, error)
 	Delete(uid int64) (models.Gate, error)
 	FindAll(paginate *utils.Paginate, filter []utils.Filter) ([]models.Gate, int64, error)
 	FindByID(uid int64) (models.Gate, error)
@@ -29,7 +30,7 @@ func (repo *gateRepository) Save(role *models.Gate) (models.Gate, error) {
 }
 
 func (repo *gateRepository) FindByID(id int64) (models.Gate, error) {
-	return BaseFindByID[models.Gate](*repo.base.GetDB(), id)
+	return BaseFindByID[models.Gate](*repo.base.GetDB(), id, []string{})
 }
 
 func (repo *gateRepository) FindAll(paginate *utils.Paginate, filters []utils.Filter) ([]models.Gate, int64, error) {
@@ -38,4 +39,8 @@ func (repo *gateRepository) FindAll(paginate *utils.Paginate, filters []utils.Fi
 
 func (repo *gateRepository) Delete(id int64) (models.Gate, error) {
 	return BaseSoftDelete[models.Gate](*repo.base.GetDB(), id)
+}
+
+func (repo *gateRepository) Update(id int64, data *map[string]interface{}) (models.Gate, error) {
+	return BaseUpdate[models.Gate](*repo.base.GetDB(), id, data)
 }

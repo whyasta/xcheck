@@ -3,8 +3,6 @@ package repositories
 import (
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/utils"
-	"encoding/json"
-	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -53,23 +51,23 @@ func (repo *eventRepository) Update(id int64, event *map[string]interface{}) (mo
 }
 
 func (repo *eventRepository) FindByID(id int64) (models.Event, error) {
-	//return BaseFindByID[models.Event](*repo.base.GetDB(), id)
-	data, err := repo.base.CommonFindByID("events", id)
-	if err != nil {
-		return models.Event{}, err
-	}
+	return BaseFindByID[models.Event](*repo.base.GetDB(), id, []string{"TicketTypes", "Gates", "Sessions"})
+	// data, err := repo.base.CommonFindByID("events", id)
+	// if err != nil {
+	// 	return models.Event{}, err
+	// }
 
-	jsonStr, err := json.Marshal(data)
-	if err != nil {
-		fmt.Println(err)
-		return models.Event{}, err
-	}
-	var event models.Event
-	if err := json.Unmarshal(jsonStr, &event); err != nil {
-		fmt.Println(err)
-		return models.Event{}, err
-	}
-	return event, nil
+	// jsonStr, err := json.Marshal(data)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return models.Event{}, err
+	// }
+	// var event models.Event
+	// if err := json.Unmarshal(jsonStr, &event); err != nil {
+	// 	fmt.Println(err)
+	// 	return models.Event{}, err
+	// }
+	// return event, nil
 }
 
 func (repo *eventRepository) Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.Event, int64, error) {
@@ -127,5 +125,5 @@ func (repo *eventRepository) GetFiltered(paginate *utils.Paginate, filters []uti
 	}
 
 	return events, count, nil*/
-	return BasePaginateWithFilter[[]models.Event](*repo.base.GetDB(), []string{"Gates", "Schedules"}, paginate, filters)
+	return BasePaginateWithFilter[[]models.Event](*repo.base.GetDB(), []string{"TicketTypes", "Gates", "Sessions"}, paginate, filters)
 }

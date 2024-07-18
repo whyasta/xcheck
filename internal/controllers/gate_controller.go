@@ -16,18 +16,18 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type TicketTypeController struct {
-	service *services.TicketTypeService
+type GateController struct {
+	service *services.GateService
 }
 
-func NewTicketTypeController(service *services.TicketTypeService) *TicketTypeController {
-	return &TicketTypeController{
+func NewGateController(service *services.GateService) *GateController {
+	return &GateController{
 		service: service,
 	}
 }
 
-// swagger:route POST /ticket-types TicketType createTicketType
-// Create TicketType
+// swagger:route POST /gates Gate createGate
+// Create Gate
 //
 // security:
 //   - Bearer: []
@@ -35,7 +35,7 @@ func NewTicketTypeController(service *services.TicketTypeService) *TicketTypeCon
 // responses:
 //
 // 200:
-func (r TicketTypeController) CreateTicketType(c *gin.Context) {
+func (r GateController) CreateGate(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
 	eventId, err := strconv.Atoi(c.Param("id"))
@@ -44,7 +44,7 @@ func (r TicketTypeController) CreateTicketType(c *gin.Context) {
 		return
 	}
 
-	var event *models.TicketType
+	var event *models.Gate
 
 	c.Next()
 	c.BindJSON(&event)
@@ -59,7 +59,7 @@ func (r TicketTypeController) CreateTicketType(c *gin.Context) {
 		return
 	}
 
-	result, err := r.service.CreateTicketType(event)
+	result, err := r.service.CreateGate(event)
 	if err != nil {
 		utils.PanicException(constant.InvalidRequest, err.Error())
 		return
@@ -67,8 +67,8 @@ func (r TicketTypeController) CreateTicketType(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", result))
 }
 
-// swagger:route GET /ticket-types TicketType getTicketTypeList
-// Get TicketType list
+// swagger:route GET /gates Gate getGateList
+// Get Gate list
 //
 // security:
 //   - Bearer: []
@@ -76,7 +76,7 @@ func (r TicketTypeController) CreateTicketType(c *gin.Context) {
 // responses:
 //
 // 200:
-func (r TicketTypeController) GetAllTicketTypes(c *gin.Context) {
+func (r GateController) GetAllGates(c *gin.Context) {
 	eventId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(constant.InvalidRequest, err.Error())
@@ -91,7 +91,7 @@ func (r TicketTypeController) GetAllTicketTypes(c *gin.Context) {
 		Value:     strconv.Itoa(eventId),
 	})
 
-	rows, count, err := r.service.GetAllTicketTypes(pageParams, filter)
+	rows, count, err := r.service.GetAllGates(pageParams, filter)
 
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -108,8 +108,8 @@ func (r TicketTypeController) GetAllTicketTypes(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, constant.Success, "", rows, &meta))
 }
 
-// swagger:route GET /ticket-types/{id} TicketType getTicketType
-// Get TicketType by id
+// swagger:route GET /gates/{id} Gate getGate
+// Get Gate by id
 //
 // security:
 //   - Bearer: []
@@ -117,17 +117,17 @@ func (r TicketTypeController) GetAllTicketTypes(c *gin.Context) {
 // responses:
 //
 // 200:
-func (r TicketTypeController) GetTicketTypeByID(c *gin.Context) {
+func (r GateController) GetGateByID(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	uid, err := strconv.Atoi(c.Param("ticketTypeId"))
+	uid, err := strconv.Atoi(c.Param("gateId"))
 	if err != nil {
 		utils.PanicException(constant.InvalidRequest, err.Error())
 		return
 	}
 
-	var user models.TicketType
-	user, err = r.service.GetTicketTypeByID(int64(uid))
+	var user models.Gate
+	user, err = r.service.GetGateByID(int64(uid))
 	if err != nil {
 		utils.PanicException(constant.DataNotFound, errors.New("data not found").Error())
 		return
@@ -136,8 +136,8 @@ func (r TicketTypeController) GetTicketTypeByID(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", user))
 }
 
-// DeleteTicketType swagger:route DELETE /ticket-types/{id} TicketType deleteTicketType
-// Delete TicketType by id
+// DeleteGate swagger:route DELETE /gates/{id} Gate deleteGate
+// Delete Gate by id
 //
 // security:
 //   - Bearer: []
@@ -145,7 +145,7 @@ func (r TicketTypeController) GetTicketTypeByID(c *gin.Context) {
 // responses:
 //
 // 200:
-func (r TicketTypeController) DeleteTicketType(c *gin.Context) {
+func (r GateController) DeleteGate(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -162,7 +162,7 @@ func (r TicketTypeController) DeleteTicketType(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", utils.Null()))
 }
 
-func (r TicketTypeController) UpdateTicketType(c *gin.Context) {
+func (r GateController) UpdateGate(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
 	eventId, err := strconv.Atoi(c.Param("id"))
@@ -171,13 +171,13 @@ func (r TicketTypeController) UpdateTicketType(c *gin.Context) {
 		return
 	}
 
-	uid, err := strconv.Atoi(c.Param("ticketTypeId"))
+	uid, err := strconv.Atoi(c.Param("gateId"))
 	if err != nil {
 		utils.PanicException(constant.InvalidRequest, err.Error())
 		return
 	}
 
-	var event *models.TicketType
+	var event *models.Gate
 	var request = make(map[string]interface{})
 
 	// event.EventID = int64(eventId)
@@ -198,7 +198,7 @@ func (r TicketTypeController) UpdateTicketType(c *gin.Context) {
 
 	log.Println(request)
 
-	result, err := r.service.UpdateTicketType(int64(eventId), int64(uid), &request)
+	result, err := r.service.UpdateGate(int64(eventId), int64(uid), &request)
 	if err != nil {
 		utils.PanicException(constant.InvalidRequest, err.Error())
 		return

@@ -12,6 +12,10 @@ type Service struct {
 	RoleService       *RoleService
 	EventService      *EventService
 	TicketTypeService *TicketTypeService
+	GateService       *GateService
+	SessionService    *SessionService
+	ImportService     *ImportService
+	BarcodeService    *BarcodeService
 }
 
 func RegisterServices(db *gorm.DB) *Service {
@@ -29,5 +33,9 @@ func NewService(
 		RoleService:       NewRoleService(repositories.Role),
 		EventService:      NewEventService(repositories.Event),
 		TicketTypeService: NewTicketTypeService(repositories.TicketType, repositories.Base),
+		GateService:       NewGateService(repositories.Gate),
+		SessionService:    NewSessionService(repositories.Session),
+		ImportService:     NewImportService(repositories.Import),
+		BarcodeService:    NewBarcodeService(repositories.Barcode),
 	}
 }

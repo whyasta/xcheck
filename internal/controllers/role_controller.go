@@ -95,9 +95,11 @@ func (r RoleController) GetAllRole(c *gin.Context) {
 		return
 	}
 	meta := utils.MetaResponse{
-		Page:  pageParams.GetPage(count),
-		Limit: pageParams.GetLimit(count),
-		Total: int(count),
+		PagingInfo: utils.PagingInfo{
+			Page:  pageParams.GetPage(count),
+			Limit: pageParams.GetLimit(count),
+			Total: int(count),
+		},
 	}
 
 	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, constant.Success, "", rows, &meta))

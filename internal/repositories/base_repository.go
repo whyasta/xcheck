@@ -14,7 +14,11 @@ type Repository struct {
 	Role       *roleRepository
 	Event      *eventRepository
 	TicketType *ticketTypeRepository
+	Gate       *gateRepository
+	Session    *sessionRepository
 	Base       *baseRepository
+	Import     *importRepository
+	Barcode    *barcodeRepository
 }
 
 func NewRepository(db *gorm.DB) *Repository {
@@ -23,6 +27,10 @@ func NewRepository(db *gorm.DB) *Repository {
 		Role:       NewRoleRepository(db),
 		Event:      NewEventRepository(db),
 		TicketType: NewTicketTypeRepository(db),
+		Gate:       NewGateRepository(db),
+		Session:    NewSessionRepository(db),
+		Import:     NewImportRepository(db),
+		Barcode:    NewBarcodeRepository(db),
 	}
 }
 
@@ -124,9 +132,17 @@ func BaseInsert[M any](db gorm.DB, item M) (M, error) {
 	return result, err
 }
 
-func BaseFindByID[M any](db gorm.DB, id int64) (M, error) {
+func BaseFindByID[M any](db gorm.DB, id int64, joins []string) (M, error) {
 	var result M
-	err := db.First(&result, "id = ?", id).Error
+	tx := db.Model(&result)
+	if len(joins) > 0 {
+		for _, join := range joins {
+			log.Println(join)
+			tx = tx.Preload(join)
+		}
+	}
+	tx = tx.First(&result, "id = ?", id)
+	err := tx.Error
 	return result, err
 }
 

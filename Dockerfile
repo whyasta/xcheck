@@ -25,8 +25,8 @@ COPY --from=builder /app/main .
 # COPY certs/*.crt /etc/ssl/certs/
 
 RUN mkdir /app/config
-COPY config/development.yml config/development.yml
-COPY config/production.yml config/production.yml
+# COPY config/development.yml config/development.yml
+# COPY config/production.yml config/production.yml
 COPY start.sh .
 EXPOSE 9052
 CMD ["/app/main", "-e", "production"]

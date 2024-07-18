@@ -15,10 +15,14 @@ import (
 	"go.uber.org/zap"
 )
 
-type MetaResponse struct {
+type PagingInfo struct {
 	Total int `json:"total"`
 	Limit int `json:"limit"`
 	Page  int `json:"page"`
+}
+
+type MetaResponse struct {
+	PagingInfo PagingInfo `json:"paging_info"`
 }
 
 // swagger:response APIResponse
@@ -27,10 +31,10 @@ type APIResponse[T any] struct {
 	Status       string        `json:"status"`
 	Message      string        `json:"message,omitempty"`
 	Data         interface{}   `json:"data,omitempty"`
-	Token        string        `json:"token,omitempty"`
+	Token        string        `json:"access_token,omitempty"`
 	RefreshToken string        `json:"refresh_token,omitempty"`
 	Meta         *MetaResponse `json:"meta,omitempty"`
-	ResponseTime float64       `json:"response_time,omitempty"`
+	ResponseTime float64       `json:"time,omitempty"`
 }
 
 // swagger:parameters  IDParam
@@ -135,7 +139,7 @@ func WriterHandler(c *gin.Context) {
 	var body map[string]interface{}
 	json.Unmarshal(originalBody.Bytes(), &body)
 	body["code"] = c.Writer.Status()
-	body["response_time"] = latency
+	body["processing_time"] = latency
 	newBody, _ := json.Marshal(body)
 
 	// log.Printf("Response :" + string(newBody) + "\n")
@@ -160,8 +164,8 @@ func WriterHandler(c *gin.Context) {
 		WithOptions(zap.Fields(zap.Any("context", logData))).
 		Info(fmt)
 
-	// Logger.Info("fmt", zap.Fields(zap.String("context", string(newBody))))
-	// Logger.Info(fmt)
+		// Logger.Info("fmt", zap.Fields(zap.String("context", string(newBody))))
+		// Logger.Info(fmt)
 
 	w.Write(newBody)
 }

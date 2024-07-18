@@ -30,7 +30,7 @@ func (repo *ticketTypeRepository) Save(role *models.TicketType) (models.TicketTy
 }
 
 func (repo *ticketTypeRepository) FindByID(id int64) (models.TicketType, error) {
-	return BaseFindByID[models.TicketType](*repo.base.GetDB(), id)
+	return BaseFindByID[models.TicketType](*repo.base.GetDB(), id, []string{})
 }
 
 func (repo *ticketTypeRepository) FindAll(paginate *utils.Paginate, filters []utils.Filter) ([]models.TicketType, int64, error) {

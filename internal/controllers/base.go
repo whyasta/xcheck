@@ -15,7 +15,10 @@ type Controller struct {
 	UserController       *UserController
 	RoleController       *RoleController
 	EventController      *EventController
+	GateController       *GateController
 	TicketTypeController *TicketTypeController
+	SessionController    *SessionController
+	BarcodeController    *BarcodeController
 }
 
 func NewController(
@@ -26,7 +29,10 @@ func NewController(
 		UserController:       NewUserController(services.UserService),
 		RoleController:       NewRoleController(services.RoleService),
 		EventController:      NewEventController(services.EventService),
+		GateController:       NewGateController(services.GateService),
 		TicketTypeController: NewTicketTypeController(services.TicketTypeService),
+		SessionController:    NewSessionController(services.SessionService),
+		BarcodeController:    NewBarcodeController(services.ImportService, services.BarcodeService),
 	}
 }
 
