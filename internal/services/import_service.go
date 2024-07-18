@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bigmind/xcheck-be/internal/constant"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/repositories"
 	"bigmind/xcheck-be/utils"
@@ -28,7 +29,7 @@ func (s *ImportService) UpdateStatusImport(id int64, status string, errorMessage
 
 func (s *ImportService) DoImportJob(id int64) (models.Import, error) {
 	log.Println("DoImportJob")
-	row, err := s.r.Update(id, &map[string]interface{}{"status": models.ImportStatusProcessing, "error_message": "Processing file"})
+	row, err := s.r.Update(id, &map[string]interface{}{"status": constant.ImportStatusProcessing, "error_message": "Processing file"})
 	if err != nil {
 		return models.Import{}, err
 	}
@@ -39,7 +40,7 @@ func (s *ImportService) DoImportJob(id int64) (models.Import, error) {
 	importJob.ImportData()
 	log.Println("Importing done")
 	// return models.Import{}, nil
-	row, err = s.r.Update(id, &map[string]interface{}{"status": models.ImportStatusCompleted, "error_message": "Completed"})
+	row, err = s.r.Update(id, &map[string]interface{}{"status": constant.ImportStatusCompleted, "error_message": "Completed"})
 	if err == nil {
 		if err = os.Remove(filepath.Join("files", row.FileName)); err != nil {
 			return models.Import{}, err

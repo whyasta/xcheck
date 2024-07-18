@@ -8,11 +8,6 @@ type UserRole struct {
 	CommonModel
 }
 
-type UserRoleRequest struct {
-	RoleName    string `gorm:"column:role_name" json:"role_name"`
-	Description string `gorm:"column:description" json:"description"`
-}
-
 func (g UserRole) ToEntity() UserRole {
 	return UserRole{
 		ID:          g.ID,

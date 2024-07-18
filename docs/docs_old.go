@@ -195,7 +195,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.EventRequest"
+                            "$ref": "#/definitions/dto.EventRequest"
                         }
                     }
                 ],
@@ -531,7 +531,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.EventRequest": {
+        "dto.EventRequest": {
             "type": "object",
             "required": [
                 "event_name"

@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"bigmind/xcheck-be/internal/constant"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/utils"
 
@@ -56,7 +57,7 @@ func (repo *importRepository) CheckValidImport(id int64) (bool, error) {
 	var result models.Import
 	err := repo.base.GetDB().
 		Where("id = ?", id).
-		Where("status = ?", models.ImportStatusCompleted).
+		Where("status = ?", constant.ImportStatusCompleted).
 		First(&result).
 		Error
 
@@ -67,7 +68,7 @@ func (repo *importRepository) CheckValidImport(id int64) (bool, error) {
 }
 
 func (repo *importRepository) CheckValidAssign(id int64) (bool, error) {
-	var result models.EventAssignment
+	var result models.Schedule
 	err := repo.base.GetDB().
 		Where("id = ?", id).
 		First(&result).

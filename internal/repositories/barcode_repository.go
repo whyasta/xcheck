@@ -1,9 +1,13 @@
 package repositories
 
 import (
+	"bigmind/xcheck-be/internal/constant"
+	"bigmind/xcheck-be/internal/dto"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/utils"
+	"errors"
 	"log"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -15,6 +19,8 @@ type BarcodeRepository interface {
 	FindAll(joins []string, paginate *utils.Paginate, filter []utils.Filter) ([]models.Barcode, int64, error)
 	FindByID(uid int64) (models.Barcode, error)
 	AssignBarcodes(importId int64, assignId int64) (int64, error)
+	Scan(barcode string) (models.Barcode, error)
+	CreateLog(barcode string, currentStatus constant.BarcodeStatus) (bool, error)
 }
 
 type barcodeRepository struct {
@@ -74,10 +80,10 @@ func (repo *barcodeRepository) AssignBarcodes(importId int64, assignId int64) (i
 		barcodes := []models.Barcode{}
 		for _, item := range importBarcodes {
 			barcodes = append(barcodes, models.Barcode{
-				Barcode:           item.Barcode,
-				EventAssignmentID: assignId,
-				Flag:              models.BarcodeFlagValid,
-				CurrentStatus:     models.BarcodeStatusNull,
+				Barcode:       item.Barcode,
+				ScheduleID:    assignId,
+				Flag:          constant.BarcodeFlagValid,
+				CurrentStatus: constant.BarcodeStatusNull,
 			})
 		}
 
@@ -91,11 +97,55 @@ func (repo *barcodeRepository) AssignBarcodes(importId int64, assignId int64) (i
 		result = repo.base.GetDB().
 			Table("imports").
 			Where("id = ?", importId).
-			Updates(map[string]interface{}{"status": models.ImportStatusPaired})
+			Updates(map[string]interface{}{"status": constant.ImportStatusPaired})
 
 		err = result.Error
 		return err
 	})
 
 	return count, err
+}
+
+func (repo *barcodeRepository) Scan(barcode string) (models.Barcode, error) {
+	var result models.Barcode
+	err := repo.base.GetDB().
+		Joins("Schedule").
+		Joins("Schedule.Session").
+		Where("barcode = ?", barcode).
+		First(&result).
+		Error
+	if err != nil {
+		return result, errors.New("barcode not found")
+	}
+
+	return result, err
+}
+
+func (repo *barcodeRepository) CreateLog(barcode string, currentStatus constant.BarcodeStatus) (bool, error) {
+	action := constant.BarcodeStatusIn
+	firstCheckin := false
+	if currentStatus == constant.BarcodeStatusNull {
+		action = constant.BarcodeStatusIn
+		firstCheckin = true
+	} else if currentStatus == constant.BarcodeStatusIn {
+		// action = constant.BarcodeStatusOut //tidak ada checkout
+		action = constant.BarcodeStatusIn
+	}
+
+	log := dto.BarcodeLog{
+		Barcode:   barcode,
+		Action:    action,
+		ScannedAt: time.Now(),
+	}
+
+	var err = repo.base.GetDB().Table("barcode_logs").Create(&log).Error
+	if err == nil {
+		err = repo.base.GetDB().
+			Table("barcodes").
+			Where("barcode = ?", barcode).
+			Update("current_status", action).
+			Update("flag", constant.BarcodeFlagUsed).
+			Error
+	}
+	return firstCheckin, err
 }

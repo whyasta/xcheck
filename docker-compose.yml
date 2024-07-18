@@ -14,7 +14,7 @@ services:
         networks:
             - external-network
         volumes:
-            - ./config:/app/config
+            - ./config/.env.docker:/app/config/.env
 
 #Docker Networks
 networks:

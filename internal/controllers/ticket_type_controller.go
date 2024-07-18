@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"bigmind/xcheck-be/constant"
+	"bigmind/xcheck-be/internal/constant"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"

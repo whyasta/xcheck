@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"bigmind/xcheck-be/constant"
+	"bigmind/xcheck-be/internal/constant"
 	"bigmind/xcheck-be/utils"
 	"net/http"
 

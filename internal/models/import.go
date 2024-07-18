@@ -17,13 +17,3 @@ type ImportBarcode struct {
 	AssignStatus string `gorm:"column:assign_status,default:0" mapstructure:"assign_status" json:"assign_status" validate:"required,min=3,max=20"`
 	CommonModel
 }
-
-type ImportStatus string
-
-const (
-	ImportStatusPending    ImportStatus = "PENDING"
-	ImportStatusProcessing ImportStatus = "PROCESSING"
-	ImportStatusCompleted  ImportStatus = "COMPLETED"
-	ImportStatusPaired     ImportStatus = "PAIRED"
-	ImportStatusFailed     ImportStatus = "FAILED"
-)

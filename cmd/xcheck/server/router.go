@@ -101,10 +101,13 @@ func NewRouter(services *services.Service) *gin.Engine {
 		authorized.GET("/gates/:gateId", controllers.GateController.GetGateByID)
 		authorized.GET("/sessions/:sessionId", controllers.SessionController.GetSessionByID)
 
-		// upload file
-		authorized.POST("/barcodes/upload", controllers.BarcodeController.UploadBarcodes)
-		authorized.POST("/barcodes/assign", controllers.BarcodeController.AssignBarcodes)
-		authorized.GET("/barcodes/check/:barcode", controllers.BarcodeController.CheckBarcode)
+		// barcodes
+		barcodeGroup := authorized.Group("barcodes")
+		{
+			barcodeGroup.POST("/upload", controllers.BarcodeController.UploadBarcodes)
+			barcodeGroup.POST("/assign", controllers.BarcodeController.AssignBarcodes)
+			barcodeGroup.POST("/scan", controllers.BarcodeController.ScanBarcode)
+		}
 	}
 
 	//router.Use(middlewares.AuthMiddleware())

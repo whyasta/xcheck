@@ -2,7 +2,7 @@ package utils
 
 import (
 	"bigmind/xcheck-be/config"
-	"bigmind/xcheck-be/constant"
+	"bigmind/xcheck-be/internal/constant"
 	"bytes"
 	"encoding/json"
 	"errors"

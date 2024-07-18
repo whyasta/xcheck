@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"bigmind/xcheck-be/constant"
+	"bigmind/xcheck-be/internal/constant"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
@@ -183,20 +183,24 @@ func (r SessionController) UpdateSession(c *gin.Context) {
 	c.BindJSON(&request)
 
 	request["event_id"] = int64(eventId)
-	utils.Decode(request, &session)
+	err = utils.Decode(request, &session)
+	if err != nil {
+		utils.PanicException(constant.InvalidRequest, err.Error())
+		return
+	}
 
-	log.Println(session)
+	log.Println("session", session)
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	err = validate.Struct(session)
 	if err != nil {
-		log.Println(err)
+		log.Println("err", err)
 		errors := err.(validator.ValidationErrors)
 		utils.PanicException(constant.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
-	log.Println(request)
+	log.Println("request", request)
 
 	result, err := r.service.UpdateSession(int64(eventId), int64(uid), &request)
 	if err != nil {

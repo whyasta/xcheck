@@ -1,7 +1,8 @@
 package controllers
 
 import (
-	"bigmind/xcheck-be/constant"
+	"bigmind/xcheck-be/internal/constant"
+	"bigmind/xcheck-be/internal/dto"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
@@ -44,7 +45,7 @@ func (r BarcodeController) UploadBarcodes(c *gin.Context) {
 	importFile, err := r.importService.CreateImport(&models.Import{
 		FileName:     files[0].Filename,
 		ImportedAt:   time.Now().Format(time.RFC3339),
-		Status:       string(models.ImportStatusPending),
+		Status:       string(constant.ImportStatusPending),
 		ErrorMessage: "",
 	})
 	if err != nil {
@@ -55,7 +56,7 @@ func (r BarcodeController) UploadBarcodes(c *gin.Context) {
 	for _, file := range files {
 		filename := filepath.Join("files", file.Filename)
 		if err := c.SaveUploadedFile(file, filename); err != nil {
-			_, _ = r.importService.UpdateStatusImport(importFile.ID, string(models.ImportStatusFailed), err.Error())
+			_, _ = r.importService.UpdateStatusImport(importFile.ID, string(constant.ImportStatusFailed), err.Error())
 			utils.PanicException(constant.InvalidRequest, fmt.Sprintf("upload file err: %s", err.Error()))
 			return
 		}
@@ -85,14 +86,14 @@ func (r BarcodeController) AssignBarcodes(c *gin.Context) {
 		return
 	}
 
-	valid, err := r.importService.CheckValid(int64(ba.ImportId), int64(ba.EventAssignmentID))
+	valid, err := r.importService.CheckValid(int64(ba.ImportId), int64(ba.ScheduleID))
 	if !valid {
 		utils.PanicException(constant.InvalidRequest, err.Error())
 		return
 	}
 
 	// process assign barcode to event
-	_, err = r.barcodeService.AssignBarcodes(int64(ba.ImportId), int64(ba.EventAssignmentID))
+	_, err = r.barcodeService.AssignBarcodes(int64(ba.ImportId), int64(ba.ScheduleID))
 	if err != nil {
 		utils.PanicException(constant.InvalidRequest, err.Error())
 		return
@@ -102,14 +103,30 @@ func (r BarcodeController) AssignBarcodes(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, message, utils.Null()))
 }
 
-func (r BarcodeController) CheckBarcode(c *gin.Context) {
+func (r BarcodeController) ScanBarcode(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	_, err := r.barcodeService.CheckBarcode(c.Param("barcode"))
+	var scan *dto.ScanBarcode
+
+	c.Next()
+	c.BindJSON(&scan)
+
+	firstCheckin, result, err := r.barcodeService.ScanBarcode(scan.EventID, scan.GateID, scan.Barcode)
 	if err != nil {
-		utils.PanicException(constant.DataNotFound, err.Error())
+		utils.PanicException(constant.InvalidRequest, err.Error())
 		return
 	}
-	message := "success"
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, message, utils.Null()))
+
+	message := string(result.CurrentStatus)
+	status := constant.Success
+
+	if firstCheckin {
+		status = constant.Checkin
+	} else if result.CurrentStatus == constant.BarcodeStatusIn {
+		status = constant.ReCheckin
+	} else {
+		status = constant.Checkout
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, status, message, utils.Null()))
 }
