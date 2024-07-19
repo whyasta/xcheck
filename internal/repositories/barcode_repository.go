@@ -20,7 +20,7 @@ type BarcodeRepository interface {
 	FindByID(uid int64) (models.Barcode, error)
 	AssignBarcodes(importId int64, assignId int64) (int64, error)
 	Scan(barcode string) (models.Barcode, error)
-	CreateLog(barcode string, currentStatus constant.BarcodeStatus) (bool, error)
+	CreateLog(userId int64, barcode string, currentStatus constant.BarcodeStatus) (bool, error)
 }
 
 type barcodeRepository struct {
@@ -121,7 +121,7 @@ func (repo *barcodeRepository) Scan(barcode string) (models.Barcode, error) {
 	return result, err
 }
 
-func (repo *barcodeRepository) CreateLog(barcode string, currentStatus constant.BarcodeStatus) (bool, error) {
+func (repo *barcodeRepository) CreateLog(userId int64, barcode string, currentStatus constant.BarcodeStatus) (bool, error) {
 	action := constant.BarcodeStatusIn
 	firstCheckin := false
 	if currentStatus == constant.BarcodeStatusNull {
@@ -136,6 +136,7 @@ func (repo *barcodeRepository) CreateLog(barcode string, currentStatus constant.
 		Barcode:   barcode,
 		Action:    action,
 		ScannedAt: time.Now(),
+		ScannedBy: userId,
 	}
 
 	var err = repo.base.GetDB().Table("barcode_logs").Create(&log).Error

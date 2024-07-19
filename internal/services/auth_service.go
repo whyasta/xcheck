@@ -53,7 +53,7 @@ func (s *AuthService) Signin(username string, password string) (models.User, map
 		return models.User{}, nil, errors.New("invalid username or password")
 	}
 
-	tokenPair, err := utils.GenerateToken(user.Username)
+	tokenPair, err := utils.GenerateToken(&user)
 	if err != nil {
 		return models.User{}, nil, err
 	}
@@ -84,7 +84,7 @@ func (s *AuthService) RefreshToken(refreshToken string) (map[string]string, erro
 		if err != nil {
 			return nil, err
 		}
-		newTokenPair, err := utils.GenerateToken(avail.Username)
+		newTokenPair, err := utils.GenerateToken(&avail)
 		if err != nil {
 			return nil, err
 		}

@@ -100,7 +100,7 @@ func (u AuthController) Signout(c *gin.Context) {
 // 200:
 func (u AuthController) CurrentUser(c *gin.Context) {
 	defer utils.ResponseHandler(c)
-	username, err := utils.ExtractTokenID(c)
+	_, username, err := utils.ExtractTokenID(c)
 
 	if err != nil {
 		utils.PanicException(constant.InvalidRequest, err.Error())

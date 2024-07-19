@@ -106,12 +106,14 @@ func (r BarcodeController) AssignBarcodes(c *gin.Context) {
 func (r BarcodeController) ScanBarcode(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
+	userId, _, err := utils.ExtractTokenID(c)
+
 	var scan *dto.ScanBarcode
 
 	c.Next()
 	c.BindJSON(&scan)
 
-	firstCheckin, result, err := r.barcodeService.ScanBarcode(scan.EventID, scan.GateID, scan.Barcode)
+	firstCheckin, result, err := r.barcodeService.ScanBarcode(userId, scan.EventID, scan.GateID, scan.Barcode)
 	if err != nil {
 		utils.PanicException(constant.InvalidRequest, err.Error())
 		return

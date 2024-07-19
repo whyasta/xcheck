@@ -2,8 +2,10 @@ package utils
 
 import (
 	"bigmind/xcheck-be/config"
+	"bigmind/xcheck-be/internal/models"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -11,12 +13,13 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateToken(username string) (map[string]string, error) {
+func GenerateToken(user *models.User) (map[string]string, error) {
 	tokenLifespan := config.GetConfig().GetInt("AUTH_JWT_EXPIRE")
 
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
-	claims["username"] = username
+	claims["username"] = user.Username
+	claims["sub"] = user.ID
 	claims["exp"] = time.Now().Add(time.Hour * time.Duration(tokenLifespan)).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := token.SignedString([]byte(config.GetConfig().GetString("AUTH_JWT_SECRET")))
@@ -25,7 +28,7 @@ func GenerateToken(username string) (map[string]string, error) {
 	}
 
 	rtClaims := jwt.MapClaims{}
-	rtClaims["sub"] = username
+	rtClaims["sub"] = user.ID
 	rtClaims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
 	rt, err := refreshToken.SignedString([]byte(config.GetConfig().GetString("AUTH_JWT_SECRET")))
@@ -74,8 +77,7 @@ func ExtractToken(c *gin.Context) string {
 	return ""
 }
 
-func ExtractTokenID(c *gin.Context) (string, error) {
-
+func ExtractTokenID(c *gin.Context) (int64, string, error) {
 	tokenString := ExtractToken(c)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -84,12 +86,14 @@ func ExtractTokenID(c *gin.Context) (string, error) {
 		return []byte(config.GetConfig().GetString("AUTH_JWT_SECRET")), nil
 	})
 	if err != nil {
-		return "", err
+		return 0, "", err
 	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
+		log.Println(claims)
 		uname := claims["username"].(string)
-		return uname, nil
+		uid := claims["sub"].(float64)
+		return int64(uid), uname, nil
 	}
-	return "", nil
+	return 0, "", nil
 }

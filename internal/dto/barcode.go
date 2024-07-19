@@ -8,5 +8,6 @@ import (
 type BarcodeLog struct {
 	Barcode   string
 	ScannedAt time.Time
+	ScannedBy int64
 	Action    constant.BarcodeStatus
 }

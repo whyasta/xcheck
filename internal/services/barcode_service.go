@@ -57,7 +57,7 @@ func (s *BarcodeService) Delete(uid int64) (models.Barcode, error) {
 	return s.r.Delete(uid)
 }
 
-func (s *BarcodeService) ScanBarcode(eventId int64, gateId int64, barcode string) (bool, models.Barcode, error) {
+func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, barcode string) (bool, models.Barcode, error) {
 	log.Printf("START SCAN => BARCODE:%s, EVENT:%d, GATE:%d", barcode, eventId, gateId)
 	// _, count, _ := s.r.FindAll([]string{"Schedule"}, utils.NewPaginate(10, 1), *utils.NewFilters([]utils.Filter{
 	// 	{
@@ -101,7 +101,7 @@ func (s *BarcodeService) ScanBarcode(eventId int64, gateId int64, barcode string
 
 	// update barcode to valid
 	// s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagUsed})
-	firstCheckin, err := s.r.CreateLog(barcode, result.CurrentStatus)
+	firstCheckin, err := s.r.CreateLog(userId, barcode, result.CurrentStatus)
 	if err != nil {
 		return false, result, err
 	}

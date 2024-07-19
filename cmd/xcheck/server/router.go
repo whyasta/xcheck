@@ -3,6 +3,7 @@ package server
 import (
 	"bigmind/xcheck-be/internal/controllers"
 	"bigmind/xcheck-be/internal/middlewares"
+	"bigmind/xcheck-be/internal/routes"
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
 	"net/http"
@@ -37,78 +38,74 @@ func NewRouter(services *services.Service) *gin.Engine {
 	// router.Use(utils.ResponseLogger())
 	// router.Use(utils.ResponseHandler())
 
-	health := new(controllers.HealthController)
-	// user := controllers.NewUserController(services.UserService)
-
 	controllers := controllers.NewController(services)
+	routes.InitRoutes(router, controllers)
 
-	router.GET("/", health.Init)
-	router.GET("/healthcheck", health.Status)
-
-	auth := router.Group("/auth")
-	{
-		auth.POST("/signin", controllers.AuthController.Signin)
-		auth.Use(middlewares.AuthMiddleware())
+	/*
+		auth := router.Group("/auth")
 		{
-			auth.GET("/me", controllers.AuthController.CurrentUser)
-			auth.POST("/token", controllers.AuthController.Refresh)
-			auth.POST("/signout", controllers.AuthController.Signout)
-		}
-	}
-
-	authorized := router.Group("/")
-	authorized.Use(middlewares.AuthMiddleware())
-	{
-		userGroup := authorized.Group("users")
-		{
-			userGroup.POST("/", controllers.UserController.CreateUser)
-			userGroup.GET("/", controllers.UserController.GetAllUser)
-			userGroup.GET("/:id", controllers.UserController.GetUserByID)
-			userGroup.POST("/:id", controllers.UserController.UpdateUser)
+			auth.POST("/signin", controllers.AuthController.Signin)
+			auth.Use(middlewares.AuthMiddleware())
+			{
+				auth.GET("/me", controllers.AuthController.CurrentUser)
+				auth.POST("/token", controllers.AuthController.Refresh)
+				auth.POST("/signout", controllers.AuthController.Signout)
+			}
 		}
 
-		userRoleGroup := authorized.Group("roles")
+		authorized := router.Group("/")
+		authorized.Use(middlewares.AuthMiddleware())
 		{
-			userRoleGroup.POST("/", controllers.RoleController.CreateRole)
-			userRoleGroup.GET("/", controllers.RoleController.GetAllRole)
-			userRoleGroup.GET("/:id", controllers.RoleController.GetRoleByID)
-			userRoleGroup.POST("/:id", controllers.EventController.UpdateEvent)
-		}
+			userGroup := authorized.Group("users")
+			{
+				userGroup.POST("/", controllers.UserController.CreateUser)
+				userGroup.GET("/", controllers.UserController.GetAllUser)
+				userGroup.GET("/:id", controllers.UserController.GetUserByID)
+				userGroup.POST("/:id", controllers.UserController.UpdateUser)
+			}
 
-		eventGroup := authorized.Group("events")
-		{
-			eventGroup.GET("/", controllers.EventController.GetAllEvents)
-			eventGroup.POST("/", controllers.EventController.CreateEvent)
-			eventGroup.GET("/:id", controllers.EventController.GetEventByID)
-			eventGroup.POST("/:id", controllers.EventController.UpdateEvent)
+			userRoleGroup := authorized.Group("roles")
+			{
+				userRoleGroup.POST("/", controllers.RoleController.CreateRole)
+				userRoleGroup.GET("/", controllers.RoleController.GetAllRole)
+				userRoleGroup.GET("/:id", controllers.RoleController.GetRoleByID)
+				userRoleGroup.POST("/:id", controllers.EventController.UpdateEvent)
+			}
 
-			eventGroup.GET("/:id/ticket-types", controllers.TicketTypeController.GetAllTicketTypes)
-			eventGroup.POST("/:id/ticket-types", controllers.TicketTypeController.CreateTicketType)
-			eventGroup.POST("/:id/ticket-types/:ticketTypeId", controllers.TicketTypeController.UpdateTicketType)
+			eventGroup := authorized.Group("events")
+			{
+				eventGroup.GET("/", controllers.EventController.GetAllEvents)
+				eventGroup.POST("/", controllers.EventController.CreateEvent)
+				eventGroup.GET("/:id", controllers.EventController.GetEventByID)
+				eventGroup.POST("/:id", controllers.EventController.UpdateEvent)
 
-			eventGroup.GET("/:id/gates", controllers.GateController.GetAllGates)
-			eventGroup.POST("/:id/gates", controllers.GateController.CreateGate)
-			eventGroup.POST("/:id/gates/:gateId", controllers.GateController.UpdateGate)
+				eventGroup.GET("/:id/ticket-types", controllers.TicketTypeController.GetAllTicketTypes)
+				eventGroup.POST("/:id/ticket-types", controllers.TicketTypeController.CreateTicketType)
+				eventGroup.POST("/:id/ticket-types/:ticketTypeId", controllers.TicketTypeController.UpdateTicketType)
 
-			eventGroup.GET("/:id/sessions", controllers.SessionController.GetAllSessions)
-			eventGroup.POST("/:id/sessions", controllers.SessionController.CreateSession)
-			eventGroup.POST("/:id/sessions/:sessionId", controllers.SessionController.UpdateSession)
+				eventGroup.GET("/:id/gates", controllers.GateController.GetAllGates)
+				eventGroup.POST("/:id/gates", controllers.GateController.CreateGate)
+				eventGroup.POST("/:id/gates/:gateId", controllers.GateController.UpdateGate)
 
-		}
+				eventGroup.GET("/:id/sessions", controllers.SessionController.GetAllSessions)
+				eventGroup.POST("/:id/sessions", controllers.SessionController.CreateSession)
+				eventGroup.POST("/:id/sessions/:sessionId", controllers.SessionController.UpdateSession)
 
-		// single get
-		authorized.GET("/ticket-types/:ticketTypeId", controllers.TicketTypeController.GetTicketTypeByID)
-		authorized.GET("/gates/:gateId", controllers.GateController.GetGateByID)
-		authorized.GET("/sessions/:sessionId", controllers.SessionController.GetSessionByID)
+			}
 
-		// barcodes
-		barcodeGroup := authorized.Group("barcodes")
-		{
-			barcodeGroup.POST("/upload", controllers.BarcodeController.UploadBarcodes)
-			barcodeGroup.POST("/assign", controllers.BarcodeController.AssignBarcodes)
-			barcodeGroup.POST("/scan", controllers.BarcodeController.ScanBarcode)
-		}
-	}
+			// single get
+			authorized.GET("/ticket-types/:ticketTypeId", controllers.TicketTypeController.GetTicketTypeByID)
+			authorized.GET("/gates/:gateId", controllers.GateController.GetGateByID)
+			authorized.GET("/sessions/:sessionId", controllers.SessionController.GetSessionByID)
+
+			// barcodes
+			barcodeGroup := authorized.Group("barcodes")
+			{
+				barcodeGroup.POST("/upload", controllers.BarcodeController.UploadBarcodes)
+				barcodeGroup.POST("/assign", controllers.BarcodeController.AssignBarcodes)
+				barcodeGroup.POST("/scan", controllers.BarcodeController.ScanBarcode)
+			}
+		}*/
 
 	//router.Use(middlewares.AuthMiddleware())
 

@@ -11,6 +11,7 @@ import (
 )
 
 type Controller struct {
+	HealthController     *HealthController
 	AuthController       *AuthController
 	UserController       *UserController
 	RoleController       *RoleController
@@ -25,6 +26,7 @@ func NewController(
 	services *services.Service,
 ) *Controller {
 	return &Controller{
+		HealthController:     new(HealthController),
 		AuthController:       NewAuthController(services.AuthService),
 		UserController:       NewUserController(services.UserService),
 		RoleController:       NewRoleController(services.RoleService),
