@@ -38,6 +38,25 @@ func (s *AuthService) GetUserByUsername(uname string) (models.User, error) {
 	result, err := s.u.FindByUsername(uname)
 	if err == nil {
 		result.Password = ""
+		result.AuthUuids = ""
+	}
+	return result, err
+}
+
+func (s *AuthService) GetUserByID(id int64) (models.User, error) {
+	result, err := s.u.FindByID(id)
+	if err == nil {
+		result.Password = ""
+		result.AuthUuids = ""
+	}
+	return result, err
+}
+
+func (s *AuthService) GetUserByAuth(id int64, authId string) (models.User, error) {
+	result, err := s.u.FindByAuth(id, authId)
+	if err == nil {
+		result.Password = ""
+		result.AuthUuids = ""
 	}
 	return result, err
 }
@@ -52,13 +71,15 @@ func (s *AuthService) Signin(username string, password string) (models.User, map
 	if err != nil {
 		return models.User{}, nil, errors.New("invalid username or password")
 	}
+	// create auth uuid
+	authD, _ := s.u.CreateAuth(user.ID)
 
-	tokenPair, err := utils.GenerateToken(&user)
+	tokenPair, err := utils.GenerateTokenUuid(&authD)
 	if err != nil {
 		return models.User{}, nil, err
 	}
-
 	user.Password = ""
+	user.AuthUuids = ""
 	return user, tokenPair, nil
 }
 
@@ -80,7 +101,7 @@ func (s *AuthService) RefreshToken(refreshToken string) (map[string]string, erro
 		log.Println(claims)
 		// Get the user record from database or
 		// run through your business logic to verify if the user can log in
-		avail, err := s.u.FindByUsername(claims["sub"].(string))
+		avail, err := s.u.FindByID(int64(claims["sub"].(float64)))
 		if err != nil {
 			return nil, err
 		}

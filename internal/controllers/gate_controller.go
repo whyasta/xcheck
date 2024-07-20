@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"bigmind/xcheck-be/internal/constant"
+	"bigmind/xcheck-be/internal/constant/response"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
@@ -40,7 +40,7 @@ func (r GateController) CreateGate(c *gin.Context) {
 
 	eventId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
@@ -55,16 +55,16 @@ func (r GateController) CreateGate(c *gin.Context) {
 	err = validate.Struct(event)
 	if err != nil {
 		errors := err.(validator.ValidationErrors)
-		utils.PanicException(constant.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
 	result, err := r.service.CreateGate(event)
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", result))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
 }
 
 // swagger:route GET /gates Gate getGateList
@@ -79,7 +79,7 @@ func (r GateController) CreateGate(c *gin.Context) {
 func (r GateController) GetAllGates(c *gin.Context) {
 	eventId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
@@ -105,7 +105,7 @@ func (r GateController) GetAllGates(c *gin.Context) {
 		},
 	}
 
-	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, constant.Success, "", rows, &meta))
+	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, response.Success, "", rows, &meta))
 }
 
 // swagger:route GET /gates/{id} Gate getGate
@@ -122,18 +122,18 @@ func (r GateController) GetGateByID(c *gin.Context) {
 
 	uid, err := strconv.Atoi(c.Param("gateId"))
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
 	var user models.Gate
 	user, err = r.service.GetGateByID(int64(uid))
 	if err != nil {
-		utils.PanicException(constant.DataNotFound, errors.New("data not found").Error())
+		utils.PanicException(response.DataNotFound, errors.New("data not found").Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", user))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", user))
 }
 
 // DeleteGate swagger:route DELETE /gates/{id} Gate deleteGate
@@ -149,17 +149,17 @@ func (r GateController) DeleteGate(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
 	_, err = r.service.Delete(int64(uid))
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", utils.Null()))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", utils.Null()))
 }
 
 func (r GateController) UpdateGate(c *gin.Context) {
@@ -167,13 +167,13 @@ func (r GateController) UpdateGate(c *gin.Context) {
 
 	eventId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
 	uid, err := strconv.Atoi(c.Param("gateId"))
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
@@ -192,7 +192,7 @@ func (r GateController) UpdateGate(c *gin.Context) {
 	err = validate.Struct(event)
 	if err != nil {
 		errors := err.(validator.ValidationErrors)
-		utils.PanicException(constant.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
@@ -200,8 +200,8 @@ func (r GateController) UpdateGate(c *gin.Context) {
 
 	result, err := r.service.UpdateGate(int64(eventId), int64(uid), &request)
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", result))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
 }

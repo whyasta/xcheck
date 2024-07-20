@@ -19,6 +19,7 @@ type Repository struct {
 	Base       *baseRepository
 	Import     *importRepository
 	Barcode    *barcodeRepository
+	Schedule   *scheduleRepository
 }
 
 func NewRepository(db *gorm.DB) *Repository {
@@ -29,6 +30,7 @@ func NewRepository(db *gorm.DB) *Repository {
 		TicketType: NewTicketTypeRepository(db),
 		Gate:       NewGateRepository(db),
 		Session:    NewSessionRepository(db),
+		Schedule:   NewScheduleRepository(db),
 		Import:     NewImportRepository(db),
 		Barcode:    NewBarcodeRepository(db),
 	}

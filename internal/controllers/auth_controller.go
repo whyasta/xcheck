@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"bigmind/xcheck-be/internal/constant"
+	"bigmind/xcheck-be/internal/constant/response"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
@@ -40,17 +40,17 @@ func (u AuthController) Signin(c *gin.Context) {
 	err := validate.Struct(userLogin)
 	if err != nil {
 		errors := err.(validator.ValidationErrors)
-		utils.PanicException(constant.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
 	_, tokenPair, err := u.service.Signin(userLogin.Username, userLogin.Password)
 	if err != nil {
-		utils.PanicException(constant.Unauthorized, err.Error())
+		utils.PanicException(response.Unauthorized, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.BuildResponseWithToken(http.StatusOK, constant.Success, tokenPair["token"], tokenPair["refresh_token"], "", utils.Null()))
+	c.JSON(http.StatusOK, utils.BuildResponseWithToken(http.StatusOK, response.Success, tokenPair["token"], tokenPair["refresh_token"], "", utils.Null()))
 }
 
 // swagger:route POST /auth/token Auth authRefreshToken
@@ -71,11 +71,11 @@ func (u AuthController) Refresh(c *gin.Context) {
 
 	tokenPair, err := u.service.RefreshToken(tokenReq.RefreshToken)
 	if err != nil {
-		utils.PanicException(constant.Unauthorized, err.Error())
+		utils.PanicException(response.Unauthorized, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.BuildResponseWithToken(http.StatusOK, constant.Success, tokenPair["token"], tokenPair["refresh_token"], "", utils.Null()))
+	c.JSON(http.StatusOK, utils.BuildResponseWithToken(http.StatusOK, response.Success, tokenPair["token"], tokenPair["refresh_token"], "", utils.Null()))
 }
 
 // swagger:route POST /auth/signout Auth signout
@@ -100,20 +100,32 @@ func (u AuthController) Signout(c *gin.Context) {
 // 200:
 func (u AuthController) CurrentUser(c *gin.Context) {
 	defer utils.ResponseHandler(c)
-	_, username, err := utils.ExtractTokenID(c)
+	uid, authId, err := utils.ExtractTokenID(c)
 
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
 	var user models.User
-	user, err = u.service.GetUserByUsername(username)
+	user, err = u.service.GetUserByAuth(uid, authId)
 
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.Unauthorized, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", user))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", user))
+}
+
+func (u AuthController) CheckAuthID(c *gin.Context) bool {
+	defer utils.ResponseHandler(c)
+	uid, authId, err := utils.ExtractTokenID(c)
+
+	if err != nil {
+		return false
+	}
+
+	_, err = u.service.GetUserByAuth(uid, authId)
+	return err == nil
 }

@@ -3,8 +3,11 @@ package repositories
 import (
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/utils"
+	"encoding/json"
+	"fmt"
 	"log"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -19,6 +22,8 @@ type UserRepository interface {
 	Update(id int64, event *map[string]interface{}) (models.User, error)
 
 	Signin(username string, password string) (models.User, error)
+	CreateAuth(id int64) (utils.AuthDetails, error)
+	FindByAuth(uid int64, authUuid string) (models.User, error)
 }
 
 type userRepository struct {
@@ -61,6 +66,7 @@ func (repo *userRepository) Paginate(paginate *utils.Paginate, params map[string
 
 	tx := repo.db.
 		Scopes(paginate.PaginatedResult).
+		Omit("Password", "AuthUuids").
 		Preload("Role").
 		Where(params).
 		Find(&users)
@@ -102,7 +108,15 @@ func (repo *userRepository) FindByUsername(username string) (user models.User, e
 }
 
 func (repo *userRepository) FindByID(id int64) (user models.User, err error) {
-	err = repo.db.Omit("Password").Preload("Role").First(&user, "id = ?", id).Error
+	err = repo.db.Omit("Password").Omit("AuthUuids").Preload("Role").First(&user, "id = ?", id).Error
+	return
+}
+
+func (repo *userRepository) FindByAuth(id int64, authId string) (user models.User, err error) {
+	err = repo.db.Omit("Password").
+		Omit("AuthUuids").Preload("Role").
+		First(&user, "id = ? AND auth_uuids LIKE ?", id, "%"+authId+"%").
+		Error
 	return
 }
 
@@ -121,4 +135,38 @@ func (repo *userRepository) Signin(username, password string) (models.User, erro
 
 func (repo *userRepository) Update(id int64, data *map[string]interface{}) (models.User, error) {
 	return BaseUpdate[models.User](*repo.db, id, data)
+}
+
+func (repo *userRepository) CreateAuth(id int64) (utils.AuthDetails, error) {
+	var user models.User
+	err := repo.db.Omit("Password").Preload("Role").First(&user, "id = ?", id).Error
+	if err != nil {
+		return utils.AuthDetails{}, err
+	}
+
+	authUuid := uuid.New().String()
+	// uuids := user.AuthUuids
+	var uuids []interface{}
+	if user.AuthUuids != "" {
+		if err := json.Unmarshal([]byte(user.AuthUuids), &uuids); err != nil {
+			fmt.Println(err)
+			return utils.AuthDetails{}, err
+		}
+	}
+	uuids = append(uuids, authUuid)
+
+	jsonStr, _ := json.Marshal(uuids)
+	user.AuthUuids = string(jsonStr)
+
+	var authD utils.AuthDetails
+	if err := repo.db.Table("users").
+		Where("id = ?", id).
+		Updates(map[string]interface{}{"auth_uuids": jsonStr}).
+		Error; err != nil {
+		return utils.AuthDetails{}, err
+	}
+
+	authD.AuthUuid = authUuid
+	authD.UserId = uint64(user.ID)
+	return authD, nil
 }

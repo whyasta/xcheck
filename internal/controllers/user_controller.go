@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"bigmind/xcheck-be/internal/constant"
+	"bigmind/xcheck-be/internal/constant/response"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
@@ -54,7 +54,7 @@ func (u UserController) GetAllUser(c *gin.Context) {
 		},
 	}
 
-	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, constant.Success, "", allUsers, &meta))
+	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, response.Success, "", allUsers, &meta))
 }
 
 // swagger:route POST /users User createUser
@@ -78,16 +78,16 @@ func (u UserController) CreateUser(c *gin.Context) {
 	err := validate.Struct(user)
 	if err != nil {
 		errors := err.(validator.ValidationErrors)
-		utils.PanicException(constant.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
 	result, err := u.service.CreateUser(user)
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", result))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
 }
 
 // swagger:route GET /users/{id} User getUser
@@ -103,18 +103,18 @@ func (u UserController) GetUserByID(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
 	var user models.User
 	user, err = u.service.GetUserByID(int64(uid))
 	if err != nil {
-		utils.PanicException(constant.DataNotFound, errors.New("data not found").Error())
+		utils.PanicException(response.DataNotFound, errors.New("data not found").Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", user))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", user))
 }
 
 func (r UserController) UpdateUser(c *gin.Context) {
@@ -122,7 +122,7 @@ func (r UserController) UpdateUser(c *gin.Context) {
 
 	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
@@ -137,15 +137,15 @@ func (r UserController) UpdateUser(c *gin.Context) {
 	err = validate.Struct(user)
 	if err != nil {
 		errors := err.(validator.ValidationErrors)
-		utils.PanicException(constant.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
 	result, err := r.service.UpdateUser(int64(uid), &request)
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 	result.Password = ""
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", result))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
 }

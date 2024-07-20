@@ -12,11 +12,12 @@ func BaseRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
 	group.GET("/healthcheck", controllers.HealthController.Status)
 
 	group.POST("/signin", controllers.AuthController.Signin)
-	group.Use(middlewares.AuthMiddleware())
+	group.Use(middlewares.AuthMiddleware(controllers))
 	{
 		// single get
 		group.GET("/ticket-types/:ticketTypeId", controllers.TicketTypeController.GetTicketTypeByID)
 		group.GET("/gates/:gateId", controllers.GateController.GetGateByID)
 		group.GET("/sessions/:sessionId", controllers.SessionController.GetSessionByID)
+		group.GET("/schedules/:scheduleId", controllers.ScheduleController.GetScheduleByID)
 	}
 }

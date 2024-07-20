@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bigmind/xcheck-be/internal/constant"
+	"bigmind/xcheck-be/internal/constant/response"
 	"bigmind/xcheck-be/internal/dto"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/services"
@@ -31,13 +32,13 @@ func (r BarcodeController) UploadBarcodes(c *gin.Context) {
 	// Multipart form
 	form, err := c.MultipartForm()
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 	files := form.File["files"]
 
 	if len(files) == 0 {
-		utils.PanicException(constant.InvalidRequest, "file not found")
+		utils.PanicException(response.InvalidRequest, "file not found")
 		return
 	}
 
@@ -49,7 +50,7 @@ func (r BarcodeController) UploadBarcodes(c *gin.Context) {
 		ErrorMessage: "",
 	})
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
@@ -57,7 +58,7 @@ func (r BarcodeController) UploadBarcodes(c *gin.Context) {
 		filename := filepath.Join("files", file.Filename)
 		if err := c.SaveUploadedFile(file, filename); err != nil {
 			_, _ = r.importService.UpdateStatusImport(importFile.ID, string(constant.ImportStatusFailed), err.Error())
-			utils.PanicException(constant.InvalidRequest, fmt.Sprintf("upload file err: %s", err.Error()))
+			utils.PanicException(response.InvalidRequest, fmt.Sprintf("upload file err: %s", err.Error()))
 			return
 		}
 	}
@@ -65,11 +66,11 @@ func (r BarcodeController) UploadBarcodes(c *gin.Context) {
 	message := fmt.Sprintf("Uploaded successfully %d files", len(files))
 	_, err = r.importService.DoImportJob(importFile.ID)
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, message, utils.Null()))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, message, utils.Null()))
 }
 
 func (r BarcodeController) AssignBarcodes(c *gin.Context) {
@@ -82,25 +83,25 @@ func (r BarcodeController) AssignBarcodes(c *gin.Context) {
 	err := validate.Struct(ba)
 	if err != nil {
 		errors := err.(validator.ValidationErrors)
-		utils.PanicException(constant.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
 	valid, err := r.importService.CheckValid(int64(ba.ImportId), int64(ba.ScheduleID))
 	if !valid {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
 	// process assign barcode to event
 	_, err = r.barcodeService.AssignBarcodes(int64(ba.ImportId), int64(ba.ScheduleID))
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
 	message := "success"
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, message, utils.Null()))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, message, utils.Null()))
 }
 
 func (r BarcodeController) ScanBarcode(c *gin.Context) {
@@ -115,19 +116,19 @@ func (r BarcodeController) ScanBarcode(c *gin.Context) {
 
 	firstCheckin, result, err := r.barcodeService.ScanBarcode(userId, scan.EventID, scan.GateID, scan.Barcode)
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
 	message := string(result.CurrentStatus)
-	status := constant.Success
+	status := response.Success
 
 	if firstCheckin {
-		status = constant.Checkin
+		status = response.Checkin
 	} else if result.CurrentStatus == constant.BarcodeStatusIn {
-		status = constant.ReCheckin
+		status = response.ReCheckin
 	} else {
-		status = constant.Checkout
+		status = response.Checkout
 	}
 
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, status, message, utils.Null()))

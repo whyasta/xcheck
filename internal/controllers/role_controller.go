@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"bigmind/xcheck-be/internal/constant"
+	"bigmind/xcheck-be/internal/constant/response"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
@@ -53,16 +53,16 @@ func (r RoleController) CreateRole(c *gin.Context) {
 	err := validate.Struct(role)
 	if err != nil {
 		errors := err.(validator.ValidationErrors)
-		utils.PanicException(constant.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
 	result, err := r.service.CreateRole(role)
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", result))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
 }
 
 // GetAllRole retrieves all roles based on the specified parameters.
@@ -102,7 +102,7 @@ func (r RoleController) GetAllRole(c *gin.Context) {
 		},
 	}
 
-	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, constant.Success, "", rows, &meta))
+	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, response.Success, "", rows, &meta))
 }
 
 // GetRoleByID retrieves a role by its ID from the database and returns it as a JSON response.
@@ -127,16 +127,16 @@ func (r RoleController) GetRoleByID(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
 	var user models.UserRole
 	user, err = r.service.GetRoleByID(int64(uid))
 	if err != nil {
-		utils.PanicException(constant.DataNotFound, errors.New("data not found").Error())
+		utils.PanicException(response.DataNotFound, errors.New("data not found").Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", user))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", user))
 }

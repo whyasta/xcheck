@@ -9,9 +9,9 @@ type Event struct {
 	Status      int           `gorm:"column:status;default:0" json:"status"`
 	StartDate   time.Time     `gorm:"column:start_date" json:"start_date"`
 	EndDate     time.Time     `gorm:"column:end_date" json:"end_date"`
-	TicketTypes []*TicketType `gorm:"foreignKey:event_id;references:id" json:"ticket_types"`
-	Gates       []*Gate       `gorm:"foreignKey:event_id;references:id" json:"gates"`
-	Sessions    []*Session    `gorm:"foreignKey:event_id;references:id" json:"sessions"`
+	TicketTypes []*TicketType `gorm:"foreignKey:event_id;references:id" json:"ticket_types,omitempty"`
+	Gates       []*Gate       `gorm:"foreignKey:event_id;references:id" json:"gates,omitempty"`
+	Sessions    []*Session    `gorm:"foreignKey:event_id;references:id" json:"sessions,omitempty"`
 	CommonModel
 }
 

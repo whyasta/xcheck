@@ -1,4 +1,4 @@
-package constant
+package response
 
 type ResponseStatus int
 type Headers int

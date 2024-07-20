@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bigmind/xcheck-be/internal/constant/response"
+	"bigmind/xcheck-be/internal/dto"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
@@ -13,20 +14,21 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/mitchellh/mapstructure"
 )
 
-type SessionController struct {
-	service *services.SessionService
+type ScheduleController struct {
+	service *services.ScheduleService
 }
 
-func NewSessionController(service *services.SessionService) *SessionController {
-	return &SessionController{
+func NewScheduleController(service *services.ScheduleService) *ScheduleController {
+	return &ScheduleController{
 		service: service,
 	}
 }
 
-// swagger:route POST /sessions Session createSession
-// Create Session
+// swagger:route POST /schedules Schedule createSchedule
+// Create Schedule
 //
 // security:
 //   - Bearer: []
@@ -34,31 +36,33 @@ func NewSessionController(service *services.SessionService) *SessionController {
 // responses:
 //
 // 200:
-func (r SessionController) CreateSession(c *gin.Context) {
+func (r ScheduleController) CreateSchedule(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	eventId, err := strconv.Atoi(c.Param("id"))
+	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
-	var session *models.Session
+	var schedule *dto.ScheduleRequest
 
 	c.Next()
-	c.BindJSON(&session)
+	c.BindJSON(&schedule)
 
-	session.EventID = int64(eventId)
+	schedule.EventID = int64(uid)
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
-	err = validate.Struct(session)
+	err = validate.Struct(schedule)
 	if err != nil {
 		errors := err.(validator.ValidationErrors)
 		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
-	result, err := r.service.CreateSession(session)
+	log.Println(schedule)
+
+	result, err := r.service.CreateSchedule(schedule)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -66,8 +70,8 @@ func (r SessionController) CreateSession(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
 }
 
-// swagger:route GET /sessions Session getSessionList
-// Get Session list
+// swagger:route GET /schedules Schedule getScheduleList
+// Get Schedule list
 //
 // security:
 //   - Bearer: []
@@ -75,8 +79,8 @@ func (r SessionController) CreateSession(c *gin.Context) {
 // responses:
 //
 // 200:
-func (r SessionController) GetAllSessions(c *gin.Context) {
-	eventId, err := strconv.Atoi(c.Param("id"))
+func (r ScheduleController) GetAllSchedules(c *gin.Context) {
+	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -85,12 +89,12 @@ func (r SessionController) GetAllSessions(c *gin.Context) {
 	pageParams, filter := MakePageFilterQueryParams(c.Request.URL.Query(), []string{"event_id"})
 
 	filter = append(filter, utils.Filter{
-		Property:  "event_id",
+		Property:  "schedules.event_id",
 		Operation: "=",
-		Value:     strconv.Itoa(eventId),
+		Value:     strconv.Itoa(uid),
 	})
 
-	rows, count, err := r.service.GetAllSessions(pageParams, filter)
+	rows, count, err := r.service.GetAllSchedules(pageParams, filter)
 
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -107,8 +111,8 @@ func (r SessionController) GetAllSessions(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, response.Success, "", rows, &meta))
 }
 
-// swagger:route GET /sessions/{id} Session getSession
-// Get Session by id
+// swagger:route GET /schedules/{id} Schedule getSchedule
+// Get Schedule by id
 //
 // security:
 //   - Bearer: []
@@ -116,17 +120,17 @@ func (r SessionController) GetAllSessions(c *gin.Context) {
 // responses:
 //
 // 200:
-func (r SessionController) GetSessionByID(c *gin.Context) {
+func (r ScheduleController) GetScheduleByID(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	uid, err := strconv.Atoi(c.Param("sessionId"))
+	uid, err := strconv.Atoi(c.Param("scheduleId"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
-	var user models.Session
-	user, err = r.service.GetSessionByID(int64(uid))
+	var user models.Schedule
+	user, err = r.service.GetScheduleByID(int64(uid))
 	if err != nil {
 		utils.PanicException(response.DataNotFound, errors.New("data not found").Error())
 		return
@@ -135,8 +139,8 @@ func (r SessionController) GetSessionByID(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", user))
 }
 
-// DeleteSession swagger:route DELETE /sessions/{id} Session deleteSession
-// Delete Session by id
+// DeleteSchedule swagger:route DELETE /schedules/{id} Schedule deleteSchedule
+// Delete Schedule by id
 //
 // security:
 //   - Bearer: []
@@ -144,7 +148,7 @@ func (r SessionController) GetSessionByID(c *gin.Context) {
 // responses:
 //
 // 200:
-func (r SessionController) DeleteSession(c *gin.Context) {
+func (r ScheduleController) DeleteSchedule(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -161,48 +165,46 @@ func (r SessionController) DeleteSession(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", utils.Null()))
 }
 
-func (r SessionController) UpdateSession(c *gin.Context) {
+func (r ScheduleController) UpdateSchedule(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	eventId, err := strconv.Atoi(c.Param("id"))
+	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
-	uid, err := strconv.Atoi(c.Param("sessionId"))
+	scheduleId, err := strconv.Atoi(c.Param("scheduleId"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
-	var session *models.Session
+	var schedule *models.Schedule
 	var request = make(map[string]interface{})
+
+	// schedule.EventID = int64(uid)
 
 	c.Next()
 	c.BindJSON(&request)
 
-	request["event_id"] = int64(eventId)
-	err = utils.Decode(request, &session)
-	if err != nil {
-		utils.PanicException(response.InvalidRequest, err.Error())
-		return
-	}
+	log.Println(request)
 
-	log.Println("session", session)
+	request["id"] = int64(scheduleId)
+	request["event_id"] = int64(uid)
+	mapstructure.Decode(request, &schedule)
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
-	err = validate.Struct(session)
+	err = validate.Struct(schedule)
 	if err != nil {
-		log.Println("err", err)
 		errors := err.(validator.ValidationErrors)
 		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
-	log.Println("request", request)
+	log.Println(request)
 
-	result, err := r.service.UpdateSession(int64(eventId), int64(uid), &request)
+	result, err := r.service.UpdateSchedule(int64(uid), int64(scheduleId), &request)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return

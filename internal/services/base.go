@@ -14,6 +14,7 @@ type Service struct {
 	TicketTypeService *TicketTypeService
 	GateService       *GateService
 	SessionService    *SessionService
+	ScheduleService   *ScheduleService
 	ImportService     *ImportService
 	BarcodeService    *BarcodeService
 }
@@ -37,5 +38,6 @@ func NewService(
 		SessionService:    NewSessionService(repositories.Session),
 		ImportService:     NewImportService(repositories.Import),
 		BarcodeService:    NewBarcodeService(repositories.Barcode),
+		ScheduleService:   NewScheduleService(repositories.Schedule),
 	}
 }

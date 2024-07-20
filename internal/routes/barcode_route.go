@@ -8,7 +8,7 @@ import (
 )
 
 func BarcodeRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
-	group.Use(middlewares.AuthMiddleware())
+	group.Use(middlewares.AuthMiddleware(controllers))
 	{
 		group.POST("/upload", controllers.BarcodeController.UploadBarcodes)
 		group.POST("/assign", controllers.BarcodeController.AssignBarcodes)

@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"bigmind/xcheck-be/internal/constant"
+	"bigmind/xcheck-be/internal/constant/response"
 	"bigmind/xcheck-be/internal/dto"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/services"
@@ -47,16 +47,16 @@ func (r EventController) CreateEvent(c *gin.Context) {
 	err := validate.Struct(event)
 	if err != nil {
 		errors := err.(validator.ValidationErrors)
-		utils.PanicException(constant.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
 	result, err := r.service.CreateEvent(event)
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", result))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
 }
 
 func (r EventController) UpdateEvent(c *gin.Context) {
@@ -64,7 +64,7 @@ func (r EventController) UpdateEvent(c *gin.Context) {
 
 	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
@@ -79,16 +79,16 @@ func (r EventController) UpdateEvent(c *gin.Context) {
 	err = validate.Struct(event)
 	if err != nil {
 		errors := err.(validator.ValidationErrors)
-		utils.PanicException(constant.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
 	result, err := r.service.UpdateEvent(int64(uid), &request)
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", result))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
 }
 
 // swagger:route GET /events Event getEventList
@@ -117,7 +117,7 @@ func (r EventController) GetAllEvents(c *gin.Context) {
 		},
 	}
 
-	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, constant.Success, "", rows, &meta))
+	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, response.Success, "", rows, &meta))
 }
 
 // swagger:route GET /events/{id} Event getEvent
@@ -133,18 +133,18 @@ func (r EventController) GetEventByID(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
 	var user models.Event
 	user, err = r.service.GetEventByID(int64(uid))
 	if err != nil {
-		utils.PanicException(constant.DataNotFound, errors.New("data not found").Error())
+		utils.PanicException(response.DataNotFound, errors.New("data not found").Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", user))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", user))
 }
 
 // DeleteEvent swagger:route DELETE /events/{id} Event deleteEvent
@@ -160,15 +160,15 @@ func (r EventController) DeleteEvent(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
 	_, err = r.service.Delete(int64(uid))
 	if err != nil {
-		utils.PanicException(constant.InvalidRequest, err.Error())
+		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, constant.Success, "", utils.Null()))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", utils.Null()))
 }

@@ -2,7 +2,7 @@ package utils
 
 import (
 	"bigmind/xcheck-be/config"
-	"bigmind/xcheck-be/internal/constant"
+	"bigmind/xcheck-be/internal/constant/response"
 	"bytes"
 	"encoding/json"
 	"errors"
@@ -50,15 +50,15 @@ func Null() interface{} {
 	return nil
 }
 
-func BuildResponse[T any](code int, responseStatus constant.ResponseStatus, message string, data T) APIResponse[T] {
+func BuildResponse[T any](code int, responseStatus response.ResponseStatus, message string, data T) APIResponse[T] {
 	return BuildResponse_(code, responseStatus.GetResponseStatus(), message, data, nil)
 }
 
-func BuildResponseWithPaginate[T any](code int, responseStatus constant.ResponseStatus, message string, data T, meta *MetaResponse) APIResponse[T] {
+func BuildResponseWithPaginate[T any](code int, responseStatus response.ResponseStatus, message string, data T, meta *MetaResponse) APIResponse[T] {
 	return BuildResponse_(code, responseStatus.GetResponseStatus(), message, data, meta)
 }
 
-func BuildResponseWithToken[T any](code int, responseStatus constant.ResponseStatus, token string, refreshToken string, message string, data T) APIResponse[T] {
+func BuildResponseWithToken[T any](code int, responseStatus response.ResponseStatus, token string, refreshToken string, message string, data T) APIResponse[T] {
 	return BuildResponseWithToken_(code, responseStatus.GetResponseStatus(), token, refreshToken, message, data)
 }
 
@@ -91,7 +91,7 @@ func PanicException_(key string, message string) {
 	}
 }
 
-func PanicException(responseKey constant.ResponseStatus, message string) {
+func PanicException(responseKey response.ResponseStatus, message string) {
 	PanicException_(responseKey.GetResponseStatus(), message)
 }
 
@@ -105,15 +105,15 @@ func ResponseHandler(c *gin.Context) {
 
 		switch key {
 		case
-			constant.DataNotFound.GetResponseStatus():
+			response.DataNotFound.GetResponseStatus():
 			c.JSON(http.StatusNotFound, BuildResponse_(http.StatusNotFound, key, msg, Null(), nil))
 			c.Abort()
 		case
-			constant.InvalidRequest.GetResponseStatus():
+			response.InvalidRequest.GetResponseStatus():
 			c.JSON(http.StatusBadRequest, BuildResponse_(http.StatusBadRequest, key, msg, Null(), nil))
 			c.Abort()
 		case
-			constant.Unauthorized.GetResponseStatus():
+			response.Unauthorized.GetResponseStatus():
 			c.JSON(http.StatusUnauthorized, BuildResponse_(http.StatusUnauthorized, key, msg, Null(), nil))
 			c.Abort()
 		default:

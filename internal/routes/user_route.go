@@ -8,7 +8,7 @@ import (
 )
 
 func UserRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
-	group.Use(middlewares.AuthMiddleware())
+	group.Use(middlewares.AuthMiddleware(controllers))
 	{
 		group.POST("/", controllers.UserController.CreateUser)
 		group.GET("/", controllers.UserController.GetAllUser)
