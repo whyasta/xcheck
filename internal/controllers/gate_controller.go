@@ -7,7 +7,6 @@ import (
 	"bigmind/xcheck-be/utils"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -196,7 +195,7 @@ func (r GateController) UpdateGate(c *gin.Context) {
 		return
 	}
 
-	log.Println(request)
+	fmt.Println(request)
 
 	result, err := r.service.UpdateGate(int64(eventId), int64(uid), &request)
 	if err != nil {

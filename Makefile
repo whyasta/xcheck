@@ -1,6 +1,8 @@
 # Change these variables as necessary.
 MAIN_PACKAGE_PATH := ./cmd/xcheck
+JOB_PACKAGE_PATH := ./cmd/job
 BINARY_NAME := xcheck
+BINARY_JOB_NAME := job
 
 # ==================================================================================== #
 # HELPERS
@@ -60,12 +62,18 @@ test/cover:
 .PHONY: build
 build:
 ##	# Include additional build steps, like TypeScript, SCSS or Tailwind compilation here...
-	go build -o=/tmp/bin/${BINARY_NAME} ${MAIN_PACKAGE_PATH}
+	go build -o=/tmp/bin/${BINARY_NAME} ${MAIN_PACKAGE_PATH} && \
+    go build -o=/tmp/bin/${BINARY_JOB_NAME} ${JOB_PACKAGE_PATH}
 
 ## run: run the  application
 .PHONY: run
 run: build
 	/tmp/bin/${BINARY_NAME}
+
+## job: run the work job
+.PHONY: job
+job: build
+	/tmp/bin/${BINARY_JOB_NAME}
 
 ## run/live: run the application with reloading on file changes
 .PHONY: run/live

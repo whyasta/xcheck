@@ -5,7 +5,6 @@ import (
 	"bigmind/xcheck-be/utils"
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -38,7 +37,7 @@ func NewUserRepository(db *gorm.DB) *userRepository {
 
 func (repo *userRepository) FindAll(params map[string]interface{}) ([]models.User, error) {
 	var users []models.User
-	// log.Println(params)
+	// fmt.Println(params)
 	err := repo.db.
 		// Scopes(NewPaginate(params["limit"], params["page"]).PaginatedResult).
 		// Preload("Role").
@@ -61,8 +60,6 @@ func (repo *userRepository) FindAll(params map[string]interface{}) ([]models.Use
 func (repo *userRepository) Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.User, int64, error) {
 	var users []models.User
 	var count int64
-
-	log.Println(paginate)
 
 	tx := repo.db.
 		Scopes(paginate.PaginatedResult).

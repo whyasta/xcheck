@@ -6,7 +6,7 @@ import (
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/utils"
 	"errors"
-	"log"
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -74,7 +74,7 @@ func (repo *barcodeRepository) AssignBarcodes(importId int64, assignId int64) (i
 			Where("import_id = ?", importId).
 			Find(&importBarcodes)
 
-		log.Println(importBarcodes)
+		fmt.Println(importBarcodes)
 
 		// for each barcode
 		barcodes := []models.Barcode{}

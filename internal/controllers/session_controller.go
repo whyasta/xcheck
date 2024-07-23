@@ -7,7 +7,6 @@ import (
 	"bigmind/xcheck-be/utils"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -189,18 +188,18 @@ func (r SessionController) UpdateSession(c *gin.Context) {
 		return
 	}
 
-	log.Println("session", session)
+	fmt.Println("session", session)
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	err = validate.Struct(session)
 	if err != nil {
-		log.Println("err", err)
+		fmt.Println("err", err)
 		errors := err.(validator.ValidationErrors)
 		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
-	log.Println("request", request)
+	fmt.Println("request", request)
 
 	result, err := r.service.UpdateSession(int64(eventId), int64(uid), &request)
 	if err != nil {

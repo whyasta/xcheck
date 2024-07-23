@@ -99,7 +99,7 @@ func (repo *eventRepository) Delete(id int64) (models.Event, error) {
 func (repo *eventRepository) GetFiltered(paginate *utils.Paginate, filters []utils.Filter) ([]models.Event, int64, error) {
 	/*var events []models.Event
 	var count int64
-	// log.Println(filters)
+	// fmt.Println(filters)
 
 	tx := repo.base.GetDB().
 		Scopes(paginate.PaginatedResult)

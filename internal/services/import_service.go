@@ -1,14 +1,15 @@
 package services
 
 import (
+	"bigmind/xcheck-be/config"
 	"bigmind/xcheck-be/internal/constant"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/repositories"
 	"bigmind/xcheck-be/utils"
 	"errors"
-	"log"
-	"os"
-	"path/filepath"
+	"fmt"
+
+	"github.com/gocraft/work"
 )
 
 type ImportService struct {
@@ -28,24 +29,32 @@ func (s *ImportService) UpdateStatusImport(id int64, status string, errorMessage
 }
 
 func (s *ImportService) DoImportJob(id int64) (models.Import, error) {
-	log.Println("DoImportJob")
+	fmt.Println("DoImportJob")
 	row, err := s.r.Update(id, &map[string]interface{}{"status": constant.ImportStatusProcessing, "error_message": "Processing file"})
 	if err != nil {
 		return models.Import{}, err
 	}
 
+	config.GetEnqueuer().Enqueue("import_barcode", work.Q{
+		"import_id": id,
+		"headers":   "barcode",
+		"csv_file":  row.FileName,
+		"table":     "import_barcodes",
+	})
+
 	// TODO: Implement import job
-	importJob := utils.NewImport(s.r.GetDB(), id, "import_barcodes", filepath.Join("files", row.FileName), []string{"barcode"})
-	log.Println("Importing data...")
-	importJob.ImportData()
-	log.Println("Importing done")
-	// return models.Import{}, nil
-	row, err = s.r.Update(id, &map[string]interface{}{"status": constant.ImportStatusCompleted, "error_message": "Completed"})
-	if err == nil {
-		if err = os.Remove(filepath.Join("files", row.FileName)); err != nil {
-			return models.Import{}, err
-		}
-	}
+	// importJob := utils.NewImport(s.r.GetDB(), id, "import_barcodes", row.FileName, []string{"barcode"})
+	// fmt.Println("Importing data...")
+	// importJob.ImportData()
+	// fmt.Println("Importing done")
+	// // return models.Import{}, nil
+	// row, err = s.r.Update(id, &map[string]interface{}{"status": constant.ImportStatusCompleted, "error_message": "Completed"})
+	// if err == nil {
+	// 	if err = os.Remove(row.FileName); err != nil {
+	// 		return models.Import{}, err
+	// 	}
+	// }
+
 	return row, err
 }
 

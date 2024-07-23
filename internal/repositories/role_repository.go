@@ -3,7 +3,7 @@ package repositories
 import (
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/utils"
-	"log"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -38,7 +38,7 @@ func (repo *roleRepository) Save(role *models.UserRole) (models.UserRole, error)
 
 func (repo *roleRepository) FindAll(params map[string]interface{}) ([]models.UserRole, error) {
 	var roles []models.UserRole
-	log.Println(params)
+	fmt.Println(params)
 	err := repo.db.Where(params).Find(&roles).Error
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func (repo *roleRepository) Paginate(paginate *utils.Paginate, params map[string
 	var roles []models.UserRole
 	var count int64
 
-	// log.Println(paginate)
+	// fmt.Println(paginate)
 
 	tx := repo.db.
 		Scopes(paginate.PaginatedResult).

@@ -41,7 +41,7 @@ func (s *TicketTypeService) UpdateTicketType(eventId int64, id int64, data *map[
 	}
 
 	return s.r.Update(id, data)
-	// log.Println("dsadas")
+	// fmt.Println("dsadas")
 	// _, err := s.b.CommonUpdate("ticket_types", map[string]interface{}{"id": id}, data)
 	// var items models.TicketType
 	// mapstructure.Decode(result, &items)

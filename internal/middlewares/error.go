@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -9,7 +9,7 @@ import (
 
 func ErrorMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		log.Printf("Total Errors -> %d", len(c.Errors))
+		fmt.Printf("Total Errors -> %d", len(c.Errors))
 
 		if len(c.Errors) <= 0 {
 			c.Next()
@@ -17,7 +17,7 @@ func ErrorMiddleware() gin.HandlerFunc {
 		}
 
 		for _, err := range c.Errors {
-			log.Printf("Error -> %+v\n", err)
+			fmt.Printf("Error -> %+v\n", err)
 		}
 		c.JSON(http.StatusInternalServerError, "")
 	}

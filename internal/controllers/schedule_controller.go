@@ -8,7 +8,6 @@ import (
 	"bigmind/xcheck-be/utils"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -60,7 +59,7 @@ func (r ScheduleController) CreateSchedule(c *gin.Context) {
 		return
 	}
 
-	log.Println(schedule)
+	fmt.Println(schedule)
 
 	result, err := r.service.CreateSchedule(schedule)
 	if err != nil {
@@ -188,7 +187,7 @@ func (r ScheduleController) UpdateSchedule(c *gin.Context) {
 	c.Next()
 	c.BindJSON(&request)
 
-	log.Println(request)
+	fmt.Println(request)
 
 	request["id"] = int64(scheduleId)
 	request["event_id"] = int64(uid)
@@ -202,7 +201,7 @@ func (r ScheduleController) UpdateSchedule(c *gin.Context) {
 		return
 	}
 
-	log.Println(request)
+	fmt.Println(request)
 
 	result, err := r.service.UpdateSchedule(int64(uid), int64(scheduleId), &request)
 	if err != nil {

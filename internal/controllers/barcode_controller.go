@@ -8,9 +8,7 @@ import (
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
 	"fmt"
-	"log"
 	"net/http"
-	"path/filepath"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -42,32 +40,35 @@ func (r BarcodeController) UploadBarcodes(c *gin.Context) {
 		return
 	}
 
-	log.Println("start => ", len(files))
-	importFile, err := r.importService.CreateImport(&models.Import{
-		FileName:     files[0].Filename,
-		ImportedAt:   time.Now().Format(time.RFC3339),
-		Status:       string(constant.ImportStatusPending),
-		ErrorMessage: "",
-	})
-	if err != nil {
-		utils.PanicException(response.InvalidRequest, err.Error())
-		return
-	}
+	tempFile := utils.TempFileName("files", "barcode", ".csv")
+	message := "failed"
 
+	fmt.Println("start => ", len(files))
 	for _, file := range files {
-		filename := filepath.Join("files", file.Filename)
-		if err := c.SaveUploadedFile(file, filename); err != nil {
-			_, _ = r.importService.UpdateStatusImport(importFile.ID, string(constant.ImportStatusFailed), err.Error())
+		// filename := filepath.Join("files", file.Filename)
+		err := c.SaveUploadedFile(file, tempFile)
+		if err != nil {
 			utils.PanicException(response.InvalidRequest, fmt.Sprintf("upload file err: %s", err.Error()))
 			return
 		}
-	}
+		importFile, err := r.importService.CreateImport(&models.Import{
+			FileName:       tempFile,
+			UploadFileName: files[0].Filename,
+			ImportedAt:     time.Now().Format(time.RFC3339),
+			Status:         string(constant.ImportStatusPending),
+			ErrorMessage:   "",
+		})
+		if err != nil {
+			utils.PanicException(response.InvalidRequest, err.Error())
+			return
+		}
 
-	message := fmt.Sprintf("Uploaded successfully %d files", len(files))
-	_, err = r.importService.DoImportJob(importFile.ID)
-	if err != nil {
-		utils.PanicException(response.InvalidRequest, err.Error())
-		return
+		message = fmt.Sprintf("Uploaded successfully %d files", len(files))
+		_, err = r.importService.DoImportJob(importFile.ID)
+		if err != nil {
+			utils.PanicException(response.InvalidRequest, err.Error())
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, message, utils.Null()))

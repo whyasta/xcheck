@@ -19,7 +19,7 @@ func AuthMiddleware(controllers *controllers.Controller) gin.HandlerFunc {
 			return
 		}
 		// if !controllers.AuthController.CheckAuthID(c) {
-		// 	log.Println("Unauthorized")
+		// 	fmt.Println("Unauthorized")
 		// 	c.JSON(http.StatusUnauthorized, utils.BuildResponse(http.StatusUnauthorized, response.Unauthorized, "Unauthorized", utils.Null()))
 		// 	c.Abort()
 		// 	return

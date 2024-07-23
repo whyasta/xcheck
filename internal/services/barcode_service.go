@@ -6,7 +6,7 @@ import (
 	"bigmind/xcheck-be/internal/repositories"
 	"bigmind/xcheck-be/utils"
 	"errors"
-	"log"
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -58,7 +58,7 @@ func (s *BarcodeService) Delete(uid int64) (models.Barcode, error) {
 }
 
 func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, barcode string) (bool, models.Barcode, error) {
-	log.Printf("START SCAN => BARCODE:%s, EVENT:%d, GATE:%d", barcode, eventId, gateId)
+	fmt.Printf("START SCAN => BARCODE:%s, EVENT:%d, GATE:%d", barcode, eventId, gateId)
 	// _, count, _ := s.r.FindAll([]string{"Schedule"}, utils.NewPaginate(10, 1), *utils.NewFilters([]utils.Filter{
 	// 	{
 	// 		Property:  "barcode",
@@ -67,7 +67,7 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 	// 	},
 	// }))
 
-	// log.Println(count)
+	// fmt.Println(count)
 	// if count <= 0 {
 	// 	return false, errors.New("invalid barcode")
 	// }
@@ -85,9 +85,9 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 		return false, result, errors.New("wrong gate")
 	}
 
-	log.Println("now", time.Now())
-	log.Println("start", result.Schedule.Session.SessionStart)
-	log.Println("end", result.Schedule.Session.SessionEnd)
+	fmt.Println("now", time.Now())
+	fmt.Println("start", result.Schedule.Session.SessionStart)
+	fmt.Println("end", result.Schedule.Session.SessionEnd)
 
 	if time.Now().After(result.Schedule.Session.SessionEnd) {
 		// update barcode to expired

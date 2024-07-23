@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"bigmind/xcheck-be/utils"
-	"log"
 	"reflect"
 
 	"gorm.io/gorm"
@@ -113,7 +112,7 @@ func (br *baseRepository) CommonFindByID(table string, id int64) (interface{}, e
 func (br *baseRepository) CommonUpdate(table string, params map[string]interface{}, data interface{}) (interface{}, error) {
 	result := make(map[string]interface{})
 
-	log.Println(br.model)
+	// fmt.Println(br.model)
 	// var err = br.GetDB().
 	// 	Table(table).
 	// 	Clauses(clause.Returning{}).
@@ -139,7 +138,6 @@ func BaseFindByID[M any](db gorm.DB, id int64, joins []string) (M, error) {
 	tx := db.Model(&result)
 	if len(joins) > 0 {
 		for _, join := range joins {
-			log.Println(join)
 			tx = tx.Preload(join)
 		}
 	}

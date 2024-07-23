@@ -1,7 +1,10 @@
 package utils
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"log"
+	"path/filepath"
 	"reflect"
 	"time"
 
@@ -63,4 +66,10 @@ func TimeIsBetween(t, min, max time.Time) bool {
 		min, max = max, min
 	}
 	return (t.Equal(min) || t.After(min)) && (t.Equal(max) || t.Before(max))
+}
+
+func TempFileName(directory, prefix, suffix string) string {
+	randBytes := make([]byte, 16)
+	rand.Read(randBytes)
+	return filepath.Join(directory, prefix+hex.EncodeToString(randBytes)+suffix)
 }

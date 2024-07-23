@@ -7,7 +7,6 @@ import (
 	"bigmind/xcheck-be/utils"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -98,7 +97,7 @@ func (s *AuthService) RefreshToken(refreshToken string) (map[string]string, erro
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		log.Println(claims)
+		fmt.Println(claims)
 		// Get the user record from database or
 		// run through your business logic to verify if the user can log in
 		avail, err := s.u.FindByID(int64(claims["sub"].(float64)))
