@@ -25,7 +25,7 @@ COPY --from=builder /app/main .
 COPY --from=builder /app/job .
 
 # COPY certs/*.crt /etc/ssl/certs/
-
+RUN touch .env
 RUN mkdir /app/config
 RUN mkdir /var/log/supervisor
 # COPY config/development.yml config/development.yml
