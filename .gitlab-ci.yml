@@ -46,5 +46,5 @@ deploy_dev:
   when: on_success
   script:
     - docker compose up -d
-  after_script:
-    - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
+#  after_script:
+#    - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
