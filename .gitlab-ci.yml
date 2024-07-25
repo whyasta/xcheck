@@ -51,6 +51,7 @@ deploy_dev:
     - echo "$ENV"
     - echo "$VAR_ENV"
     - echo "$ENV" >> .env
+    - cat .env
     - docker compose up -d --build
 #  after_script:
 #    - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
