@@ -54,7 +54,7 @@ func (r BarcodeController) UploadBarcodes(c *gin.Context) {
 		importFile, err := r.importService.CreateImport(&models.Import{
 			FileName:       tempFile,
 			UploadFileName: files[0].Filename,
-			ImportedAt:     time.Now().Format(time.RFC3339),
+			ImportedAt:     time.Now().Format("2006-01-02 15:04:05"),
 			Status:         string(constant.ImportStatusPending),
 			ErrorMessage:   "",
 		})
