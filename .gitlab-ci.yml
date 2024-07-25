@@ -1,0 +1,50 @@
+image: docker
+
+variables:
+  SERVICE_NAME: xcheck
+
+stages:
+  - build
+  - deploy
+
+build:
+  stage: build
+  tags:
+    - build
+  image: docker:24-dind
+  services:
+    - name: docker:24-dind
+      alias: docker
+      command: ["--tls=false","--mtu=1300"]
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+#  only:
+#    refs:
+#      - tags
+#      - main
+#  before_script:
+#    - if [ "$CI_COMMIT_BRANCH" ==  "main" ]; then VERSION=$CI_PIPELINE_IID; else VERSION=$CI_COMMIT_TAG; fi;
+  script:
+    # Set up .env
+    - touch .env
+    - echo "$ENV" >> .env
+    - docker build -t xcheck:alpine .
+    - docker image ls
+    #- docker tag $SERVICE_NAME:$VERSION $REPO/$SERVICE_NAME:$VERSION
+
+deploy_dev:
+  stage: deploy
+  environment:
+    name: dev
+  tags:
+    - bm-dev-kris
+  variables:
+    VERSION: $CI_PIPELINE_IID
+#  only:
+#    refs:
+#      - main
+  when: on_success
+  script:
+    - docker compose up -d
+#  after_script:
+#    - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
