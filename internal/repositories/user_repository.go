@@ -3,8 +3,6 @@ package repositories
 import (
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/utils"
-	"encoding/json"
-	"fmt"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -142,27 +140,29 @@ func (repo *userRepository) CreateAuth(id int64) (utils.AuthDetails, error) {
 	}
 
 	authUuid := uuid.New().String()
-	// uuids := user.AuthUuids
-	var uuids []interface{}
-	if user.AuthUuids != "" {
-		if err := json.Unmarshal([]byte(user.AuthUuids), &uuids); err != nil {
-			fmt.Println(err)
-			return utils.AuthDetails{}, err
-		}
-	}
-	uuids = append(uuids, authUuid)
 
-	jsonStr, _ := json.Marshal(uuids)
-	user.AuthUuids = string(jsonStr)
+	/*
+			// uuids := user.AuthUuids
+			var uuids []interface{}
+			if user.AuthUuids != "" {
+				if err := json.Unmarshal([]byte(user.AuthUuids), &uuids); err != nil {
+					fmt.Println(err)
+					return utils.AuthDetails{}, err
+				}
+			}
+
+		    uuids = append(uuids, authUuid)
+			jsonStr, _ := json.Marshal(uuids)
+			user.AuthUuids = string(jsonStr)
+
+			if err := repo.db.Table("users").
+				Where("id = ?", id).
+				Updates(map[string]interface{}{"auth_uuids": jsonStr}).
+				Error; err != nil {
+				return utils.AuthDetails{}, err
+			}*/
 
 	var authD utils.AuthDetails
-	if err := repo.db.Table("users").
-		Where("id = ?", id).
-		Updates(map[string]interface{}{"auth_uuids": jsonStr}).
-		Error; err != nil {
-		return utils.AuthDetails{}, err
-	}
-
 	authD.AuthUuid = authUuid
 	authD.UserId = uint64(user.ID)
 	return authD, nil
