@@ -14,6 +14,7 @@ type Barcode struct {
 }
 
 type BarcodeAssignment struct {
-	ScheduleID int64 `json:"schedule_id" validate:"required"`
-	ImportId   int64 `json:"import_id" validate:"required"`
+	ScheduleID   int64 `json:"schedule_id" validate:"required"`
+	ImportId     int64 `json:"import_id" validate:"required"`
+	TicketTypeID int64 `json:"ticket_type_id" validate:"required"`
 }

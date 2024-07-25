@@ -18,7 +18,7 @@ type BarcodeRepository interface {
 	Delete(uid int64) (models.Barcode, error)
 	FindAll(joins []string, paginate *utils.Paginate, filter []utils.Filter) ([]models.Barcode, int64, error)
 	FindByID(uid int64) (models.Barcode, error)
-	AssignBarcodes(importId int64, assignId int64) (int64, error)
+	AssignBarcodes(importId int64, assignId int64, ticketTypeId int64) (int64, error)
 	Scan(barcode string) (models.Barcode, error)
 	CreateLog(userId int64, barcode string, currentStatus constant.BarcodeStatus) (bool, error)
 }
@@ -53,7 +53,7 @@ func (repo *barcodeRepository) Update(id int64, data *map[string]interface{}) (m
 	return BaseUpdate[models.Barcode](*repo.base.GetDB(), id, data)
 }
 
-func (repo *barcodeRepository) AssignBarcodes(importId int64, assignId int64) (int64, error) {
+func (repo *barcodeRepository) AssignBarcodes(importId int64, assignId int64, ticketTypeId int64) (int64, error) {
 	var importBarcodes []models.ImportBarcode
 
 	var err error
@@ -82,6 +82,7 @@ func (repo *barcodeRepository) AssignBarcodes(importId int64, assignId int64) (i
 			barcodes = append(barcodes, models.Barcode{
 				Barcode:       item.Barcode,
 				ScheduleID:    assignId,
+				TicketTypeID:  ticketTypeId,
 				Flag:          constant.BarcodeFlagValid,
 				CurrentStatus: constant.BarcodeStatusNull,
 			})

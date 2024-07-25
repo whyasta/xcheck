@@ -111,8 +111,8 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 	return firstCheckin, result, err
 }
 
-func (s *BarcodeService) AssignBarcodes(importId int64, assignId int64) (bool, error) {
-	count, err := s.r.AssignBarcodes(importId, assignId)
+func (s *BarcodeService) AssignBarcodes(importId int64, assignId int64, ticketTypeId int64) (bool, error) {
+	count, err := s.r.AssignBarcodes(importId, assignId, ticketTypeId)
 
 	if err != nil || count <= 0 {
 		return false, err

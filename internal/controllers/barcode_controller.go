@@ -95,7 +95,7 @@ func (r BarcodeController) AssignBarcodes(c *gin.Context) {
 	}
 
 	// process assign barcode to event
-	_, err = r.barcodeService.AssignBarcodes(int64(ba.ImportId), int64(ba.ScheduleID))
+	_, err = r.barcodeService.AssignBarcodes(int64(ba.ImportId), int64(ba.ScheduleID), int64(ba.TicketTypeID))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
