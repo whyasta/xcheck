@@ -46,6 +46,9 @@ deploy_dev:
 #      - main
   when: on_success
   script:
-    - docker compose up -d
+    - touch .env
+    - ls -lah
+    - echo "$ENV" >> .env
+    - docker compose up -d --build
 #  after_script:
 #    - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
