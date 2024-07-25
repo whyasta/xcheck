@@ -52,7 +52,8 @@ func (s *AuthService) GetUserByID(id int64) (models.User, error) {
 }
 
 func (s *AuthService) GetUserByAuth(id int64, authId string) (models.User, error) {
-	result, err := s.u.FindByAuth(id, authId)
+	//result, err := s.u.FindByAuth(id, authId)
+	result, err := s.u.FindByID(id)
 	if err == nil {
 		result.Password = ""
 		result.AuthUuids = ""
