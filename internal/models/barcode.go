@@ -8,6 +8,7 @@ type Barcode struct {
 	Flag          constant.BarcodeFlag   `gorm:"column:flag;" json:"flag"`
 	CurrentStatus constant.BarcodeStatus `gorm:"column:current_status;" json:"current_status"`
 	ScheduleID    int64                  `gorm:"column:schedule_id" json:"schedule_id"`
+	TicketTypeID  int64                  `gorm:"column:ticket_type_id" mapstructure:"ticket_type_id" json:"ticket_type_id" validate:"required"`
 	Schedule      *Schedule              `gorm:"foreignKey:id;references:schedule_id" json:"schedule"`
 	CommonModel
 }

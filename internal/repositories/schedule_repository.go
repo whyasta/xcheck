@@ -34,7 +34,7 @@ func (repo *scheduleRepository) FindByID(id int64) (models.Schedule, error) {
 }
 
 func (repo *scheduleRepository) FindAll(paginate *utils.Paginate, filters []utils.Filter) ([]models.Schedule, int64, error) {
-	return BasePaginateWithFilter[[]models.Schedule](*repo.base.GetDB(), []string{"Session", "Gate", "Event", "TicketType"}, paginate, filters)
+	return BasePaginateWithFilter[[]models.Schedule](*repo.base.GetDB(), []string{"Session", "Gate", "Event"}, paginate, filters)
 }
 
 func (repo *scheduleRepository) Delete(id int64) (models.Schedule, error) {
