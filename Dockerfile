@@ -34,7 +34,7 @@ COPY app.conf /etc/supervisor/conf.d/
 COPY start.sh .
 RUN chown -R root:root /app && chmod -R ug+rwx /app
 
-EXPOSE 9099
+EXPOSE 9052
 # CMD ["/app/main", "-e", "production"]
 ENTRYPOINT ["/app/start.sh"]
 # ================ End running app
