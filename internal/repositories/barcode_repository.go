@@ -62,7 +62,7 @@ func (repo *barcodeRepository) AssignBarcodes(importId int64, assignId int64) (i
 	// Begin transaction
 	repo.base.GetDB().Transaction(func(tx *gorm.DB) error {
 		result := repo.base.GetDB().
-			Table("import_barcodes").
+			Table("raw_barcodes").
 			Where("import_id = ?", importId).
 			Updates(map[string]interface{}{"assign_status": 1})
 
@@ -70,7 +70,7 @@ func (repo *barcodeRepository) AssignBarcodes(importId int64, assignId int64) (i
 		count = result.RowsAffected
 
 		repo.base.GetDB().
-			Table("import_barcodes").
+			Table("raw_barcodes").
 			Where("import_id = ?", importId).
 			Find(&importBarcodes)
 

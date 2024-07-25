@@ -39,11 +39,11 @@ func (s *ImportService) DoImportJob(id int64) (models.Import, error) {
 		"import_id": id,
 		"headers":   "barcode",
 		"csv_file":  row.FileName,
-		"table":     "import_barcodes",
+		"table":     "raw_barcodes",
 	})
 
 	// TODO: Implement import job
-	// importJob := utils.NewImport(s.r.GetDB(), id, "import_barcodes", row.FileName, []string{"barcode"})
+	// importJob := utils.NewImport(s.r.GetDB(), id, "raw_barcodes", row.FileName, []string{"barcode"})
 	// fmt.Println("Importing data...")
 	// importJob.ImportData()
 	// fmt.Println("Importing done")
