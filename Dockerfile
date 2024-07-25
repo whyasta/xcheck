@@ -31,6 +31,7 @@ RUN mkdir /var/log/supervisor
 # COPY config/development.yml config/development.yml
 # COPY config/production.yml config/production.yml
 COPY app.conf /etc/supervisor/conf.d/
+COPY .env .
 COPY start.sh .
 RUN chown -R root:root /app && chmod -R ug+rwx /app
 
