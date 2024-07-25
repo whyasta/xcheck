@@ -16,6 +16,14 @@ services:
         volumes:
             - ./config/.env.docker:/app/config/.env
 
+    redis-db:
+        image: redis:latest
+        restart: always
+        ports:
+          - "26379:6379"
+        networks:
+            - external-network          
+
 #Docker Networks
 networks:
     external-network:
