@@ -4,7 +4,6 @@ variables:
   SERVICE_NAME: xcheck
 
 stages:
-#  - build
   - deploy_dev
   - deploy_prod
 
@@ -46,17 +45,15 @@ deploy_dev:
     - touch .env
     - echo "$ENV" >> .env
     - docker compose up -d --build
-#  after_script:
-#    - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
 
-cleanup_dev:
-  stage: deploy_dev
-  environment:
-    name: dev
-  tags:
-    - bm-dev-kris
-  script:
-    - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
+# cleanup_dev:
+#   stage: deploy_dev
+#   environment:
+#     name: dev
+#   tags:
+#     - bm-dev-kris
+#   script:
+#     - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
 
 deploy_prod:
   stage: deploy_prod
