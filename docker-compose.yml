@@ -14,7 +14,7 @@ services:
         networks:
             - external-network
         volumes:
-            - .env:/app/.env
+            - .:/app/
 
     redis-db:
         image: redis:latest
