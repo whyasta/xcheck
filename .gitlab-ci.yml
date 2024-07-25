@@ -7,32 +7,6 @@ stages:
   - deploy_dev
   - deploy_prod
 
-# build:
-#   stage: build
-#   tags:
-#     - build
-#   image: docker:24-dind
-#   services:
-#     - name: docker:24-dind
-#       alias: docker
-#       command: ["--tls=false","--mtu=1300"]
-#   variables:
-#     DOCKER_TLS_CERTDIR: ""
-# #  only:
-# #    refs:
-# #      - tags
-# #      - main
-# #  before_script:
-# #    - if [ "$CI_COMMIT_BRANCH" ==  "main" ]; then VERSION=$CI_PIPELINE_IID; else VERSION=$CI_COMMIT_TAG; fi;
-#   script:
-#     # Set up .env
-#     - touch .env
-#     - ls -lah
-#     - echo "$ENV" >> .env
-#     - docker build -t xcheck:latest .
-#     - docker image ls
-#     #- docker tag $SERVICE_NAME:$VERSION $REPO/$SERVICE_NAME:$VERSION
-
 deploy_dev:
   stage: deploy_dev
   environment:
@@ -46,27 +20,27 @@ deploy_dev:
     - echo "$ENV" >> .env
     - docker compose up -d --build
 
-# cleanup_dev:
-#   stage: deploy_dev
-#   environment:
-#     name: dev
-#   tags:
-#     - bm-dev-kris
-#   script:
-#     - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
+cleanup_dev:
+  stage: deploy_dev
+  environment:
+    name: dev
+  tags:
+    - bm-dev-kris
+  script:
+    - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
 
 deploy_prod:
   stage: deploy_prod
   environment:
     name: prod
   tags:
-    - bm-dev-kris
+    - xx
   variables:
     VERSION: $CI_PIPELINE_IID
- only:
-   refs:
-     - main
-     - tags
+  only:
+    refs:
+      - main
+      - tags
   script:
     - touch .env
     - echo "$ENV" >> .env
