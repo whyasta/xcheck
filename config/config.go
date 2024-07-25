@@ -20,8 +20,7 @@ func Init(env string) {
 	config = viper.New()
 	config.SetConfigType("env")
 	config.SetConfigName(".env")
-	config.AddConfigPath("../config/")
-	config.AddConfigPath("config/")
+	config.AddConfigPath(".")
 
 	err = config.ReadInConfig()
 	if err != nil {
