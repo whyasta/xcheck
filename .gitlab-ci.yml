@@ -21,7 +21,7 @@ deploy_dev:
     - docker compose up -d --build
 
 cleanup_dev:
-  stage: cleanup_dev
+  stage: deploy_dev
   environment:
     name: dev
   tags:
