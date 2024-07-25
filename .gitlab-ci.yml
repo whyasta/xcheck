@@ -4,8 +4,8 @@ variables:
   SERVICE_NAME: xcheck
 
 stages:
-#  - build
-  - deploy
+  - deploy_dev
+  - deploy_prod
 
 # build:
 #   stage: build
@@ -34,20 +34,41 @@ stages:
 #     #- docker tag $SERVICE_NAME:$VERSION $REPO/$SERVICE_NAME:$VERSION
 
 deploy_dev:
-  stage: deploy
+  stage: deploy_dev
   environment:
     name: dev
   tags:
     - bm-dev-kris
   variables:
     VERSION: $CI_PIPELINE_IID
-#  only:
-#    refs:
-#      - main
-  when: on_success
   script:
     - touch .env
     - echo "$ENV" >> .env
     - docker compose up -d --build
-#  after_script:
-#    - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
+
+# cleanup_dev:
+#   stage: deploy_dev
+#   environment:
+#     name: dev
+#   tags:
+#     - bm-dev-kris
+#   script:
+#     - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
+
+deploy_prod:
+  stage: deploy_prod
+  environment:
+    name: prod
+  tags:
+    - bm-dev-kris
+  variables:
+    VERSION: $CI_PIPELINE_IID
+ only:
+   refs:
+     - main
+     - tags
+  script:
+    - touch .env
+    - echo "$ENV" >> .env
+    - docker compose up -d --build
+  when: manual
