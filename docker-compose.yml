@@ -13,8 +13,8 @@ services:
         working_dir: /app
         networks:
             - external-network
-        volumes:
-            - ./config/.env.docker:/app/config/.env
+        # volumes:
+        #     - ./config/.env.docker:/app/config/.env
 
     redis-db:
         image: redis:latest
@@ -22,7 +22,7 @@ services:
         ports:
           - "26379:6379"
         networks:
-            - external-network          
+            - external-network
 
 #Docker Networks
 networks:
