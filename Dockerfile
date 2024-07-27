@@ -18,7 +18,8 @@ RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o job ./cmd/job
 # ================ Start running app
 FROM alpine:3.20
 # Install Dependencies
-RUN apk --no-cache add libaio libnsl libc6-compat curl supervisor tzdata
+RUN apk --no-cache add --update tzdata libaio libnsl libc6-compat curl supervisor && rm  -rf /tmp/* /var/cache/apk/*
+#curl supervisor
 ENV TZ=Asia/Jakarta
 
 WORKDIR /app
@@ -34,9 +35,10 @@ RUN mkdir /var/log/supervisor
 COPY app.conf /etc/supervisor/conf.d/
 COPY .env .
 COPY start.sh .
-RUN chown -R root:root /app && chmod -R ug+rwx /app
+#RUN chown -R root:root /app && chmod -R ug+rwx /app
+RUN chmod ug+rwx /app/start.sh
 
 EXPOSE 9052
 # CMD ["/app/main", "-e", "production"]
-ENTRYPOINT ["/app/start.sh"]
+#ENTRYPOINT ["/app/start.sh"]
 # ================ End running app
