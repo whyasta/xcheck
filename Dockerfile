@@ -18,7 +18,8 @@ RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o job ./cmd/job
 # ================ Start running app
 FROM alpine:3.20
 # Install Dependencies
-RUN apk --no-cache add libaio libnsl libc6-compat curl supervisor
+RUN apk --no-cache add libaio libnsl libc6-compat curl supervisor tzdata
+ENV TZ=Asia/Jakarta
 
 WORKDIR /app
 COPY --from=builder /app/main .
