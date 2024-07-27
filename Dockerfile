@@ -40,5 +40,5 @@ RUN chmod ug+rwx /app/start.sh
 
 EXPOSE 9052
 # CMD ["/app/main", "-e", "production"]
-#ENTRYPOINT ["/app/start.sh"]
+ENTRYPOINT ["/app/start.sh"]
 # ================ End running app
