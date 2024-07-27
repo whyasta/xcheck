@@ -87,7 +87,14 @@ func (u AuthController) Refresh(c *gin.Context) {
 //
 // 200:
 func (u AuthController) Signout(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "pong"})
+	defer utils.ResponseHandler(c)
+
+	err := utils.BlacklistToken(utils.ExtractToken(c))
+	if err != nil {
+		utils.PanicException(response.Unauthorized, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "ok", "status": "SUCCESS"})
 }
 
 // swagger:route GET /auth/me Auth authMe

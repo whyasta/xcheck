@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/gomodule/redigo/redis"
 	"github.com/google/uuid"
 )
 
@@ -90,10 +91,16 @@ func TokenValid(c *gin.Context) error {
 	// log.Println("jwtSecret: ", config.GetConfig().GetString("auth.jwtSecret"))
 
 	if tokenString == "" {
-		return errors.New("Unauthorized")
+		return errors.New("unauthorized")
 	}
 
-	_, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+	// check blacklist or not
+	redisToken, err := redis.String(config.NewRedis().Get().Do("GET", "blacklist_"+tokenString))
+	if redisToken != "" && err == nil {
+		return errors.New("unauthorized - blacklist")
+	}
+
+	_, err = jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
@@ -177,4 +184,13 @@ func ExtractTokenAuth(c *gin.Context) (*AuthDetails, error) {
 		}, nil
 	}
 	return nil, err
+}
+
+func BlacklistToken(token string) error {
+	_, err := config.NewRedis().Get().Do("SET", "blacklist_"+token, token, "EX", 3600*24)
+	if err != nil {
+		return errors.New("unable to blacklist token")
+	}
+
+	return nil
 }

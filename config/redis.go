@@ -1,15 +1,19 @@
 package config
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/gocraft/work"
 	"github.com/gomodule/redigo/redis"
 )
 
 // Make a redis pool
 var redisPool = &redis.Pool{
-	MaxActive: 5,
-	MaxIdle:   5,
-	Wait:      true,
+	MaxActive:       100,
+	MaxIdle:         5,
+	MaxConnLifetime: time.Duration(10) * time.Minute,
+	Wait:            true,
 	Dial: func() (redis.Conn, error) {
 		redisHost := GetConfig().GetString("REDIS_HOST")
 		redisPort := GetConfig().GetString("REDIS_PORT")
@@ -17,8 +21,14 @@ var redisPool = &redis.Pool{
 	},
 }
 
+var instance *redis.Pool
+
 func NewRedis() *redis.Pool {
-	return redisPool
+	if instance == nil {
+		fmt.Println("Creating new redis pool")
+		instance = redisPool
+	}
+	return instance
 }
 
 func NewFakeRedis() *redis.Pool {
