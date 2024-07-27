@@ -57,6 +57,17 @@ func ConnectToDB() (*gorm.DB, error) {
 	return db, err
 }
 
+func GetDsn() string {
+	configEnv := GetConfig()
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		configEnv.GetString("DATABASE_USER"),
+		configEnv.GetString("DATABASE_PASSWORD"),
+		configEnv.GetString("DATABASE_HOST"),
+		configEnv.GetString("DATABASE_PORT"),
+		configEnv.GetString("DATABASE_NAME"),
+	)
+}
+
 func GetConfig() *viper.Viper {
 	return config
 }

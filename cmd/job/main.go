@@ -7,9 +7,9 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"syscall"
 
 	"github.com/gocraft/work"
-	"github.com/gomodule/redigo/redis"
 )
 
 type Context struct {
@@ -17,22 +17,22 @@ type Context struct {
 	Data map[string]interface{}
 }
 
-var redisPool = &redis.Pool{
-	MaxActive: 5,
-	MaxIdle:   5,
-	Wait:      true,
-	Dial: func() (redis.Conn, error) {
-		redisHost := config.GetConfig().GetString("REDIS_HOST")
-		redisPort := config.GetConfig().GetString("REDIS_PORT")
-		return redis.Dial("tcp", fmt.Sprintf("%s:%s", redisHost, redisPort))
-	},
-}
+// var redisPool = &redis.Pool{
+// 	MaxActive: 5,
+// 	MaxIdle:   5,
+// 	Wait:      true,
+// 	Dial: func() (redis.Conn, error) {
+// 		redisHost := config.GetConfig().GetString("REDIS_HOST")
+// 		redisPort := config.GetConfig().GetString("REDIS_PORT")
+// 		return redis.Dial("tcp", fmt.Sprintf("%s:%s", redisHost, redisPort))
+// 	},
+// }
 
 func main() {
 	fmt.Println("Running job queue")
 	config.Init("production")
 
-	pool := work.NewWorkerPool(Context{}, 10, "xcheck", redisPool)
+	pool := work.NewWorkerPool(Context{}, 10, "xcheck", config.NewRedis())
 	pool.Middleware((*Context).Log)
 	pool.Start()
 
@@ -41,7 +41,7 @@ func main() {
 
 	// waiting exit signal：
 	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt, os.Kill)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
 	<-signalChan
 
 	fmt.Println("Stop the pool")
