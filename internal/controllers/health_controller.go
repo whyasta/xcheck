@@ -2,13 +2,11 @@ package controllers
 
 import (
 	"bigmind/xcheck-be/checks"
-	"bigmind/xcheck-be/config"
 	"errors"
 	"net/http"
 	"sync"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gocraft/work"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -20,9 +18,9 @@ type CheckStatus struct {
 type HealthController struct{}
 
 func (h HealthController) Init(c *gin.Context) {
-	config.GetEnqueuer().Enqueue("test", work.Q{
-		"email_address": "qjDpS@example.com",
-	})
+	// config.GetEnqueuer().Enqueue("test", work.Q{
+	// 	"email_address": "qjDpS@example.com",
+	// })
 
 	c.JSON(http.StatusOK, gin.H{"message": "pong"})
 }
