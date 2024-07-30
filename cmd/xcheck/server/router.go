@@ -6,7 +6,6 @@ import (
 	"bigmind/xcheck-be/internal/routes"
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-openapi/runtime/middleware"
@@ -118,13 +117,13 @@ func NewRouter(services *services.Service) *gin.Engine {
 	// 	}
 	// }
 
-	router.NoMethod(func(c *gin.Context) {
-		c.JSON(http.StatusMethodNotAllowed, gin.H{"code": 405, "message": "405 method not allowed"})
-	})
+	// router.NoMethod(func(c *gin.Context) {
+	// 	c.JSON(http.StatusMethodNotAllowed, gin.H{"code": 405, "message": "405 method not allowed"})
+	// })
 
-	router.NoRoute(func(c *gin.Context) {
-		c.JSON(http.StatusNotFound, gin.H{"code": 404, "message": "404 page not found"})
-	})
+	// router.NoRoute(func(c *gin.Context) {
+	// 	c.JSON(http.StatusNotFound, gin.H{"code": 404, "message": "404 page not found"})
+	// })
 
 	router.Use(middlewares.ErrorMiddleware())
 

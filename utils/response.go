@@ -135,11 +135,33 @@ func WriterHandler(c *gin.Context) {
 	latency := time.Since(t).Seconds()
 
 	originalBody := w.body
+
 	w.body = &bytes.Buffer{}
 	var body map[string]interface{}
-	json.Unmarshal(originalBody.Bytes(), &body)
-	body["code"] = c.Writer.Status()
-	body["processing_time"] = latency
+	if originalBody.Len() == 0 {
+		w.Write([]byte(`
+        ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣠⡤⠤⠤⠶⠶⠤⠤⢤⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+        ⠀⠀⠀⠀⠀⣠⡴⠚⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠳⠦⣄⠀⠀⠀⠀⠀⠀
+        ⠀⠀⠀⣠⡾⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠻⣦⠀⠀⠀⠀
+        ⠀⢀⡾⢋⣤⠤⣤⣄⡀⠀⠀⠀⠀⠀⠀⢀⣠⣤⠤⢦⣄⡀⠀⠀⠈⢷⡀⠀⠀
+        ⢀⡾⣶⠋⠀⠀⣿⣿⣷⡄⠀⠀⠀⠀⢠⡿⠉⠀⠀⢰⣿⣿⣆⠀⠀⠈⢻⡄⠀
+        ⣾⠅⡏⠀⠀⠀⠙⠛⠉⣷⠀⠀⠀⠀⣼⠃⠀⠀⠀⠈⠛⠋⢻⡄⠀⠀⠐⢿⠀
+        ⡇⠀⣷⣤⣤⣤⣤⣤⣤⡏⠀⠀⠀⠀⢻⣤⣤⣤⣤⣤⣤⣤⣼⠃⠀⠀⠀⠸⡄
+        ⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠠⡇
+        ⡇⠀⠰⠲⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣶⣆⠀⠀⠀⠀⢰⠃
+        ⢿⡀⠀⠐⣿⣿⣿⢿⣿⢿⣿⢿⣿⢿⣿⢿⣿⢿⣿⢿⣿⢿⣿⠀⠀⠀⠀⣾⠀
+        ⠘⢷⡀⠀⠙⣿⣿⣿⣻⣿⣻⣿⣻⣿⣻⣿⣻⣿⣻⣿⢿⣿⡏⠀⠀⠀⣼⠃⠀
+        ⠀⠈⢷⣄⠀⠘⢿⣿⣿⣽⡿⣽⠟⠈⠀⠀⠀⠈⠉⠿⣿⠟⠀⠀⢀⡾⠃⠀⠀
+        ⠀⠀⠀⠙⢦⣄⠀⠛⢿⣿⣿⠃⠀⠀⠀⠀⠀⣀⣤⠞⠁⠀⢀⣴⠟⠁⠀⠀⠀
+        ⠀⠀⠀⠀⠀⠙⠲⢤⣀⡈⠙⠳⠖⠒⠒⠚⠛⠉⠀⣀⣴⠞⠋⠁⠀⠀⠀⠀⠀
+        ⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠓⠒⠲⠤⠦⠶⠒⠚⠛⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀`))
+		return
+	} else {
+		json.Unmarshal(originalBody.Bytes(), &body)
+		body["code"] = c.Writer.Status()
+		body["processing_time"] = latency
+	}
+
 	newBody, _ := json.Marshal(body)
 
 	// log.Printf("Response :" + string(newBody) + "\n")
