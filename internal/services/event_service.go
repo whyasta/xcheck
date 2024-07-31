@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bigmind/xcheck-be/internal/dto"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/repositories"
 	"bigmind/xcheck-be/utils"
@@ -14,8 +15,12 @@ func NewEventService(r repositories.EventRepository) *EventService {
 	return &EventService{r}
 }
 
-func (s *EventService) CreateEvent(event *models.Event) (models.Event, error) {
+func (s *EventService) CreateEvent(event *dto.EventRequest) (models.Event, error) {
 	return s.r.Save(event)
+}
+
+func (s *EventService) CreateBulkEvent(events *[]dto.EventRequest) ([]models.Event, error) {
+	return s.r.BulkSave(events)
 }
 
 func (s *EventService) UpdateEvent(id int64, event *map[string]interface{}) (models.Event, error) {

@@ -6,6 +6,7 @@ import (
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -38,10 +39,54 @@ func NewEventController(service *services.EventService) *EventController {
 func (r EventController) CreateEvent(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	var event *models.Event
+	var event *dto.EventRequest
+	var bulkEvent *[]dto.EventRequest
 
-	c.Next()
-	c.BindJSON(&event)
+	jsons := make([]byte, c.Request.ContentLength)
+	fmt.Println(c.Request.ContentLength)
+	if _, err := c.Request.Body.Read(jsons); err != nil {
+		if err.Error() != "EOF" {
+			return
+		}
+	}
+	fmt.Println(string(jsons))
+
+	if err := json.Unmarshal(jsons, &bulkEvent); err != nil {
+		bulkEvent = nil
+		if err := json.Unmarshal(jsons, &event); err != nil {
+			utils.PanicException(response.InvalidRequest, err.Error())
+			return
+		}
+	}
+
+	/*
+		c.Next()
+		if err := c.BindJSON(&bulkEvent); err != nil {
+			bulkEvent = nil
+			if err := c.BindJSON(&event); err != nil {
+				utils.PanicException(response.InvalidRequest, err.Error())
+				return
+			}
+		}*/
+
+	if bulkEvent != nil {
+		for _, event := range *bulkEvent {
+			validate := validator.New(validator.WithRequiredStructEnabled())
+			err := validate.Struct(event)
+			if err != nil {
+				errors := err.(validator.ValidationErrors)
+				utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+				return
+			}
+		}
+		result, err := r.service.CreateBulkEvent(bulkEvent)
+		if err != nil {
+			utils.PanicException(response.InvalidRequest, err.Error())
+			return
+		}
+		c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
+		return
+	}
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	err := validate.Struct(event)
@@ -68,7 +113,7 @@ func (r EventController) UpdateEvent(c *gin.Context) {
 		return
 	}
 
-	var event *dto.EventRequest
+	var event *dto.EventUpdateDto
 	var request = make(map[string]interface{})
 
 	c.Next()

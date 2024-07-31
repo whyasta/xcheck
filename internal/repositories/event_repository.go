@@ -1,6 +1,7 @@
 package repositories
 
 import (
+	"bigmind/xcheck-be/internal/dto"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/utils"
 
@@ -8,7 +9,8 @@ import (
 )
 
 type EventRepository interface {
-	Save(event *models.Event) (models.Event, error)
+	Save(event *dto.EventRequest) (models.Event, error)
+	BulkSave(events *[]dto.EventRequest) ([]models.Event, error)
 	Update(id int64, event *map[string]interface{}) (models.Event, error)
 	Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.Event, int64, error)
 	GetFiltered(paginate *utils.Paginate, filters []utils.Filter) ([]models.Event, int64, error)
@@ -26,13 +28,23 @@ func NewEventRepository(db *gorm.DB) *eventRepository {
 	}
 }
 
-func (repo *eventRepository) Save(event *models.Event) (models.Event, error) {
-	if event.ID != 0 {
+func (repo *eventRepository) Save(eventDto *dto.EventRequest) (models.Event, error) {
+	if eventDto.ID != 0 {
 		var result = models.Event{}
-		var err = repo.base.GetDB().Save(&event).First(&result).Error
+		var err = repo.base.GetDB().Save(&eventDto).First(&result).Error
 		return result, err
 	}
+
+	event := eventDto.ToEntity()
 	return BaseInsert(*repo.base.GetDB(), *event)
+}
+
+func (repo *eventRepository) BulkSave(eventDto *[]dto.EventRequest) ([]models.Event, error) {
+	event := make([]models.Event, 0)
+	for _, v := range *eventDto {
+		event = append(event, *v.ToEntity())
+	}
+	return BaseInsert(*repo.base.GetDB(), event)
 }
 
 func (repo *eventRepository) Update(id int64, event *map[string]interface{}) (models.Event, error) {
