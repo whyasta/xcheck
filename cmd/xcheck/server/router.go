@@ -125,6 +125,7 @@ func NewRouter(services *services.Service) *gin.Engine {
 	// 	c.JSON(http.StatusNotFound, gin.H{"code": 404, "message": "404 page not found"})
 	// })
 
+	router.Use(middlewares.CORSMiddleware())
 	router.Use(middlewares.ErrorMiddleware())
 
 	return router
