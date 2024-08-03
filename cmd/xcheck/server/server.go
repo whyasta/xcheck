@@ -5,6 +5,8 @@ import (
 	"bigmind/xcheck-be/internal/services"
 	"fmt"
 	"log"
+	"net/http"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -43,5 +45,13 @@ func Init() {
 
 	r := NewRouter(services)
 	log.Printf("Starting server " + configEnv.GetString("SERVER_ADDRESS") + " at port :" + configEnv.GetString("SERVER_PORT") + "\n")
-	r.Run(configEnv.GetString("SERVER_ADDRESS") + ":" + configEnv.GetString("SERVER_PORT"))
+	//r.Run(configEnv.GetString("SERVER_ADDRESS") + ":" + configEnv.GetString("SERVER_PORT"))
+	srv := &http.Server{
+		Addr:         configEnv.GetString("SERVER_ADDRESS") + ":" + configEnv.GetString("SERVER_PORT"),
+		WriteTimeout: time.Second * 60,
+		ReadTimeout:  time.Second * 15,
+		IdleTimeout:  time.Second * 60,
+		Handler:      r,
+	}
+	srv.ListenAndServe()
 }
