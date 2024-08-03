@@ -82,6 +82,7 @@ func (u UserController) CreateUser(c *gin.Context) {
 		return
 	}
 
+	user.AuthUuids = nil
 	result, err := u.service.CreateUser(user)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())

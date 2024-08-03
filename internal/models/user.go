@@ -12,7 +12,7 @@ type User struct {
 	Email     string   `gorm:"column:email" json:"email" validate:"required,email"`
 	RoleID    int64    `gorm:"column:role_id" json:"role_id" validate:"required"`
 	Role      UserRole `gorm:"foreignKey:RoleID;references:ID" json:"role"`
-	AuthUuids string   `gorm:"column:auth_uuids" json:"auth_uuids,omitempty"`
+	AuthUuids *string  `gorm:"column:auth_uuids" json:"auth_uuids,omitempty"`
 	CommonModel
 }
 
