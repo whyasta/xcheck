@@ -8,13 +8,14 @@ import (
 	"bigmind/xcheck-be/utils"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-openapi/runtime/middleware"
 )
 
 func NewRouter(services *services.Service) *gin.Engine {
-	gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.DebugMode)
 
 	router := gin.New()
+	router.ForwardedByClientIP = true
+	router.SetTrustedProxies([]string{"127.0.0.1", "192.168.1.2", "10.0.0.0/8"})
 
 	// router.Use(gin.Logger())
 	router.Use(gin.Recovery())
@@ -28,10 +29,10 @@ func NewRouter(services *services.Service) *gin.Engine {
 
 	// router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	router.StaticFile("/swagger.yml", "./docs/swagger.yml")
-	opts := middleware.SwaggerUIOpts{SpecURL: "swagger.yml"}
-	sh := middleware.SwaggerUI(opts, nil)
-	router.GET("/docs", gin.WrapH(sh))
+	// router.StaticFile("/swagger.yml", "./docs/swagger.yml")
+	// opts := middleware.SwaggerUIOpts{SpecURL: "swagger.yml"}
+	// sh := middleware.SwaggerUI(opts, nil)
+	// router.GET("/docs", gin.WrapH(sh))
 
 	router.Use(utils.WriterHandler)
 	// router.Use(utils.ResponseLogger())
