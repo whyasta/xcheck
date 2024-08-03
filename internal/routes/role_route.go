@@ -10,8 +10,8 @@ import (
 func RoleRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
 	group.Use(middlewares.AuthMiddleware(controllers))
 	{
-		group.POST("/", controllers.RoleController.CreateRole)
-		group.GET("/", controllers.RoleController.GetAllRole)
+		group.POST("", controllers.RoleController.CreateRole)
+		group.GET("", controllers.RoleController.GetAllRole)
 		group.GET("/:id", controllers.RoleController.GetRoleByID)
 		group.POST("/:id", controllers.RoleController.CreateRole)
 	}
