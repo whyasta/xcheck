@@ -11,7 +11,8 @@ func BarcodeRoutes(group *gin.RouterGroup, controllers *controllers.Controller) 
 	group.Use(middlewares.AuthMiddleware(controllers))
 	{
 		group.POST("/upload", controllers.BarcodeController.UploadBarcodes)
+		group.POST("/download", controllers.BarcodeController.DownloadBarcodes)
 		group.POST("/assign", controllers.BarcodeController.AssignBarcodes)
-		group.POST("/scan", controllers.BarcodeController.ScanBarcode)
+		group.POST("/scan/:action", controllers.BarcodeController.ScanBarcode)
 	}
 }

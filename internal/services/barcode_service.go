@@ -13,10 +13,11 @@ import (
 
 type BarcodeService struct {
 	r repositories.BarcodeRepository
+	s repositories.ScheduleRepository
 }
 
-func NewBarcodeService(r repositories.BarcodeRepository) *BarcodeService {
-	return &BarcodeService{r}
+func NewBarcodeService(r repositories.BarcodeRepository, s repositories.ScheduleRepository) *BarcodeService {
+	return &BarcodeService{r, s}
 }
 
 func (s *BarcodeService) CreateBarcode(data *models.Barcode) (models.Barcode, error) {
@@ -45,6 +46,40 @@ func (s *BarcodeService) UpdateBarcode(eventId int64, id int64, data *map[string
 	return s.r.Update(id, data)
 }
 
+func (s *BarcodeService) DownloadBarcodes(eventId int64, sessionId int64, gateId int64) ([]models.Barcode, int64, error) {
+	schedules, _, err := s.s.FindAll(utils.NewPaginate(999999, 1), *utils.NewFilters([]utils.Filter{
+		{
+			Property:  "event_id",
+			Operation: "=",
+			Value:     strconv.Itoa(int(eventId)),
+		},
+		{
+			Property:  "session_id",
+			Operation: "=",
+			Value:     strconv.Itoa(int(sessionId)),
+		},
+		{
+			Property:  "gate_id",
+			Operation: "=",
+			Value:     strconv.Itoa(int(gateId)),
+		},
+	}))
+
+	if len(schedules) == 0 || err != nil {
+		return []models.Barcode{}, 0, errors.New("barcode not found")
+	}
+
+	barcodes, count, err := s.r.FindAll([]string{"Schedule"}, utils.NewPaginate(999999, 1), *utils.NewFilters([]utils.Filter{
+		{
+			Property:  "schedule_id",
+			Operation: "=",
+			Value:     strconv.Itoa(int(eventId)),
+		},
+	}))
+
+	return barcodes, count, err
+}
+
 func (s *BarcodeService) GetAllBarcodes(pageParams *utils.Paginate, filters []utils.Filter) ([]models.Barcode, int64, error) {
 	return s.r.FindAll([]string{"Schedule"}, pageParams, filters)
 }
@@ -57,7 +92,7 @@ func (s *BarcodeService) Delete(uid int64) (models.Barcode, error) {
 	return s.r.Delete(uid)
 }
 
-func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, barcode string) (bool, models.Barcode, error) {
+func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, barcode string, action constant.BarcodeStatus) (bool, models.Barcode, error) {
 	fmt.Printf("START SCAN => BARCODE:%s, EVENT:%d, GATE:%d", barcode, eventId, gateId)
 	// _, count, _ := s.r.FindAll([]string{"Schedule"}, utils.NewPaginate(10, 1), *utils.NewFilters([]utils.Filter{
 	// 	{
@@ -101,7 +136,7 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 
 	// update barcode to valid
 	// s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagUsed})
-	firstCheckin, err := s.r.CreateLog(userId, barcode, result.CurrentStatus)
+	firstCheckin, err := s.r.CreateLog(userId, barcode, result.CurrentStatus, action)
 	if err != nil {
 		return false, result, err
 	}

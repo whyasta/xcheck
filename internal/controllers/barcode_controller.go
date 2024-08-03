@@ -74,6 +74,30 @@ func (r BarcodeController) UploadBarcodes(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, message, utils.Null()))
 }
 
+func (r BarcodeController) DownloadBarcodes(c *gin.Context) {
+	defer utils.ResponseHandler(c)
+
+	var dto *dto.BarcodeDownloadDto
+
+	c.Next()
+	c.BindJSON(&dto)
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	err := validate.Struct(dto)
+	if err != nil {
+		errors := err.(validator.ValidationErrors)
+		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+		return
+	}
+
+	rows, _, err := r.barcodeService.DownloadBarcodes(dto.EventID, dto.SessionID, dto.GateID)
+	if err != nil {
+		utils.PanicException(response.InvalidRequest, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", rows))
+}
+
 func (r BarcodeController) AssignBarcodes(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	var ba *models.BarcodeAssignment
@@ -108,6 +132,19 @@ func (r BarcodeController) AssignBarcodes(c *gin.Context) {
 func (r BarcodeController) ScanBarcode(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
+	paramAction := c.Param("action")
+	if paramAction != "in" && paramAction != "out" {
+		utils.PanicException(response.InvalidRequest, "invalid action")
+		return
+	}
+
+	action := constant.BarcodeStatusIn
+	if paramAction == "in" {
+		action = constant.BarcodeStatusIn
+	} else if paramAction == "out" {
+		action = constant.BarcodeStatusOut
+	}
+
 	userId, _, err := utils.ExtractTokenID(c)
 
 	var scan *dto.ScanBarcode
@@ -115,7 +152,7 @@ func (r BarcodeController) ScanBarcode(c *gin.Context) {
 	c.Next()
 	c.BindJSON(&scan)
 
-	firstCheckin, result, err := r.barcodeService.ScanBarcode(userId, scan.EventID, scan.GateID, scan.Barcode)
+	firstCheckin, result, err := r.barcodeService.ScanBarcode(userId, scan.EventID, scan.GateID, scan.Barcode, action)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
