@@ -19,6 +19,8 @@ func NewRouter(services *services.Service) *gin.Engine {
 
 	// router.Use(gin.Logger())
 	router.Use(gin.Recovery())
+	router.Use(middlewares.CORSMiddleware())
+	router.Use(middlewares.ErrorMiddleware())
 
 	// router.Group("/swagger").Handler(ginSwagger.WrapHandler(
 	// 	httpSwagger.URL(fmt.Sprintf("http://localhost:%s/swagger/doc.json", os.Getenv("LISTENADDR"))),
@@ -125,9 +127,6 @@ func NewRouter(services *services.Service) *gin.Engine {
 	// router.NoRoute(func(c *gin.Context) {
 	// 	c.JSON(http.StatusNotFound, gin.H{"code": 404, "message": "404 page not found"})
 	// })
-
-	router.Use(middlewares.CORSMiddleware())
-	router.Use(middlewares.ErrorMiddleware())
 
 	return router
 }

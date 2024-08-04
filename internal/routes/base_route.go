@@ -26,7 +26,7 @@ func BaseRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
 	group.GET("/", controllers.HealthController.Init)
 	group.GET("/healthcheck", controllers.HealthController.Status([]checks.Check{mysqlCheck, redisCheck}, &failureNotification))
 
-	group.POST("/signin", controllers.AuthController.Signin)
+	// group.POST("/signin", controllers.AuthController.Signin)
 	group.Use(middlewares.AuthMiddleware(controllers))
 	{
 		// single get
