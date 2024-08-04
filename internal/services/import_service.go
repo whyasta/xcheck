@@ -58,8 +58,8 @@ func (s *ImportService) DoImportJob(id int64) (models.Import, error) {
 	return row, err
 }
 
-func (s *ImportService) GetAllImports(paginate *utils.Paginate, filters []utils.Filter) ([]models.Import, int64, error) {
-	return s.r.FindAll(paginate, filters)
+func (s *ImportService) GetAllImports(paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Import, int64, error) {
+	return s.r.FindAll(paginate, filters, sorts)
 }
 
 func (s *ImportService) GetImportByID(uid int64) (models.Import, error) {

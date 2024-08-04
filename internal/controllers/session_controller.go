@@ -81,7 +81,7 @@ func (r SessionController) GetAllSessions(c *gin.Context) {
 		return
 	}
 
-	pageParams, filter := MakePageFilterQueryParams(c.Request.URL.Query(), []string{"event_id"})
+	pageParams, filter, sort := MakePageFilterQueryParams(c.Request.URL.Query(), []string{"event_id"})
 
 	filter = append(filter, utils.Filter{
 		Property:  "event_id",
@@ -89,7 +89,7 @@ func (r SessionController) GetAllSessions(c *gin.Context) {
 		Value:     strconv.Itoa(eventId),
 	})
 
-	rows, count, err := r.service.GetAllSessions(pageParams, filter)
+	rows, count, err := r.service.GetAllSessions(pageParams, filter, sort)
 
 	if err != nil {
 		fmt.Println("Error:", err)

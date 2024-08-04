@@ -33,8 +33,8 @@ func (s *EventService) GetAllEvents(pageParams *utils.Paginate, params map[strin
 	return result, count, err
 }
 
-func (s *EventService) GetFilteredEvents(pageParams *utils.Paginate, filters []utils.Filter) ([]models.Event, int64, error) {
-	result, count, err := s.r.GetFiltered(pageParams, filters)
+func (s *EventService) GetFilteredEvents(pageParams *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Event, int64, error) {
+	result, count, err := s.r.GetFiltered(pageParams, filters, sorts)
 	return result, count, err
 }
 

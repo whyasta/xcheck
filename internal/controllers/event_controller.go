@@ -147,8 +147,8 @@ func (r EventController) UpdateEvent(c *gin.Context) {
 // 200:
 func (r EventController) GetAllEvents(c *gin.Context) {
 	//pageParams, params := MakePaginationQueryParams(c.Request.URL.Query(), []string{"event_id"})
-	pageParams, filter := MakePageFilterQueryParams(c.Request.URL.Query(), []string{"event_id"})
-	rows, count, err := r.service.GetFilteredEvents(pageParams, filter)
+	pageParams, filter, sort := MakePageFilterQueryParams(c.Request.URL.Query(), []string{"event_id"})
+	rows, count, err := r.service.GetFilteredEvents(pageParams, filter, sort)
 
 	if err != nil {
 		fmt.Println("Error:", err)

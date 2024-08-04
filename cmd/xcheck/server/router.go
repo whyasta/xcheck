@@ -11,7 +11,7 @@ import (
 )
 
 func NewRouter(services *services.Service) *gin.Engine {
-	gin.SetMode(gin.DebugMode)
+	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.New()
 	router.ForwardedByClientIP = true

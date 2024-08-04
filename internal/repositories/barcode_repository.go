@@ -16,7 +16,7 @@ type BarcodeRepository interface {
 	Save(role *models.Barcode) (models.Barcode, error)
 	Update(id int64, data *map[string]interface{}) (models.Barcode, error)
 	Delete(uid int64) (models.Barcode, error)
-	FindAll(joins []string, paginate *utils.Paginate, filter []utils.Filter) ([]models.Barcode, int64, error)
+	FindAll(joins []string, paginate *utils.Paginate, filter []utils.Filter, sorts []utils.Sort) ([]models.Barcode, int64, error)
 	FindByID(uid int64) (models.Barcode, error)
 	AssignBarcodes(importId int64, assignId int64, ticketTypeId int64) (int64, error)
 	Scan(barcode string) (models.Barcode, error)
@@ -41,8 +41,8 @@ func (repo *barcodeRepository) FindByID(id int64) (models.Barcode, error) {
 	return BaseFindByID[models.Barcode](*repo.base.GetDB(), id, []string{})
 }
 
-func (repo *barcodeRepository) FindAll(joins []string, paginate *utils.Paginate, filters []utils.Filter) ([]models.Barcode, int64, error) {
-	return BasePaginateWithFilter[[]models.Barcode](*repo.base.GetDB(), joins, paginate, filters)
+func (repo *barcodeRepository) FindAll(joins []string, paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Barcode, int64, error) {
+	return BasePaginateWithFilter[[]models.Barcode](*repo.base.GetDB(), joins, paginate, filters, sorts)
 }
 
 func (repo *barcodeRepository) Delete(id int64) (models.Barcode, error) {

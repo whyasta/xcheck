@@ -11,7 +11,7 @@ type SessionRepository interface {
 	Save(role *models.Session) (models.Session, error)
 	Update(id int64, data *map[string]interface{}) (models.Session, error)
 	Delete(uid int64) (models.Session, error)
-	FindAll(paginate *utils.Paginate, filter []utils.Filter) ([]models.Session, int64, error)
+	FindAll(paginate *utils.Paginate, filter []utils.Filter, sorts []utils.Sort) ([]models.Session, int64, error)
 	FindByID(uid int64) (models.Session, error)
 }
 
@@ -33,8 +33,8 @@ func (repo *sessionRepository) FindByID(id int64) (models.Session, error) {
 	return BaseFindByID[models.Session](*repo.base.GetDB(), id, []string{})
 }
 
-func (repo *sessionRepository) FindAll(paginate *utils.Paginate, filters []utils.Filter) ([]models.Session, int64, error) {
-	return BasePaginateWithFilter[[]models.Session](*repo.base.GetDB(), []string{}, paginate, filters)
+func (repo *sessionRepository) FindAll(paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Session, int64, error) {
+	return BasePaginateWithFilter[[]models.Session](*repo.base.GetDB(), []string{}, paginate, filters, sorts)
 }
 
 func (repo *sessionRepository) Delete(id int64) (models.Session, error) {

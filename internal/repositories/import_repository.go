@@ -13,7 +13,7 @@ type ImportRepository interface {
 	Save(role *models.Import) (models.Import, error)
 	Update(id int64, data *map[string]interface{}) (models.Import, error)
 	Delete(uid int64) (models.Import, error)
-	FindAll(paginate *utils.Paginate, filter []utils.Filter) ([]models.Import, int64, error)
+	FindAll(paginate *utils.Paginate, filter []utils.Filter, sorts []utils.Sort) ([]models.Import, int64, error)
 	FindByID(uid int64) (models.Import, error)
 	CheckValidImport(uid int64) (bool, error)
 	CheckValidAssign(uid int64) (bool, error)
@@ -41,8 +41,8 @@ func (repo *importRepository) FindByID(id int64) (models.Import, error) {
 	return BaseFindByID[models.Import](*repo.base.GetDB(), id, []string{})
 }
 
-func (repo *importRepository) FindAll(paginate *utils.Paginate, filters []utils.Filter) ([]models.Import, int64, error) {
-	return BasePaginateWithFilter[[]models.Import](*repo.base.GetDB(), []string{}, paginate, filters)
+func (repo *importRepository) FindAll(paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Import, int64, error) {
+	return BasePaginateWithFilter[[]models.Import](*repo.base.GetDB(), []string{}, paginate, filters, sorts)
 }
 
 func (repo *importRepository) Delete(id int64) (models.Import, error) {

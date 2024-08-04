@@ -11,7 +11,7 @@ type GateRepository interface {
 	Save(role *models.Gate) (models.Gate, error)
 	Update(id int64, data *map[string]interface{}) (models.Gate, error)
 	Delete(uid int64) (models.Gate, error)
-	FindAll(paginate *utils.Paginate, filter []utils.Filter) ([]models.Gate, int64, error)
+	FindAll(paginate *utils.Paginate, filter []utils.Filter, sorts []utils.Sort) ([]models.Gate, int64, error)
 	FindByID(uid int64) (models.Gate, error)
 }
 
@@ -33,8 +33,8 @@ func (repo *gateRepository) FindByID(id int64) (models.Gate, error) {
 	return BaseFindByID[models.Gate](*repo.base.GetDB(), id, []string{})
 }
 
-func (repo *gateRepository) FindAll(paginate *utils.Paginate, filters []utils.Filter) ([]models.Gate, int64, error) {
-	return BasePaginateWithFilter[[]models.Gate](*repo.base.GetDB(), []string{}, paginate, filters)
+func (repo *gateRepository) FindAll(paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Gate, int64, error) {
+	return BasePaginateWithFilter[[]models.Gate](*repo.base.GetDB(), []string{}, paginate, filters, sorts)
 }
 
 func (repo *gateRepository) Delete(id int64) (models.Gate, error) {

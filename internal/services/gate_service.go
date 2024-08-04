@@ -33,7 +33,7 @@ func (s *GateService) UpdateGate(eventId int64, id int64, data *map[string]inter
 			Value:     strconv.Itoa(int(id)),
 		},
 	}
-	rows, _, _ := s.r.FindAll(utils.NewPaginate(1, 0), filters)
+	rows, _, _ := s.r.FindAll(utils.NewPaginate(1, 0), filters, []utils.Sort{})
 
 	if len(rows) == 0 {
 		return models.Gate{}, errors.New("record not found")
@@ -42,8 +42,8 @@ func (s *GateService) UpdateGate(eventId int64, id int64, data *map[string]inter
 	return s.r.Update(id, data)
 }
 
-func (s *GateService) GetAllGates(pageParams *utils.Paginate, filters []utils.Filter) ([]models.Gate, int64, error) {
-	return s.r.FindAll(pageParams, filters)
+func (s *GateService) GetAllGates(pageParams *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Gate, int64, error) {
+	return s.r.FindAll(pageParams, filters, sorts)
 }
 
 func (s *GateService) GetGateByID(uid int64) (models.Gate, error) {

@@ -34,7 +34,7 @@ func (s *TicketTypeService) UpdateTicketType(eventId int64, id int64, data *map[
 			Value:     strconv.Itoa(int(id)),
 		},
 	}
-	rows, _, _ := s.r.FindAll(utils.NewPaginate(1, 0), filters)
+	rows, _, _ := s.r.FindAll(utils.NewPaginate(1, 0), filters, []utils.Sort{})
 
 	if len(rows) == 0 {
 		return models.TicketType{}, errors.New("record not found")
@@ -48,8 +48,8 @@ func (s *TicketTypeService) UpdateTicketType(eventId int64, id int64, data *map[
 	// return models.TicketType{}, err
 }
 
-func (s *TicketTypeService) GetAllTicketTypes(pageParams *utils.Paginate, filters []utils.Filter) ([]models.TicketType, int64, error) {
-	return s.r.FindAll(pageParams, filters)
+func (s *TicketTypeService) GetAllTicketTypes(pageParams *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.TicketType, int64, error) {
+	return s.r.FindAll(pageParams, filters, sorts)
 }
 
 func (s *TicketTypeService) GetTicketTypeByID(uid int64) (models.TicketType, error) {

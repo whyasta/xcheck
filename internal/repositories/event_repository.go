@@ -13,7 +13,7 @@ type EventRepository interface {
 	BulkSave(events *[]dto.EventRequest) ([]models.Event, error)
 	Update(id int64, event *map[string]interface{}) (models.Event, error)
 	Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.Event, int64, error)
-	GetFiltered(paginate *utils.Paginate, filters []utils.Filter) ([]models.Event, int64, error)
+	GetFiltered(paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Event, int64, error)
 	Delete(uid int64) (models.Event, error)
 	FindByID(uid int64) (models.Event, error)
 }
@@ -108,7 +108,7 @@ func (repo *eventRepository) Delete(id int64) (models.Event, error) {
 	return BaseSoftDelete[models.Event](*repo.base.GetDB(), id)
 }
 
-func (repo *eventRepository) GetFiltered(paginate *utils.Paginate, filters []utils.Filter) ([]models.Event, int64, error) {
+func (repo *eventRepository) GetFiltered(paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Event, int64, error) {
 	/*var events []models.Event
 	var count int64
 	// fmt.Println(filters)
@@ -137,5 +137,5 @@ func (repo *eventRepository) GetFiltered(paginate *utils.Paginate, filters []uti
 	}
 
 	return events, count, nil*/
-	return BasePaginateWithFilter[[]models.Event](*repo.base.GetDB(), []string{"TicketTypes", "Gates", "Sessions"}, paginate, filters)
+	return BasePaginateWithFilter[[]models.Event](*repo.base.GetDB(), []string{"TicketTypes", "Gates", "Sessions"}, paginate, filters, sorts)
 }

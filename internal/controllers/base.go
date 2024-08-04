@@ -4,6 +4,7 @@ import (
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
 	"encoding/json"
+	"log"
 	"reflect"
 	"strconv"
 
@@ -86,7 +87,7 @@ func MakePaginationQueryParams(params map[string][]string, allowedParams []strin
 	return paginate, newParams
 }
 
-func MakePageFilterQueryParams(params map[string][]string, allowedParams []string) (*utils.Paginate, []utils.Filter) {
+func MakePageFilterQueryParams(params map[string][]string, allowedParams []string) (*utils.Paginate, []utils.Filter, []utils.Sort) {
 	pageParams := make(map[string]interface{})
 
 	for key, value := range params {
@@ -117,8 +118,11 @@ func MakePageFilterQueryParams(params map[string][]string, allowedParams []strin
 
 	paginate := utils.NewPaginate(limit, page)
 
-	newParams := MakeFilterQueryParams(params)
-	return paginate, newParams
+	filterParams := MakeFilterQueryParams(params)
+	sortParams := MakeSortQueryParams(params)
+
+	log.Println("ini kah?", sortParams)
+	return paginate, filterParams, sortParams
 }
 
 func MakeFilterQueryParams(params map[string][]string) []utils.Filter {
@@ -137,4 +141,22 @@ func MakeFilterQueryParams(params map[string][]string) []utils.Filter {
 	}
 
 	return filters
+}
+
+func MakeSortQueryParams(params map[string][]string) []utils.Sort {
+	var sorts []utils.Sort
+
+	for key, value := range params {
+		print(key)
+		if key != "sort" {
+			continue
+		}
+
+		if err := json.Unmarshal([]byte(value[0]), &sorts); err != nil {
+			panic(err)
+		}
+		// fmt.Println(filters)
+	}
+
+	return sorts
 }

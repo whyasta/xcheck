@@ -85,7 +85,7 @@ func (r ScheduleController) GetAllSchedules(c *gin.Context) {
 		return
 	}
 
-	pageParams, filter := MakePageFilterQueryParams(c.Request.URL.Query(), []string{"event_id"})
+	pageParams, filter, sort := MakePageFilterQueryParams(c.Request.URL.Query(), []string{"event_id"})
 
 	filter = append(filter, utils.Filter{
 		Property:  "schedules.event_id",
@@ -93,7 +93,7 @@ func (r ScheduleController) GetAllSchedules(c *gin.Context) {
 		Value:     strconv.Itoa(uid),
 	})
 
-	rows, count, err := r.service.GetAllSchedules(pageParams, filter)
+	rows, count, err := r.service.GetAllSchedules(pageParams, filter, sort)
 
 	if err != nil {
 		fmt.Println("Error:", err)

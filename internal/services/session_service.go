@@ -33,7 +33,7 @@ func (s *SessionService) UpdateSession(eventId int64, id int64, data *map[string
 			Value:     strconv.Itoa(int(id)),
 		},
 	}
-	rows, _, _ := s.r.FindAll(utils.NewPaginate(1, 0), filters)
+	rows, _, _ := s.r.FindAll(utils.NewPaginate(1, 0), filters, []utils.Sort{})
 
 	if len(rows) == 0 {
 		return models.Session{}, errors.New("record not found")
@@ -42,8 +42,8 @@ func (s *SessionService) UpdateSession(eventId int64, id int64, data *map[string
 	return s.r.Update(id, data)
 }
 
-func (s *SessionService) GetAllSessions(pageParams *utils.Paginate, filters []utils.Filter) ([]models.Session, int64, error) {
-	return s.r.FindAll(pageParams, filters)
+func (s *SessionService) GetAllSessions(pageParams *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Session, int64, error) {
+	return s.r.FindAll(pageParams, filters, sorts)
 }
 
 func (s *SessionService) GetSessionByID(uid int64) (models.Session, error) {

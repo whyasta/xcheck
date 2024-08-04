@@ -37,7 +37,7 @@ func (s *BarcodeService) UpdateBarcode(eventId int64, id int64, data *map[string
 			Value:     strconv.Itoa(int(id)),
 		},
 	}
-	rows, _, _ := s.r.FindAll([]string{}, utils.NewPaginate(1, 0), filters)
+	rows, _, _ := s.r.FindAll([]string{}, utils.NewPaginate(1, 0), filters, []utils.Sort{})
 
 	if len(rows) == 0 {
 		return models.Barcode{}, errors.New("record not found")
@@ -63,7 +63,7 @@ func (s *BarcodeService) DownloadBarcodes(eventId int64, sessionId int64, gateId
 			Operation: "=",
 			Value:     strconv.Itoa(int(gateId)),
 		},
-	}))
+	}), []utils.Sort{})
 
 	if len(schedules) == 0 || err != nil {
 		return []models.Barcode{}, 0, errors.New("barcode not found")
@@ -75,13 +75,13 @@ func (s *BarcodeService) DownloadBarcodes(eventId int64, sessionId int64, gateId
 			Operation: "=",
 			Value:     strconv.Itoa(int(eventId)),
 		},
-	}))
+	}), []utils.Sort{})
 
 	return barcodes, count, err
 }
 
-func (s *BarcodeService) GetAllBarcodes(pageParams *utils.Paginate, filters []utils.Filter) ([]models.Barcode, int64, error) {
-	return s.r.FindAll([]string{"Schedule"}, pageParams, filters)
+func (s *BarcodeService) GetAllBarcodes(pageParams *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Barcode, int64, error) {
+	return s.r.FindAll([]string{"Schedule"}, pageParams, filters, sorts)
 }
 
 func (s *BarcodeService) GetBarcodeByID(uid int64) (models.Barcode, error) {

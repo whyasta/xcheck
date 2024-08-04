@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"bigmind/xcheck-be/utils"
+	"log"
 	"reflect"
 
 	"gorm.io/gorm"
@@ -182,7 +183,7 @@ func BasePaginate[M any](db gorm.DB, paginate *utils.Paginate, params map[string
 	return records, count, err
 }
 
-func BasePaginateWithFilter[M any](db gorm.DB, joins []string, paginate *utils.Paginate, filters []utils.Filter) (M, int64, error) {
+func BasePaginateWithFilter[M any](db gorm.DB, joins []string, paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) (M, int64, error) {
 	var records M
 	var count int64
 
@@ -196,7 +197,15 @@ func BasePaginateWithFilter[M any](db gorm.DB, joins []string, paginate *utils.P
 	if len(filters) > 0 {
 		for _, filter := range filters {
 			newFilter := utils.NewFilter(filter.Property, filter.Operation, filter.Collation, filter.Value, filter.Items)
-			tx = tx.Where(newFilter.FilterResult("", &db))
+			tx = newFilter.FilterResult("", tx)
+		}
+	}
+
+	log.Println("sorts: ", sorts)
+	if len(sorts) > 0 {
+		for _, sort := range sorts {
+			newSort := utils.NewSort(sort.Property, sort.Direction)
+			tx = newSort.SortResult(tx)
 		}
 	}
 
