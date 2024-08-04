@@ -46,7 +46,7 @@ func (s *BarcodeService) UpdateBarcode(eventId int64, id int64, data *map[string
 	return s.r.Update(id, data)
 }
 
-func (s *BarcodeService) DownloadBarcodes(eventId int64, sessionId int64, gateId int64) ([]models.Barcode, int64, error) {
+func (s *BarcodeService) DownloadBarcodes(pageParams *utils.Paginate, eventId int64, sessionId int64, gateId int64) ([]models.Barcode, int64, error) {
 	schedules, _, err := s.s.FindAll(utils.NewPaginate(999999, 1), *utils.NewFilters([]utils.Filter{
 		{
 			Property:  "event_id",
@@ -69,7 +69,7 @@ func (s *BarcodeService) DownloadBarcodes(eventId int64, sessionId int64, gateId
 		return []models.Barcode{}, 0, errors.New("barcode not found")
 	}
 
-	barcodes, count, err := s.r.FindAll([]string{"Schedule"}, utils.NewPaginate(999999, 1), *utils.NewFilters([]utils.Filter{
+	barcodes, count, err := s.r.FindAll([]string{"Schedule"}, pageParams, *utils.NewFilters([]utils.Filter{
 		{
 			Property:  "schedule_id",
 			Operation: "=",
