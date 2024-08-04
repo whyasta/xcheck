@@ -8,7 +8,6 @@ import (
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -91,8 +90,6 @@ func (r BarcodeController) DownloadBarcodes(c *gin.Context) {
 	}
 
 	pageParams, _, _ := MakePageFilterQueryParams(c.Request.URL.Query(), []string{""})
-	log.Println(pageParams)
-
 	rows, count, err := r.barcodeService.DownloadBarcodes(pageParams, dto.EventID, dto.SessionID, dto.GateID)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())

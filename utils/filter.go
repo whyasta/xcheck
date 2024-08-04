@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"gorm.io/gorm"
@@ -31,7 +30,7 @@ func NewFilters(items []Filter) *[]Filter {
 }
 
 func (f *Filter) FilterResult(operator string, db *gorm.DB) *gorm.DB {
-	log.Println("budal")
+	// log.Println("budal")
 	if f.Items != nil {
 		for i := 0; i < len(f.Items); i++ {
 			val := f.Items[i]
@@ -49,7 +48,7 @@ func (f *Filter) FilterResult(operator string, db *gorm.DB) *gorm.DB {
 	}
 
 	query := fmt.Sprintf("%s %s ?", f.Property, f.Operation)
-	log.Println(query, f.Value)
+	// log.Println(query, f.Value)
 	if strings.ToLower(operator) == "or" {
 		return db.Or(query, f.Value)
 	}
