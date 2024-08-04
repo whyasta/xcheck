@@ -44,70 +44,70 @@ func NewRouter(services *services.Service) *gin.Engine {
 	routes.InitRoutes(router, controllers)
 
 	/*
-		auth := router.Group("/auth")
-		{
-			auth.POST("/signin", controllers.AuthController.Signin)
-			auth.Use(middlewares.AuthMiddleware())
-			{
-				auth.GET("/me", controllers.AuthController.CurrentUser)
-				auth.POST("/token", controllers.AuthController.Refresh)
-				auth.POST("/signout", controllers.AuthController.Signout)
-			}
-		}
+	   auth := router.Group("/auth")
+	   {
+	       auth.POST("/signin", controllers.AuthController.Signin)
+	       auth.Use(middlewares.AuthMiddleware())
+	       {
+	           auth.GET("/me", controllers.AuthController.CurrentUser)
+	           auth.POST("/token", controllers.AuthController.Refresh)
+	           auth.POST("/signout", controllers.AuthController.Signout)
+	       }
+	   }
 
-		authorized := router.Group("/")
-		authorized.Use(middlewares.AuthMiddleware())
-		{
-			userGroup := authorized.Group("users")
-			{
-				userGroup.POST("/", controllers.UserController.CreateUser)
-				userGroup.GET("/", controllers.UserController.GetAllUser)
-				userGroup.GET("/:id", controllers.UserController.GetUserByID)
-				userGroup.POST("/:id", controllers.UserController.UpdateUser)
-			}
+	   authorized := router.Group("/")
+	   authorized.Use(middlewares.AuthMiddleware())
+	   {
+	       userGroup := authorized.Group("users")
+	       {
+	           userGroup.POST("/", controllers.UserController.CreateUser)
+	           userGroup.GET("/", controllers.UserController.GetAllUser)
+	           userGroup.GET("/:id", controllers.UserController.GetUserByID)
+	           userGroup.POST("/:id", controllers.UserController.UpdateUser)
+	       }
 
-			userRoleGroup := authorized.Group("roles")
-			{
-				userRoleGroup.POST("/", controllers.RoleController.CreateRole)
-				userRoleGroup.GET("/", controllers.RoleController.GetAllRole)
-				userRoleGroup.GET("/:id", controllers.RoleController.GetRoleByID)
-				userRoleGroup.POST("/:id", controllers.EventController.UpdateEvent)
-			}
+	       userRoleGroup := authorized.Group("roles")
+	       {
+	           userRoleGroup.POST("/", controllers.RoleController.CreateRole)
+	           userRoleGroup.GET("/", controllers.RoleController.GetAllRole)
+	           userRoleGroup.GET("/:id", controllers.RoleController.GetRoleByID)
+	           userRoleGroup.POST("/:id", controllers.EventController.UpdateEvent)
+	       }
 
-			eventGroup := authorized.Group("events")
-			{
-				eventGroup.GET("/", controllers.EventController.GetAllEvents)
-				eventGroup.POST("/", controllers.EventController.CreateEvent)
-				eventGroup.GET("/:id", controllers.EventController.GetEventByID)
-				eventGroup.POST("/:id", controllers.EventController.UpdateEvent)
+	       eventGroup := authorized.Group("events")
+	       {
+	           eventGroup.GET("/", controllers.EventController.GetAllEvents)
+	           eventGroup.POST("/", controllers.EventController.CreateEvent)
+	           eventGroup.GET("/:id", controllers.EventController.GetEventByID)
+	           eventGroup.POST("/:id", controllers.EventController.UpdateEvent)
 
-				eventGroup.GET("/:id/ticket-types", controllers.TicketTypeController.GetAllTicketTypes)
-				eventGroup.POST("/:id/ticket-types", controllers.TicketTypeController.CreateTicketType)
-				eventGroup.POST("/:id/ticket-types/:ticketTypeId", controllers.TicketTypeController.UpdateTicketType)
+	           eventGroup.GET("/:id/ticket-types", controllers.TicketTypeController.GetAllTicketTypes)
+	           eventGroup.POST("/:id/ticket-types", controllers.TicketTypeController.CreateTicketType)
+	           eventGroup.POST("/:id/ticket-types/:ticketTypeId", controllers.TicketTypeController.UpdateTicketType)
 
-				eventGroup.GET("/:id/gates", controllers.GateController.GetAllGates)
-				eventGroup.POST("/:id/gates", controllers.GateController.CreateGate)
-				eventGroup.POST("/:id/gates/:gateId", controllers.GateController.UpdateGate)
+	           eventGroup.GET("/:id/gates", controllers.GateController.GetAllGates)
+	           eventGroup.POST("/:id/gates", controllers.GateController.CreateGate)
+	           eventGroup.POST("/:id/gates/:gateId", controllers.GateController.UpdateGate)
 
-				eventGroup.GET("/:id/sessions", controllers.SessionController.GetAllSessions)
-				eventGroup.POST("/:id/sessions", controllers.SessionController.CreateSession)
-				eventGroup.POST("/:id/sessions/:sessionId", controllers.SessionController.UpdateSession)
+	           eventGroup.GET("/:id/sessions", controllers.SessionController.GetAllSessions)
+	           eventGroup.POST("/:id/sessions", controllers.SessionController.CreateSession)
+	           eventGroup.POST("/:id/sessions/:sessionId", controllers.SessionController.UpdateSession)
 
-			}
+	       }
 
-			// single get
-			authorized.GET("/ticket-types/:ticketTypeId", controllers.TicketTypeController.GetTicketTypeByID)
-			authorized.GET("/gates/:gateId", controllers.GateController.GetGateByID)
-			authorized.GET("/sessions/:sessionId", controllers.SessionController.GetSessionByID)
+	       // single get
+	       authorized.GET("/ticket-types/:ticketTypeId", controllers.TicketTypeController.GetTicketTypeByID)
+	       authorized.GET("/gates/:gateId", controllers.GateController.GetGateByID)
+	       authorized.GET("/sessions/:sessionId", controllers.SessionController.GetSessionByID)
 
-			// barcodes
-			barcodeGroup := authorized.Group("barcodes")
-			{
-				barcodeGroup.POST("/upload", controllers.BarcodeController.UploadBarcodes)
-				barcodeGroup.POST("/assign", controllers.BarcodeController.AssignBarcodes)
-				barcodeGroup.POST("/scan", controllers.BarcodeController.ScanBarcode)
-			}
-		}*/
+	       // barcodes
+	       barcodeGroup := authorized.Group("barcodes")
+	       {
+	           barcodeGroup.POST("/upload", controllers.BarcodeController.UploadBarcodes)
+	           barcodeGroup.POST("/assign", controllers.BarcodeController.AssignBarcodes)
+	           barcodeGroup.POST("/scan", controllers.BarcodeController.ScanBarcode)
+	       }
+	   }*/
 
 	//router.Use(middlewares.AuthMiddleware())
 

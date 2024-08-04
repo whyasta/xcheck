@@ -9,7 +9,7 @@ import (
 
 func AuthRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
 	group.POST("/signin", controllers.AuthController.Signin)
-	group.Use(middlewares.AuthMiddleware(controllers))
+	group.Use(middlewares.AuthMiddleware())
 	{
 		group.GET("/me", controllers.AuthController.CurrentUser)
 		group.POST("/token", controllers.AuthController.Refresh)

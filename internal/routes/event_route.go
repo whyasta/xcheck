@@ -8,7 +8,7 @@ import (
 )
 
 func EventRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
-	group.Use(middlewares.AuthMiddleware(controllers))
+	group.Use(middlewares.AuthMiddleware())
 	{
 		group.GET("", controllers.EventController.GetAllEvents)
 		group.POST("", controllers.EventController.CreateEvent)

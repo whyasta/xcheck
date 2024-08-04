@@ -9,7 +9,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AuthMiddleware(controllers *controllers.Controller) gin.HandlerFunc {
+func AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		err := utils.TokenValid(c)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, utils.BuildResponse(http.StatusUnauthorized, response.Unauthorized, err.Error(), utils.Null()))
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
+func AuthMiddlewareWithController(controllers *controllers.Controller) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		err := utils.TokenValid(c)
 		if err != nil {
