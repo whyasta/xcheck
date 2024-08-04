@@ -10,7 +10,7 @@ type User struct {
 	Username  string   `gorm:"column:username" json:"username" validate:"required,min=5,max=20"`
 	Password  string   `gorm:"column:password" json:"password,omitempty" validate:"required,min=2,max=32"`
 	Email     string   `gorm:"column:email" json:"email" validate:"required,email"`
-	RoleID    int64    `gorm:"column:role_id" json:"role_id" validate:"required"`
+	RoleID    *int64   `gorm:"column:role_id" json:"role_id,omitempty"`
 	Role      UserRole `gorm:"foreignKey:RoleID;references:ID" json:"role"`
 	AuthUuids *string  `gorm:"column:auth_uuids" json:"auth_uuids,omitempty"`
 	CommonModel
@@ -36,10 +36,10 @@ type UserRequest struct {
 }
 
 type UserUpdateRequest struct {
-	Username string `gorm:"column:username" mapstructure:"username" json:"username,omitempty" validate:"omitempty"`
-	Password string `gorm:"column:password" mapstructure:"password" json:"password,omitempty" validate:"omitempty"`
-	Email    string `gorm:"column:email" mapstructure:"email" json:"email,omitempty" validate:"email,omitempty"`
-	RoleID   int64  `gorm:"column:role_id" mapstructure:"role_id" json:"role_id,omitempty"`
+	Username string  `gorm:"column:username" mapstructure:"username" json:"username,omitempty" validate:"omitempty"`
+	Password string  `gorm:"column:password" mapstructure:"password" json:"password,omitempty" validate:"omitempty"`
+	Email    *string `gorm:"column:email" mapstructure:"email" json:"email,omitempty" validate:"omitempty,email"`
+	RoleID   int64   `gorm:"column:role_id" mapstructure:"role_id" json:"role_id,omitempty"`
 }
 
 // swagger:parameters getUser deleteUser
