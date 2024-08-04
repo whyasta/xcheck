@@ -38,7 +38,7 @@ func (repo *barcodeRepository) Save(role *models.Barcode) (models.Barcode, error
 }
 
 func (repo *barcodeRepository) FindByID(id int64) (models.Barcode, error) {
-	return BaseFindByID[models.Barcode](*repo.base.GetDB(), id, []string{})
+	return BaseFindByID[models.Barcode](*repo.base.GetDB(), "barcodes", id, []string{})
 }
 
 func (repo *barcodeRepository) FindAll(joins []string, paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Barcode, int64, error) {

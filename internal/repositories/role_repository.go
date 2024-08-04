@@ -55,7 +55,7 @@ func (repo *roleRepository) FindByID(id int64) (models.UserRole, error) {
 	// 	return models.UserRole{}, err
 	// }
 	// return role, nil
-	return BaseFindByID[models.UserRole](*repo.db, id, []string{})
+	return BaseFindByID[models.UserRole](*repo.db, "roles", id, []string{})
 }
 
 func (repo *roleRepository) Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.UserRole, int64, error) {

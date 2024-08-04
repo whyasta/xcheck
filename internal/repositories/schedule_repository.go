@@ -30,7 +30,7 @@ func (repo *scheduleRepository) Save(data *models.Schedule) (models.Schedule, er
 }
 
 func (repo *scheduleRepository) FindByID(id int64) (models.Schedule, error) {
-	return BaseFindByID[models.Schedule](*repo.base.GetDB(), id, []string{})
+	return BaseFindByID[models.Schedule](*repo.base.GetDB(), "schedules", id, []string{})
 }
 
 func (repo *scheduleRepository) FindAll(paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Schedule, int64, error) {

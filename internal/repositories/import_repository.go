@@ -38,7 +38,7 @@ func (repo *importRepository) Save(role *models.Import) (models.Import, error) {
 }
 
 func (repo *importRepository) FindByID(id int64) (models.Import, error) {
-	return BaseFindByID[models.Import](*repo.base.GetDB(), id, []string{})
+	return BaseFindByID[models.Import](*repo.base.GetDB(), "imports", id, []string{})
 }
 
 func (repo *importRepository) FindAll(paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Import, int64, error) {

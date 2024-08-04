@@ -134,7 +134,7 @@ func BaseInsert[M any](db gorm.DB, item M) (M, error) {
 	return result, err
 }
 
-func BaseFindByID[M any](db gorm.DB, id int64, joins []string) (M, error) {
+func BaseFindByID[M any](db gorm.DB, tableName string, id int64, joins []string) (M, error) {
 	var result M
 	tx := db.Model(&result)
 	if len(joins) > 0 {
@@ -142,8 +142,9 @@ func BaseFindByID[M any](db gorm.DB, id int64, joins []string) (M, error) {
 			tx = tx.Preload(join)
 		}
 	}
-	tx = tx.First(&result, "id = ?", id)
-	err := tx.Error
+
+	err := tx.First(&result, "id = ?", id).Error
+	// err := tx.Error
 	return result, err
 }
 

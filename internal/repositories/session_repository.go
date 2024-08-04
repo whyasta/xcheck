@@ -30,7 +30,7 @@ func (repo *sessionRepository) Save(role *models.Session) (models.Session, error
 }
 
 func (repo *sessionRepository) FindByID(id int64) (models.Session, error) {
-	return BaseFindByID[models.Session](*repo.base.GetDB(), id, []string{})
+	return BaseFindByID[models.Session](*repo.base.GetDB(), "sessions", id, []string{})
 }
 
 func (repo *sessionRepository) FindAll(paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Session, int64, error) {

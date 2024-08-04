@@ -30,7 +30,7 @@ func (repo *gateRepository) Save(role *models.Gate) (models.Gate, error) {
 }
 
 func (repo *gateRepository) FindByID(id int64) (models.Gate, error) {
-	return BaseFindByID[models.Gate](*repo.base.GetDB(), id, []string{})
+	return BaseFindByID[models.Gate](*repo.base.GetDB(), "gates", id, []string{})
 }
 
 func (repo *gateRepository) FindAll(paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Gate, int64, error) {

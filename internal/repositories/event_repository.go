@@ -64,7 +64,7 @@ func (repo *eventRepository) Update(id int64, event *map[string]interface{}) (mo
 }
 
 func (repo *eventRepository) FindByID(id int64) (models.Event, error) {
-	return BaseFindByID[models.Event](*repo.base.GetDB(), id, []string{"TicketTypes", "Gates", "Sessions"})
+	return BaseFindByID[models.Event](*repo.base.GetDB(), "events", id, []string{"TicketTypes", "Gates", "Sessions"})
 	// data, err := repo.base.CommonFindByID("events", id)
 	// if err != nil {
 	// 	return models.Event{}, err
