@@ -2,6 +2,7 @@ package services
 
 import (
 	"bigmind/xcheck-be/internal/constant"
+	"bigmind/xcheck-be/internal/dto"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/repositories"
 	"bigmind/xcheck-be/utils"
@@ -80,6 +81,14 @@ func (s *BarcodeService) DownloadBarcodes(pageParams *utils.Paginate, eventId in
 	return barcodes, count, err
 }
 
+func (s *BarcodeService) UploadBarcodeLogs(logs *[]dto.BarcodeUploadLogDto) error {
+	barcodeLogs := make([]models.BarcodeLog, 0)
+	for _, v := range *logs {
+		barcodeLogs = append(barcodeLogs, *v.ToEntity())
+	}
+	return s.r.CreateBulkLog(&barcodeLogs)
+}
+
 func (s *BarcodeService) GetAllBarcodes(pageParams *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Barcode, int64, error) {
 	return s.r.FindAll([]string{"Schedule"}, pageParams, filters, sorts)
 }
@@ -136,7 +145,7 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 
 	// update barcode to valid
 	// s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagUsed})
-	firstCheckin, err := s.r.CreateLog(userId, barcode, result.CurrentStatus, action)
+	firstCheckin, err := s.r.CreateLog(eventId, userId, barcode, result.CurrentStatus, action)
 	if err != nil {
 		return false, result, err
 	}

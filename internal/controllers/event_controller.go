@@ -3,7 +3,6 @@ package controllers
 import (
 	"bigmind/xcheck-be/internal/constant/response"
 	"bigmind/xcheck-be/internal/dto"
-	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
 	"encoding/json"
@@ -182,7 +181,7 @@ func (r EventController) GetEventByID(c *gin.Context) {
 		return
 	}
 
-	var user models.Event
+	var user dto.EventResponse
 	user, err = r.service.GetEventByID(int64(uid))
 	if err != nil {
 		utils.PanicException(response.DataNotFound, errors.New("data not found").Error())

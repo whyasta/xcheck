@@ -33,13 +33,52 @@ func (s *EventService) GetAllEvents(pageParams *utils.Paginate, params map[strin
 	return result, count, err
 }
 
-func (s *EventService) GetFilteredEvents(pageParams *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Event, int64, error) {
+func (s *EventService) GetFilteredEvents(pageParams *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]dto.EventResponse, int64, error) {
 	result, count, err := s.r.GetFiltered(pageParams, filters, sorts)
-	return result, count, err
+
+	rows := []dto.EventResponse{}
+	for _, item := range result {
+		rows = append(rows, dto.EventResponse{
+			EventName:   item.EventName,
+			Status:      item.Status,
+			StartDate:   item.StartDate,
+			EndDate:     item.EndDate,
+			TicketTypes: item.TicketTypes,
+			Gates:       item.Gates,
+			Sessions:    item.Sessions,
+			EventSummary: dto.EventSummary{
+				TotalBarcode:  0,
+				TotalCheckIn:  0,
+				TotalCheckOut: 0,
+			},
+		})
+	}
+
+	return rows, count, err
 }
 
-func (s *EventService) GetEventByID(uid int64) (models.Event, error) {
-	return s.r.FindByID(uid)
+func (s *EventService) GetEventByID(uid int64) (dto.EventResponse, error) {
+	res, err := s.r.FindByID(uid)
+	if err != nil {
+		return dto.EventResponse{}, err
+	}
+
+	row := dto.EventResponse{
+		EventName:    res.EventName,
+		Status:       res.Status,
+		StartDate:    res.StartDate,
+		EndDate:      res.EndDate,
+		TicketTypes:  res.TicketTypes,
+		Gates:        res.Gates,
+		Sessions:     res.Sessions,
+		EventSummary: s.r.Summary(res.ID),
+		// EventSummary: dto.EventSummary{
+		// 	TotalBarcode:  0,
+		// 	TotalCheckIn:  0,
+		// 	TotalCheckOut: 0,
+		// },
+	}
+	return row, nil
 }
 
 func (s *EventService) Delete(uid int64) (models.Event, error) {

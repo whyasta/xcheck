@@ -14,6 +14,23 @@ type EventRequest struct {
 	EndDate   time.Time `gorm:"column:end_date" mapstructure:"end_date" json:"end_date,omitempty" validate:"required"`
 }
 
+type EventResponse struct {
+	EventName    string               `json:"event_name" validate:"required,min=5,max=100"`
+	Status       int                  `json:"status"`
+	StartDate    time.Time            `json:"start_date"`
+	EndDate      time.Time            `json:"end_date"`
+	TicketTypes  []*models.TicketType `json:"ticket_types,omitempty"`
+	Gates        []*models.Gate       `json:"gates,omitempty"`
+	Sessions     []*models.Session    `json:"sessions,omitempty"`
+	EventSummary `json:"summary"`
+}
+
+type EventSummary struct {
+	TotalBarcode  int64 `json:"total_barcode"`
+	TotalCheckIn  int64 `json:"total_check_in"`
+	TotalCheckOut int64 `json:"total_check_out"`
+}
+
 type EventUpdateDto struct {
 	ID        int64     `gorm:"column:id" mapstructure:"id" json:"id,omitempty"`
 	EventName string    `gorm:"column:event_name" mapstructure:"event_name" json:"event_name" validate:"required,min=5,max=100"`

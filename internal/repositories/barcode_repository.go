@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"bigmind/xcheck-be/internal/constant"
-	"bigmind/xcheck-be/internal/dto"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/utils"
 	"errors"
@@ -20,7 +19,8 @@ type BarcodeRepository interface {
 	FindByID(uid int64) (models.Barcode, error)
 	AssignBarcodes(importId int64, assignId int64, ticketTypeId int64) (int64, error)
 	Scan(barcode string) (models.Barcode, error)
-	CreateLog(userId int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus) (bool, error)
+	CreateLog(eventId int64, userId int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus) (bool, error)
+	CreateBulkLog(barcodes *[]models.BarcodeLog) error
 }
 
 type barcodeRepository struct {
@@ -122,7 +122,7 @@ func (repo *barcodeRepository) Scan(barcode string) (models.Barcode, error) {
 	return result, err
 }
 
-func (repo *barcodeRepository) CreateLog(userId int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus) (bool, error) {
+func (repo *barcodeRepository) CreateLog(eventId int64, userId int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus) (bool, error) {
 	// action := constant.BarcodeStatusIn
 	firstCheckin := false
 	if currentStatus == constant.BarcodeStatusNull {
@@ -133,11 +133,12 @@ func (repo *barcodeRepository) CreateLog(userId int64, barcode string, currentSt
 		action = constant.BarcodeStatusIn
 	}
 
-	log := dto.BarcodeLog{
+	log := models.BarcodeLog{
 		Barcode:   barcode,
 		Action:    action,
 		ScannedAt: time.Now(),
 		ScannedBy: userId,
+		EventID:   eventId,
 	}
 
 	var err = repo.base.GetDB().Table("barcode_logs").Create(&log).Error
@@ -150,4 +151,9 @@ func (repo *barcodeRepository) CreateLog(userId int64, barcode string, currentSt
 			Error
 	}
 	return firstCheckin, err
+}
+
+func (repo *barcodeRepository) CreateBulkLog(barcodes *[]models.BarcodeLog) error {
+	var err = repo.base.GetDB().Table("barcode_logs").Create(&barcodes).Error
+	return err
 }

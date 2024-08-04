@@ -1,6 +1,9 @@
 package models
 
-import "bigmind/xcheck-be/internal/constant"
+import (
+	"bigmind/xcheck-be/internal/constant"
+	"time"
+)
 
 type Barcode struct {
 	ID            int64                  `gorm:"column:id; primary_key; not null" json:"id"`
@@ -17,4 +20,13 @@ type BarcodeAssignment struct {
 	ScheduleID   int64 `json:"schedule_id" validate:"required"`
 	ImportId     int64 `json:"import_id" validate:"required"`
 	TicketTypeID int64 `json:"ticket_type_id" validate:"required"`
+}
+
+type BarcodeLog struct {
+	EventID   int64
+	Barcode   string
+	ScannedAt time.Time
+	GateID    int64
+	ScannedBy int64
+	Action    constant.BarcodeStatus
 }

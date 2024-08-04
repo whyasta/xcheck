@@ -7,6 +7,7 @@ import (
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -74,7 +75,7 @@ func (r BarcodeController) UploadBarcodes(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, message, utils.Null()))
 }
 
-func (r BarcodeController) DownloadBarcodes(c *gin.Context) {
+func (r BarcodeController) SyncDownloadBarcodes(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
 	var dto *dto.BarcodeDownloadDto
@@ -105,6 +106,47 @@ func (r BarcodeController) DownloadBarcodes(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, response.Success, "", rows, &meta))
+}
+
+func (r BarcodeController) SyncUploadBarcodes(c *gin.Context) {
+	defer utils.ResponseHandler(c)
+
+	var barcodeLogs []dto.BarcodeUploadLogDto
+
+	jsons := make([]byte, c.Request.ContentLength)
+	if _, err := c.Request.Body.Read(jsons); err != nil {
+		if err.Error() != "EOF" {
+			return
+		}
+	}
+
+	if err := json.Unmarshal(jsons, &barcodeLogs); err != nil {
+		utils.PanicException(response.InvalidRequest, err.Error())
+		return
+	}
+
+	// c.Next()
+	// c.BindJSON(&dto)
+
+	dto := dto.BarcodeUploadDto{
+		Data: barcodeLogs,
+	}
+
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	err := validate.Struct(dto)
+	if err != nil {
+		errors := err.(validator.ValidationErrors)
+		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+		return
+	}
+
+	err = r.barcodeService.UploadBarcodeLogs(&dto.Data)
+	if err != nil {
+		utils.PanicException(response.InvalidRequest, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", utils.Null()))
 }
 
 func (r BarcodeController) AssignBarcodes(c *gin.Context) {
