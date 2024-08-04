@@ -28,6 +28,15 @@ func NewRedis() *redis.Pool {
 		fmt.Println("Creating new redis pool")
 		instance = redisPool
 	}
+
+	conn := redisPool.Get()
+	defer conn.Close()
+	_, err := conn.Do("PING")
+	if err != nil {
+		Logger.Error("Can't connect to the Redis database")
+		instance = redisPool
+	}
+
 	return instance
 }
 
