@@ -45,6 +45,9 @@ func (f *Filter) FilterResult(operator string, db *gorm.DB) *gorm.DB {
 
 	if strings.ToLower(f.Operation) == "like" {
 		f.Value = "%" + f.Value + "%"
+		if f.Value == "%%" { // hack for empty value
+			return db
+		}
 	}
 
 	query := fmt.Sprintf("%s %s ?", f.Property, f.Operation)

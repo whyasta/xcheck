@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"bigmind/xcheck-be/utils"
-	"log"
 	"reflect"
 
 	"gorm.io/gorm"
@@ -202,7 +201,7 @@ func BasePaginateWithFilter[M any](db gorm.DB, joins []string, paginate *utils.P
 		}
 	}
 
-	log.Println("sorts: ", sorts)
+	// log.Println("sorts: ", sorts)
 	if len(sorts) > 0 {
 		for _, sort := range sorts {
 			newSort := utils.NewSort(sort.Property, sort.Direction)

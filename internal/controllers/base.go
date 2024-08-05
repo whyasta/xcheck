@@ -4,7 +4,6 @@ import (
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
 	"encoding/json"
-	"log"
 	"reflect"
 	"strconv"
 
@@ -121,7 +120,7 @@ func MakePageFilterQueryParams(params map[string][]string, allowedParams []strin
 	filterParams := MakeFilterQueryParams(params)
 	sortParams := MakeSortQueryParams(params)
 
-	log.Println("ini kah?", sortParams)
+	// log.Println("ini kah?", sortParams)
 	return paginate, filterParams, sortParams
 }
 
