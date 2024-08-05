@@ -15,14 +15,14 @@ type EventRequest struct {
 }
 
 type EventResponse struct {
-	ID           int64                `json:"id"`
-	EventName    string               `json:"event_name" validate:"required,min=5,max=100"`
-	Status       int                  `json:"status"`
-	StartDate    time.Time            `json:"start_date"`
-	EndDate      time.Time            `json:"end_date"`
-	TicketTypes  []*models.TicketType `json:"ticket_types,omitempty"`
-	Gates        []*models.Gate       `json:"gates,omitempty"`
-	Sessions     []*models.Session    `json:"sessions,omitempty"`
+	ID           int64               `json:"id"`
+	EventName    string              `json:"event_name" validate:"required,min=5,max=100"`
+	Status       int                 `json:"status"`
+	StartDate    time.Time           `json:"start_date"`
+	EndDate      time.Time           `json:"end_date"`
+	TicketTypes  []models.TicketType `json:"ticket_types"`
+	Gates        []models.Gate       `json:"gates"`
+	Sessions     []models.Session    `json:"sessions"`
 	EventSummary `json:"summary"`
 }
 
