@@ -181,14 +181,14 @@ func (r EventController) GetEventByID(c *gin.Context) {
 		return
 	}
 
-	var user dto.EventResponse
-	user, err = r.service.GetEventByID(int64(uid))
+	var event dto.EventResponse
+	event, err = r.service.GetEventByID(int64(uid))
 	if err != nil {
 		utils.PanicException(response.DataNotFound, errors.New("data not found").Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", user))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", event))
 }
 
 // DeleteEvent swagger:route DELETE /events/{id} Event deleteEvent

@@ -39,6 +39,7 @@ func (s *EventService) GetFilteredEvents(pageParams *utils.Paginate, filters []u
 	rows := []dto.EventResponse{}
 	for _, item := range result {
 		rows = append(rows, dto.EventResponse{
+			ID:          item.ID,
 			EventName:   item.EventName,
 			Status:      item.Status,
 			StartDate:   item.StartDate,
@@ -64,6 +65,7 @@ func (s *EventService) GetEventByID(uid int64) (dto.EventResponse, error) {
 	}
 
 	row := dto.EventResponse{
+		ID:           res.ID,
 		EventName:    res.EventName,
 		Status:       res.Status,
 		StartDate:    res.StartDate,

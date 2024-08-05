@@ -15,6 +15,7 @@ type EventRequest struct {
 }
 
 type EventResponse struct {
+	ID           int64                `json:"id"`
 	EventName    string               `json:"event_name" validate:"required,min=5,max=100"`
 	Status       int                  `json:"status"`
 	StartDate    time.Time            `json:"start_date"`
