@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -158,6 +159,12 @@ func WriterHandler(c *gin.Context) {
 		return
 	} else {
 		json.Unmarshal(originalBody.Bytes(), &body)
+
+		if body == nil {
+			w.Write(nil)
+			return
+		}
+
 		body["code"] = c.Writer.Status()
 		body["processing_time"] = latency
 	}
@@ -182,8 +189,10 @@ func WriterHandler(c *gin.Context) {
 			"body":    json.RawMessage(newBody),
 		},
 	}
+
+	requestId := uuid.NewString()
 	config.Logger.
-		WithOptions(zap.Fields(zap.Any("context", logData))).
+		WithOptions(zap.Fields(zap.Any("requestId", requestId), zap.Any("context", logData))).
 		Info(fmt)
 
 		// Logger.Info("fmt", zap.Fields(zap.String("context", string(newBody))))

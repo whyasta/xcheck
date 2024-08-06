@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -71,12 +72,15 @@ func (r EventController) CreateEvent(c *gin.Context) {
 	if bulkEvent != nil {
 		for _, event := range *bulkEvent {
 			validate := validator.New(validator.WithRequiredStructEnabled())
+			validate.RegisterValidation("date", utils.DateValidation)
 			err := validate.Struct(event)
 			if err != nil {
 				errors := err.(validator.ValidationErrors)
 				utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 				return
 			}
+
+			log.Println(event)
 		}
 		result, err := r.service.CreateBulkEvent(bulkEvent)
 		if err != nil {
@@ -120,19 +124,34 @@ func (r EventController) UpdateEvent(c *gin.Context) {
 	mapstructure.Decode(request, &event)
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
+	validate.RegisterValidation("date", utils.DateValidation)
+
 	err = validate.Struct(event)
 	if err != nil {
-		errors := err.(validator.ValidationErrors)
-		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", err))
+		// errors := err.(validator.ValidationErrors)
+		// utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
-	result, err := r.service.UpdateEvent(int64(uid), &request)
+	res, err := r.service.UpdateEvent(int64(uid), &request)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
+
+	row := dto.EventResponse{
+		ID:          res.ID,
+		EventName:   res.EventName,
+		Status:      res.Status,
+		StartDate:   res.StartDate.Format("2006-01-02"),
+		EndDate:     res.EndDate.Format("2006-01-02"),
+		TicketTypes: res.TicketTypes,
+		Gates:       res.Gates,
+		Sessions:    res.Sessions,
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", row))
 }
 
 // swagger:route GET /events Event getEventList
