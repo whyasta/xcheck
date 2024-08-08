@@ -8,7 +8,8 @@ import (
 )
 
 type SessionRepository interface {
-	Save(role *models.Session) (models.Session, error)
+	Save(session *models.Session) (models.Session, error)
+	BulkSave(sessions *[]models.Session) ([]models.Session, error)
 	Update(id int64, data *map[string]interface{}) (models.Session, error)
 	Delete(uid int64) (models.Session, error)
 	FindAll(paginate *utils.Paginate, filter []utils.Filter, sorts []utils.Sort) ([]models.Session, int64, error)
@@ -25,8 +26,12 @@ func NewSessionRepository(db *gorm.DB) *sessionRepository {
 	}
 }
 
-func (repo *sessionRepository) Save(role *models.Session) (models.Session, error) {
-	return BaseInsert(*repo.base.GetDB(), *role)
+func (repo *sessionRepository) Save(session *models.Session) (models.Session, error) {
+	return BaseInsert(*repo.base.GetDB(), *session)
+}
+
+func (repo *sessionRepository) BulkSave(sessions *[]models.Session) ([]models.Session, error) {
+	return BaseInsert(*repo.base.GetDB(), *sessions)
 }
 
 func (repo *sessionRepository) FindByID(id int64) (models.Session, error) {

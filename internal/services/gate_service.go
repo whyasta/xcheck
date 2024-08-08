@@ -20,6 +20,10 @@ func (s *GateService) CreateGate(data *models.Gate) (models.Gate, error) {
 	return s.r.Save(data)
 }
 
+func (s *GateService) CreateBulkGate(gates *[]models.Gate) ([]models.Gate, error) {
+	return s.r.BulkSave(gates)
+}
+
 func (s *GateService) UpdateGate(eventId int64, id int64, data *map[string]interface{}) (models.Gate, error) {
 	var filters = []utils.Filter{
 		{

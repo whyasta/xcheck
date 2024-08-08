@@ -5,6 +5,7 @@ import (
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -43,9 +44,49 @@ func (r SessionController) CreateSession(c *gin.Context) {
 	}
 
 	var session *models.Session
+	var bulk []models.Session
 
-	c.Next()
-	c.BindJSON(&session)
+	jsons := make([]byte, c.Request.ContentLength)
+	if _, err := c.Request.Body.Read(jsons); err != nil {
+		if err.Error() != "EOF" {
+			return
+		}
+	}
+
+	if err := json.Unmarshal(jsons, &bulk); err != nil {
+		bulk = nil
+		if err := json.Unmarshal(jsons, &session); err != nil {
+			utils.PanicException(response.InvalidRequest, err.Error())
+			return
+		}
+	}
+
+	if bulk != nil {
+		for i, item := range bulk {
+			bulk[i].EventID = int64(eventId)
+			item.EventID = int64(eventId)
+
+			validate := validator.New(validator.WithRequiredStructEnabled())
+			validate.RegisterValidation("date", utils.DateValidation)
+			err := validate.Struct(&item)
+			if err != nil {
+				errors := err.(validator.ValidationErrors)
+				utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+				return
+			}
+		}
+		result, err := r.service.CreateBulkSession(&bulk)
+		if err != nil {
+			utils.PanicException(response.InvalidRequest, err.Error())
+			return
+		}
+		c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
+		return
+	}
+
+	/*
+		c.Next()
+		c.BindJSON(&session)*/
 
 	session.EventID = int64(eventId)
 

@@ -21,6 +21,10 @@ func (s *TicketTypeService) CreateTicketType(data *models.TicketType) (models.Ti
 	return s.r.Save(data)
 }
 
+func (s *TicketTypeService) CreateBulkTicketType(types *[]models.TicketType) ([]models.TicketType, error) {
+	return s.r.BulkSave(types)
+}
+
 func (s *TicketTypeService) UpdateTicketType(eventId int64, id int64, data *map[string]interface{}) (models.TicketType, error) {
 	var filters = []utils.Filter{
 		{

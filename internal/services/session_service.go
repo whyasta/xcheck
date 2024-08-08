@@ -20,6 +20,10 @@ func (s *SessionService) CreateSession(data *models.Session) (models.Session, er
 	return s.r.Save(data)
 }
 
+func (s *SessionService) CreateBulkSession(sessions *[]models.Session) ([]models.Session, error) {
+	return s.r.BulkSave(sessions)
+}
+
 func (s *SessionService) UpdateSession(eventId int64, id int64, data *map[string]interface{}) (models.Session, error) {
 	var filters = []utils.Filter{
 		{

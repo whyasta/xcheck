@@ -8,7 +8,8 @@ import (
 )
 
 type GateRepository interface {
-	Save(role *models.Gate) (models.Gate, error)
+	Save(gate *models.Gate) (models.Gate, error)
+	BulkSave(gates *[]models.Gate) ([]models.Gate, error)
 	Update(id int64, data *map[string]interface{}) (models.Gate, error)
 	Delete(uid int64) (models.Gate, error)
 	FindAll(paginate *utils.Paginate, filter []utils.Filter, sorts []utils.Sort) ([]models.Gate, int64, error)
@@ -25,8 +26,12 @@ func NewGateRepository(db *gorm.DB) *gateRepository {
 	}
 }
 
-func (repo *gateRepository) Save(role *models.Gate) (models.Gate, error) {
-	return BaseInsert(*repo.base.GetDB(), *role)
+func (repo *gateRepository) Save(gate *models.Gate) (models.Gate, error) {
+	return BaseInsert(*repo.base.GetDB(), *gate)
+}
+
+func (repo *gateRepository) BulkSave(gates *[]models.Gate) ([]models.Gate, error) {
+	return BaseInsert(*repo.base.GetDB(), *gates)
 }
 
 func (repo *gateRepository) FindByID(id int64) (models.Gate, error) {
