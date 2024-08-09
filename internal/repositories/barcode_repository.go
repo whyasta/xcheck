@@ -80,11 +80,11 @@ func (repo *barcodeRepository) AssignBarcodes(importId int64, assignId int64, ti
 		barcodes := []models.Barcode{}
 		for _, item := range importBarcodes {
 			barcodes = append(barcodes, models.Barcode{
-				Barcode:       item.Barcode,
-				ScheduleID:    assignId,
-				TicketTypeID:  ticketTypeId,
-				Flag:          constant.BarcodeFlagValid,
-				CurrentStatus: constant.BarcodeStatusNull,
+				Barcode:          item.Barcode,
+				GateAllocationID: assignId,
+				TicketTypeID:     ticketTypeId,
+				Flag:             constant.BarcodeFlagValid,
+				CurrentStatus:    constant.BarcodeStatusNull,
 			})
 		}
 
@@ -110,8 +110,8 @@ func (repo *barcodeRepository) AssignBarcodes(importId int64, assignId int64, ti
 func (repo *barcodeRepository) Scan(barcode string) (models.Barcode, error) {
 	var result models.Barcode
 	err := repo.base.GetDB().
-		Joins("Schedule").
-		Joins("Schedule.Session").
+		Joins("GateAllocation").
+		Joins("GateAllocation.Session").
 		Where("barcode = ?", barcode).
 		First(&result).
 		Error

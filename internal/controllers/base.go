@@ -11,32 +11,32 @@ import (
 )
 
 type Controller struct {
-	HealthController     *HealthController
-	AuthController       *AuthController
-	UserController       *UserController
-	RoleController       *RoleController
-	EventController      *EventController
-	GateController       *GateController
-	TicketTypeController *TicketTypeController
-	ScheduleController   *ScheduleController
-	SessionController    *SessionController
-	BarcodeController    *BarcodeController
+	HealthController         *HealthController
+	AuthController           *AuthController
+	UserController           *UserController
+	RoleController           *RoleController
+	EventController          *EventController
+	GateController           *GateController
+	TicketTypeController     *TicketTypeController
+	GateAllocationController *GateAllocationController
+	SessionController        *SessionController
+	BarcodeController        *BarcodeController
 }
 
 func NewController(
 	services *services.Service,
 ) *Controller {
 	return &Controller{
-		HealthController:     new(HealthController),
-		AuthController:       NewAuthController(services.AuthService),
-		UserController:       NewUserController(services.UserService),
-		RoleController:       NewRoleController(services.RoleService),
-		EventController:      NewEventController(services.EventService),
-		GateController:       NewGateController(services.GateService),
-		TicketTypeController: NewTicketTypeController(services.TicketTypeService),
-		ScheduleController:   NewScheduleController(services.ScheduleService),
-		SessionController:    NewSessionController(services.SessionService),
-		BarcodeController:    NewBarcodeController(services.ImportService, services.BarcodeService),
+		HealthController:         new(HealthController),
+		AuthController:           NewAuthController(services.AuthService),
+		UserController:           NewUserController(services.UserService),
+		RoleController:           NewRoleController(services.RoleService),
+		EventController:          NewEventController(services.EventService),
+		GateController:           NewGateController(services.GateService),
+		TicketTypeController:     NewTicketTypeController(services.TicketTypeService),
+		GateAllocationController: NewGateAllocationController(services.GateAllocationService),
+		SessionController:        NewSessionController(services.SessionService),
+		BarcodeController:        NewBarcodeController(services.ImportService, services.BarcodeService),
 	}
 }
 

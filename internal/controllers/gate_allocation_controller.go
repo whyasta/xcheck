@@ -16,18 +16,18 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type ScheduleController struct {
-	service *services.ScheduleService
+type GateAllocationController struct {
+	service *services.GateAllocationService
 }
 
-func NewScheduleController(service *services.ScheduleService) *ScheduleController {
-	return &ScheduleController{
+func NewGateAllocationController(service *services.GateAllocationService) *GateAllocationController {
+	return &GateAllocationController{
 		service: service,
 	}
 }
 
-// swagger:route POST /schedules Schedule createSchedule
-// Create Schedule
+// swagger:route POST /gateAllocations GateAllocation createGateAllocation
+// Create GateAllocation
 //
 // security:
 //   - Bearer: []
@@ -35,7 +35,7 @@ func NewScheduleController(service *services.ScheduleService) *ScheduleControlle
 // responses:
 //
 // 200:
-func (r ScheduleController) CreateSchedule(c *gin.Context) {
+func (r GateAllocationController) CreateGateAllocation(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
 	uid, err := strconv.Atoi(c.Param("id"))
@@ -44,24 +44,24 @@ func (r ScheduleController) CreateSchedule(c *gin.Context) {
 		return
 	}
 
-	var schedule *dto.ScheduleRequest
+	var gateAllocation *dto.GateAllocationRequest
 
 	c.Next()
-	c.BindJSON(&schedule)
+	c.BindJSON(&gateAllocation)
 
-	schedule.EventID = int64(uid)
+	gateAllocation.EventID = int64(uid)
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
-	err = validate.Struct(schedule)
+	err = validate.Struct(gateAllocation)
 	if err != nil {
 		errors := err.(validator.ValidationErrors)
 		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
-	fmt.Println(schedule)
+	fmt.Println(gateAllocation)
 
-	result, err := r.service.CreateSchedule(schedule)
+	result, err := r.service.CreateGateAllocation(gateAllocation)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -69,8 +69,8 @@ func (r ScheduleController) CreateSchedule(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
 }
 
-// swagger:route GET /schedules Schedule getScheduleList
-// Get Schedule list
+// swagger:route GET /gateAllocations GateAllocation getGateAllocationList
+// Get GateAllocation list
 //
 // security:
 //   - Bearer: []
@@ -78,7 +78,7 @@ func (r ScheduleController) CreateSchedule(c *gin.Context) {
 // responses:
 //
 // 200:
-func (r ScheduleController) GetAllSchedules(c *gin.Context) {
+func (r GateAllocationController) GetAllGateAllocations(c *gin.Context) {
 	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
@@ -88,12 +88,12 @@ func (r ScheduleController) GetAllSchedules(c *gin.Context) {
 	pageParams, filter, sort := MakePageFilterQueryParams(c.Request.URL.Query(), []string{"event_id"})
 
 	filter = append(filter, utils.Filter{
-		Property:  "schedules.event_id",
+		Property:  "gate_allocations.event_id",
 		Operation: "=",
 		Value:     strconv.Itoa(uid),
 	})
 
-	rows, count, err := r.service.GetAllSchedules(pageParams, filter, sort)
+	rows, count, err := r.service.GetAllGateAllocations(pageParams, filter, sort)
 
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -110,8 +110,8 @@ func (r ScheduleController) GetAllSchedules(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, response.Success, "", rows, &meta))
 }
 
-// swagger:route GET /schedules/{id} Schedule getSchedule
-// Get Schedule by id
+// swagger:route GET /gateAllocations/{id} GateAllocation getGateAllocation
+// Get GateAllocation by id
 //
 // security:
 //   - Bearer: []
@@ -119,17 +119,17 @@ func (r ScheduleController) GetAllSchedules(c *gin.Context) {
 // responses:
 //
 // 200:
-func (r ScheduleController) GetScheduleByID(c *gin.Context) {
+func (r GateAllocationController) GetGateAllocationByID(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	uid, err := strconv.Atoi(c.Param("scheduleId"))
+	uid, err := strconv.Atoi(c.Param("gateAllocationId"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
-	var user models.Schedule
-	user, err = r.service.GetScheduleByID(int64(uid))
+	var user models.GateAllocation
+	user, err = r.service.GetGateAllocationByID(int64(uid))
 	if err != nil {
 		utils.PanicException(response.DataNotFound, errors.New("data not found").Error())
 		return
@@ -138,8 +138,8 @@ func (r ScheduleController) GetScheduleByID(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", user))
 }
 
-// DeleteSchedule swagger:route DELETE /schedules/{id} Schedule deleteSchedule
-// Delete Schedule by id
+// DeleteGateAllocation swagger:route DELETE /gateAllocations/{id} GateAllocation deleteGateAllocation
+// Delete GateAllocation by id
 //
 // security:
 //   - Bearer: []
@@ -147,7 +147,7 @@ func (r ScheduleController) GetScheduleByID(c *gin.Context) {
 // responses:
 //
 // 200:
-func (r ScheduleController) DeleteSchedule(c *gin.Context) {
+func (r GateAllocationController) DeleteGateAllocation(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -164,7 +164,7 @@ func (r ScheduleController) DeleteSchedule(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", utils.Null()))
 }
 
-func (r ScheduleController) UpdateSchedule(c *gin.Context) {
+func (r GateAllocationController) UpdateGateAllocation(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
 	uid, err := strconv.Atoi(c.Param("id"))
@@ -173,28 +173,28 @@ func (r ScheduleController) UpdateSchedule(c *gin.Context) {
 		return
 	}
 
-	scheduleId, err := strconv.Atoi(c.Param("scheduleId"))
+	gateAllocationId, err := strconv.Atoi(c.Param("gateAllocationId"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
-	var schedule *models.Schedule
+	var gateAllocation *models.GateAllocation
 	var request = make(map[string]interface{})
 
-	// schedule.EventID = int64(uid)
+	// gateAllocation.EventID = int64(uid)
 
 	c.Next()
 	c.BindJSON(&request)
 
 	fmt.Println(request)
 
-	request["id"] = int64(scheduleId)
+	request["id"] = int64(gateAllocationId)
 	request["event_id"] = int64(uid)
-	mapstructure.Decode(request, &schedule)
+	mapstructure.Decode(request, &gateAllocation)
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
-	err = validate.Struct(schedule)
+	err = validate.Struct(gateAllocation)
 	if err != nil {
 		errors := err.(validator.ValidationErrors)
 		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
@@ -203,7 +203,7 @@ func (r ScheduleController) UpdateSchedule(c *gin.Context) {
 
 	fmt.Println(request)
 
-	result, err := r.service.UpdateSchedule(int64(uid), int64(scheduleId), &request)
+	result, err := r.service.UpdateGateAllocation(int64(uid), int64(gateAllocationId), &request)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return

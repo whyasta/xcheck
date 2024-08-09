@@ -68,7 +68,7 @@ func (repo *importRepository) CheckValidImport(id int64) (bool, error) {
 }
 
 func (repo *importRepository) CheckValidAssign(id int64) (bool, error) {
-	var result models.Schedule
+	var result models.GateAllocation
 	err := repo.base.GetDB().
 		Where("id = ?", id).
 		First(&result).

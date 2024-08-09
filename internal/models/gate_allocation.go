@@ -1,7 +1,7 @@
 package models
 
 // swagger:model
-type Schedule struct {
+type GateAllocation struct {
 	ID        int64    `gorm:"column:id; primary_key; not null" json:"id"`
 	EventID   int64    `gorm:"column:event_id" mapstructure:"event_id" json:"event_id" validate:"required"`
 	SessionID int64    `gorm:"column:session_id" mapstructure:"session_id" json:"session_id" validate:"required"`

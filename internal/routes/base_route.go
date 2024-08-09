@@ -33,6 +33,6 @@ func BaseRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
 		group.GET("/ticket-types/:ticketTypeId", controllers.TicketTypeController.GetTicketTypeByID)
 		group.GET("/gates/:gateId", controllers.GateController.GetGateByID)
 		group.GET("/sessions/:sessionId", controllers.SessionController.GetSessionByID)
-		group.GET("/schedules/:scheduleId", controllers.ScheduleController.GetScheduleByID)
+		group.GET("/gate-allocations/:gateAllocationId", controllers.GateAllocationController.GetGateAllocationByID)
 	}
 }

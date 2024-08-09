@@ -14,10 +14,10 @@ import (
 
 type BarcodeService struct {
 	r repositories.BarcodeRepository
-	s repositories.ScheduleRepository
+	s repositories.GateAllocationRepository
 }
 
-func NewBarcodeService(r repositories.BarcodeRepository, s repositories.ScheduleRepository) *BarcodeService {
+func NewBarcodeService(r repositories.BarcodeRepository, s repositories.GateAllocationRepository) *BarcodeService {
 	return &BarcodeService{r, s}
 }
 
@@ -48,7 +48,7 @@ func (s *BarcodeService) UpdateBarcode(eventId int64, id int64, data *map[string
 }
 
 func (s *BarcodeService) DownloadBarcodes(pageParams *utils.Paginate, eventId int64, sessionId int64, gateId int64) ([]models.Barcode, int64, error) {
-	schedules, _, err := s.s.FindAll(utils.NewPaginate(999999, 1), *utils.NewFilters([]utils.Filter{
+	gateAllocations, _, err := s.s.FindAll(utils.NewPaginate(999999, 1), *utils.NewFilters([]utils.Filter{
 		{
 			Property:  "event_id",
 			Operation: "=",
@@ -66,13 +66,13 @@ func (s *BarcodeService) DownloadBarcodes(pageParams *utils.Paginate, eventId in
 		},
 	}), []utils.Sort{})
 
-	if len(schedules) == 0 || err != nil {
+	if len(gateAllocations) == 0 || err != nil {
 		return []models.Barcode{}, 0, errors.New("barcode not found")
 	}
 
-	barcodes, count, err := s.r.FindAll([]string{"Schedule"}, pageParams, *utils.NewFilters([]utils.Filter{
+	barcodes, count, err := s.r.FindAll([]string{"GateAllocation"}, pageParams, *utils.NewFilters([]utils.Filter{
 		{
-			Property:  "schedule_id",
+			Property:  "gateAllocation_id",
 			Operation: "=",
 			Value:     strconv.Itoa(int(eventId)),
 		},
@@ -90,7 +90,7 @@ func (s *BarcodeService) UploadBarcodeLogs(logs *[]dto.BarcodeUploadLogDto) erro
 }
 
 func (s *BarcodeService) GetAllBarcodes(pageParams *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Barcode, int64, error) {
-	return s.r.FindAll([]string{"Schedule"}, pageParams, filters, sorts)
+	return s.r.FindAll([]string{"GateAllocation"}, pageParams, filters, sorts)
 }
 
 func (s *BarcodeService) GetBarcodeByID(uid int64) (models.Barcode, error) {
@@ -103,7 +103,7 @@ func (s *BarcodeService) Delete(uid int64) (models.Barcode, error) {
 
 func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, barcode string, action constant.BarcodeStatus) (bool, models.Barcode, error) {
 	fmt.Printf("START SCAN => BARCODE:%s, EVENT:%d, GATE:%d", barcode, eventId, gateId)
-	// _, count, _ := s.r.FindAll([]string{"Schedule"}, utils.NewPaginate(10, 1), *utils.NewFilters([]utils.Filter{
+	// _, count, _ := s.r.FindAll([]string{"GateAllocation"}, utils.NewPaginate(10, 1), *utils.NewFilters([]utils.Filter{
 	// 	{
 	// 		Property:  "barcode",
 	// 		Operation: "=",
@@ -121,25 +121,25 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 		return false, result, err
 	}
 
-	if result.Schedule.EventID != eventId {
+	if result.GateAllocation.EventID != eventId {
 		return false, result, errors.New("wrong event")
 	}
 
-	if result.Schedule.GateID != gateId {
+	if result.GateAllocation.GateID != gateId {
 		return false, result, errors.New("wrong gate")
 	}
 
 	fmt.Println("now", time.Now())
-	fmt.Println("start", result.Schedule.Session.SessionStart)
-	fmt.Println("end", result.Schedule.Session.SessionEnd)
+	fmt.Println("start", result.GateAllocation.Session.SessionStart)
+	fmt.Println("end", result.GateAllocation.Session.SessionEnd)
 
-	if time.Now().After(result.Schedule.Session.SessionEnd) {
+	if time.Now().After(result.GateAllocation.Session.SessionEnd) {
 		// update barcode to expired
 		s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagExpired})
 		return false, result, errors.New("session ended")
 	}
 
-	if !utils.TimeIsBetween(time.Now(), result.Schedule.Session.SessionStart, result.Schedule.Session.SessionEnd) {
+	if !utils.TimeIsBetween(time.Now(), result.GateAllocation.Session.SessionStart, result.GateAllocation.Session.SessionEnd) {
 		return false, result, errors.New("not in session time")
 	}
 

@@ -163,14 +163,14 @@ func (r BarcodeController) AssignBarcodes(c *gin.Context) {
 		return
 	}
 
-	valid, err := r.importService.CheckValid(int64(ba.ImportId), int64(ba.ScheduleID))
+	valid, err := r.importService.CheckValid(int64(ba.ImportId), int64(ba.GateAllocationID))
 	if !valid {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
 	// process assign barcode to event
-	_, err = r.barcodeService.AssignBarcodes(int64(ba.ImportId), int64(ba.ScheduleID), int64(ba.TicketTypeID))
+	_, err = r.barcodeService.AssignBarcodes(int64(ba.ImportId), int64(ba.GateAllocationID), int64(ba.TicketTypeID))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -196,7 +196,7 @@ func (r BarcodeController) ScanBarcode(c *gin.Context) {
 		action = constant.BarcodeStatusOut
 	}
 
-	userId, _, err := utils.ExtractTokenID(c)
+	userId, _, _ := utils.ExtractTokenID(c)
 
 	var scan *dto.ScanBarcode
 

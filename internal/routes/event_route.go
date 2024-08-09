@@ -27,8 +27,8 @@ func EventRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
 		group.POST("/:id/sessions", controllers.SessionController.CreateSession)
 		group.POST("/:id/sessions/:sessionId", controllers.SessionController.UpdateSession)
 
-		group.GET("/:id/schedules", controllers.ScheduleController.GetAllSchedules)
-		group.POST("/:id/schedules", controllers.ScheduleController.CreateSchedule)
-		group.POST("/:id/schedules/:scheduleId", controllers.ScheduleController.UpdateSchedule)
+		group.GET("/:id/gate-allocations", controllers.GateAllocationController.GetAllGateAllocations)
+		group.POST("/:id/gate-allocations", controllers.GateAllocationController.CreateGateAllocation)
+		group.POST("/:id/gate-allocations/:gateAllocationId", controllers.GateAllocationController.UpdateGateAllocation)
 	}
 }

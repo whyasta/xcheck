@@ -9,29 +9,29 @@ import (
 )
 
 type Repository struct {
-	User       *userRepository
-	Role       *roleRepository
-	Event      *eventRepository
-	TicketType *ticketTypeRepository
-	Gate       *gateRepository
-	Session    *sessionRepository
-	Base       *baseRepository
-	Import     *importRepository
-	Barcode    *barcodeRepository
-	Schedule   *scheduleRepository
+	User           *userRepository
+	Role           *roleRepository
+	Event          *eventRepository
+	TicketType     *ticketTypeRepository
+	Gate           *gateRepository
+	Session        *sessionRepository
+	Base           *baseRepository
+	Import         *importRepository
+	Barcode        *barcodeRepository
+	GateAllocation *gateAllocationRepository
 }
 
 func NewRepository(db *gorm.DB) *Repository {
 	return &Repository{
-		User:       NewUserRepository(db),
-		Role:       NewRoleRepository(db),
-		Event:      NewEventRepository(db),
-		TicketType: NewTicketTypeRepository(db),
-		Gate:       NewGateRepository(db),
-		Session:    NewSessionRepository(db),
-		Schedule:   NewScheduleRepository(db),
-		Import:     NewImportRepository(db),
-		Barcode:    NewBarcodeRepository(db),
+		User:           NewUserRepository(db),
+		Role:           NewRoleRepository(db),
+		Event:          NewEventRepository(db),
+		TicketType:     NewTicketTypeRepository(db),
+		Gate:           NewGateRepository(db),
+		Session:        NewSessionRepository(db),
+		GateAllocation: NewGateAllocationRepository(db),
+		Import:         NewImportRepository(db),
+		Barcode:        NewBarcodeRepository(db),
 	}
 }
 
