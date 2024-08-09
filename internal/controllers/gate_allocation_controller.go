@@ -6,8 +6,10 @@ import (
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -38,18 +40,62 @@ func NewGateAllocationController(service *services.GateAllocationService) *GateA
 func (r GateAllocationController) CreateGateAllocation(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	uid, err := strconv.Atoi(c.Param("id"))
+	eventId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
-	var gateAllocation *dto.GateAllocationRequest
+	/*
+		var gateAllocation *dto.GateAllocationRequest
 
-	c.Next()
-	c.BindJSON(&gateAllocation)
+		c.Next()
+		c.BindJSON(&gateAllocation)
+	*/
 
-	gateAllocation.EventID = int64(uid)
+	var gateAllocation *models.GateAllocation
+	var bulk []models.GateAllocation
+
+	jsons := make([]byte, c.Request.ContentLength)
+	if _, err := c.Request.Body.Read(jsons); err != nil {
+		if err.Error() != "EOF" {
+			return
+		}
+	}
+
+	if err := json.Unmarshal(jsons, &bulk); err != nil {
+		bulk = nil
+		if err := json.Unmarshal(jsons, &gateAllocation); err != nil {
+			utils.PanicException(response.InvalidRequest, err.Error())
+			return
+		}
+	}
+
+	if bulk != nil {
+		for i, item := range bulk {
+			log.Println("item", item)
+			bulk[i].EventID = int64(eventId)
+			item.EventID = int64(eventId)
+
+			validate := validator.New(validator.WithRequiredStructEnabled())
+			validate.RegisterValidation("date", utils.DateValidation)
+			err := validate.Struct(&item)
+			if err != nil {
+				errors := err.(validator.ValidationErrors)
+				utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+				return
+			}
+		}
+		result, err := r.service.CreateBulkGateAllocation(&bulk)
+		if err != nil {
+			utils.PanicException(response.InvalidRequest, err.Error())
+			return
+		}
+		c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
+		return
+	}
+
+	gateAllocation.EventID = int64(eventId)
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	err = validate.Struct(gateAllocation)
@@ -59,9 +105,11 @@ func (r GateAllocationController) CreateGateAllocation(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(gateAllocation)
-
-	result, err := r.service.CreateGateAllocation(gateAllocation)
+	result, err := r.service.CreateGateAllocation(&dto.GateAllocationRequest{
+		EventID:   gateAllocation.EventID,
+		SessionID: gateAllocation.SessionID,
+		GateID:    gateAllocation.GateID,
+	})
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return

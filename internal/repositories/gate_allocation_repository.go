@@ -9,6 +9,7 @@ import (
 
 type GateAllocationRepository interface {
 	Save(data *models.GateAllocation) (models.GateAllocation, error)
+	BulkSave(events *[]models.GateAllocation) ([]models.GateAllocation, error)
 	Update(id int64, data *map[string]interface{}) (models.GateAllocation, error)
 	Delete(uid int64) (models.GateAllocation, error)
 	FindAll(paginate *utils.Paginate, filter []utils.Filter, sorts []utils.Sort) ([]models.GateAllocation, int64, error)
@@ -26,6 +27,10 @@ func NewGateAllocationRepository(db *gorm.DB) *gateAllocationRepository {
 }
 
 func (repo *gateAllocationRepository) Save(data *models.GateAllocation) (models.GateAllocation, error) {
+	return BaseInsert(*repo.base.GetDB(), *data)
+}
+
+func (repo *gateAllocationRepository) BulkSave(data *[]models.GateAllocation) ([]models.GateAllocation, error) {
 	return BaseInsert(*repo.base.GetDB(), *data)
 }
 

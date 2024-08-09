@@ -21,6 +21,10 @@ func (s *GateAllocationService) CreateGateAllocation(data *dto.GateAllocationReq
 	return s.r.Save(data.ToEntity())
 }
 
+func (s *GateAllocationService) CreateBulkGateAllocation(gates *[]models.GateAllocation) ([]models.GateAllocation, error) {
+	return s.r.BulkSave(gates)
+}
+
 func (s *GateAllocationService) UpdateGateAllocation(eventId int64, id int64, data *map[string]interface{}) (models.GateAllocation, error) {
 	var filters = []utils.Filter{
 		{
