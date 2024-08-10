@@ -10,6 +10,7 @@ import (
 func BarcodeRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
 	group.Use(middlewares.AuthMiddleware())
 	{
+		group.GET("/uploads", controllers.BarcodeController.GetAllUploads)
 		group.POST("/upload", controllers.BarcodeController.UploadBarcodes)
 		group.POST("/assign", controllers.BarcodeController.AssignBarcodes)
 		group.POST("/scan/:action", controllers.BarcodeController.ScanBarcode)

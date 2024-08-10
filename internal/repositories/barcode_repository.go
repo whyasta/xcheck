@@ -98,7 +98,7 @@ func (repo *barcodeRepository) AssignBarcodes(importId int64, assignId int64, ti
 		result = repo.base.GetDB().
 			Table("imports").
 			Where("id = ?", importId).
-			Updates(map[string]interface{}{"status": constant.ImportStatusPaired})
+			Updates(map[string]interface{}{"status": constant.ImportStatusAssigned})
 
 		err = result.Error
 		return err

@@ -50,6 +50,13 @@ func ImportBarcodeJob(job *work.Job) error {
 	importId := job.ArgInt64("import_id")
 	headers := job.ArgString("headers")
 	if err := job.ArgError(); err != nil {
+		db, _ := config.ConnectToDB()
+		importRepo := repositories.NewImportRepository(db)
+		_, err := importRepo.Update(importId, &map[string]interface{}{"status": constant.ImportStatusCompleted, "error_message": "Failed"})
+		defer func() {
+			dbInstance, _ := db.DB()
+			_ = dbInstance.Close()
+		}()
 		fmt.Println("=> import barcode job error", err.Error())
 		return err
 	}
@@ -95,6 +102,7 @@ func (i Import) ImportData() error {
 	csvReader, csvFile, err := i.openCsvFile()
 	if err != nil {
 		log.Fatal(err.Error())
+		return err
 	}
 	defer csvFile.Close()
 
@@ -169,7 +177,9 @@ func (i Import) doInsertJob(workerIndex, counter int, db *gorm.DB, values []inte
 		func(outerError *error) {
 			defer func() {
 				if err := recover(); err != nil {
-					*outerError = fmt.Errorf("%v", err)
+					*outerError = fmt.Errorf("outer error %v", err)
+					importRepo := repositories.NewImportRepository(db)
+					importRepo.Update(i.ImportID, &map[string]interface{}{"status": constant.ImportStatusFailed, "error_message": err})
 				}
 			}()
 
@@ -179,15 +189,15 @@ func (i Import) doInsertJob(workerIndex, counter int, db *gorm.DB, values []inte
 				strings.Join(generateQuestionsMark(len(i.Headers)), ",")+",?",
 			)
 
+			fmt.Println("=> do insert")
+
 			importId := []interface{}{i.ImportID}
 			values = append(values, importId...)
 
 			err := db.WithContext(context.Background()).Exec(query, values...).Error
 			if err != nil {
-				log.Fatal(err.Error())
-			}
-
-			if err != nil {
+				importRepo := repositories.NewImportRepository(db)
+				importRepo.Update(i.ImportID, &map[string]interface{}{"status": constant.ImportStatusFailed, "error_message": err.Error()})
 				log.Fatal(err.Error())
 			}
 		}(&outerError)
@@ -196,7 +206,7 @@ func (i Import) doInsertJob(workerIndex, counter int, db *gorm.DB, values []inte
 		}
 	}
 
-	// if counter%100 == 0 {
-	// 	fmt.Println("=> worker", workerIndex, "inserted", counter, "data")
-	// }
+	if counter%100 == 0 {
+		fmt.Println("=> worker", workerIndex, "inserted", counter, "data")
+	}
 }

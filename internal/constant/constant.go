@@ -20,6 +20,6 @@ const (
 	ImportStatusPending    ImportStatus = "PENDING"
 	ImportStatusProcessing ImportStatus = "PROCESSING"
 	ImportStatusCompleted  ImportStatus = "COMPLETED"
-	ImportStatusPaired     ImportStatus = "PAIRED"
+	ImportStatusAssigned   ImportStatus = "ASSIGNED"
 	ImportStatusFailed     ImportStatus = "FAILED"
 )

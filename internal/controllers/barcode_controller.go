@@ -25,6 +25,27 @@ func NewBarcodeController(importService *services.ImportService, barcodeService 
 	return &BarcodeController{importService, barcodeService}
 }
 
+func (r BarcodeController) GetAllUploads(c *gin.Context) {
+	defer utils.ResponseHandler(c)
+	pageParams, filter, sort := MakePageFilterQueryParams(c.Request.URL.Query(), []string{"status"})
+
+	rows, count, err := r.importService.GetAllImports(pageParams, filter, sort)
+
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	meta := utils.MetaResponse{
+		PagingInfo: utils.PagingInfo{
+			Page:  pageParams.GetPage(count),
+			Limit: pageParams.GetLimit(count),
+			Total: int(count),
+		},
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, response.Success, "", rows, &meta))
+}
+
 func (r BarcodeController) UploadBarcodes(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
@@ -57,7 +78,7 @@ func (r BarcodeController) UploadBarcodes(c *gin.Context) {
 			UploadFileName: files[0].Filename,
 			ImportedAt:     time.Now().Format("2006-01-02 15:04:05"),
 			Status:         string(constant.ImportStatusPending),
-			ErrorMessage:   "",
+			StatusMessage:  "",
 		})
 		if err != nil {
 			utils.PanicException(response.InvalidRequest, err.Error())
