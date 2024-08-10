@@ -6,7 +6,7 @@ type ImportDto struct {
 	UploadFileName string              `gorm:"column:upload_file_name" mapstructure:"upload_file_name" json:"upload_file_name" validate:"required,min=3,max=20"`
 	ImportedAt     string              `gorm:"column:imported_at" mapstructure:"imported_at" json:"imported_at" validate:"required,min=3,max=20"`
 	Status         string              `gorm:"column:status" mapstructure:"status" json:"status" validate:"required,min=3,max=20"`
-	ErrorMessage   string              `gorm:"column:error_message" mapstructure:"error_message" json:"error_message" validate:"required,min=3,max=20"`
+	StatusMessage  string              `gorm:"column:status_message" mapstructure:"status_message" json:"status_message" validate:"required,min=3,max=20"`
 	BarcodeList    []*ImportBarcodeDto `gorm:"foreignKey:import_id;references:id" json:"barcode_list"`
 }
 

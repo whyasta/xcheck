@@ -25,12 +25,12 @@ func (s *ImportService) CreateImport(data *models.Import) (models.Import, error)
 }
 
 func (s *ImportService) UpdateStatusImport(id int64, status string, errorMessage string) (models.Import, error) {
-	return s.r.Update(id, &map[string]interface{}{"status": status, "error_message": errorMessage})
+	return s.r.Update(id, &map[string]interface{}{"status": status, "status_message": errorMessage})
 }
 
 func (s *ImportService) DoImportJob(id int64) (models.Import, error) {
 	fmt.Println("DoImportJob")
-	row, err := s.r.Update(id, &map[string]interface{}{"status": constant.ImportStatusProcessing, "error_message": "Processing file"})
+	row, err := s.r.Update(id, &map[string]interface{}{"status": constant.ImportStatusProcessing, "status_message": "Processing file"})
 	if err != nil {
 		return models.Import{}, err
 	}
@@ -48,7 +48,7 @@ func (s *ImportService) DoImportJob(id int64) (models.Import, error) {
 	// importJob.ImportData()
 	// fmt.Println("Importing done")
 	// // return models.Import{}, nil
-	// row, err = s.r.Update(id, &map[string]interface{}{"status": constant.ImportStatusCompleted, "error_message": "Completed"})
+	// row, err = s.r.Update(id, &map[string]interface{}{"status": constant.ImportStatusCompleted, "status_message": "Completed"})
 	// if err == nil {
 	// 	if err = os.Remove(row.FileName); err != nil {
 	// 		return models.Import{}, err
