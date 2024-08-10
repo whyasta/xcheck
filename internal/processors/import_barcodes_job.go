@@ -52,7 +52,7 @@ func ImportBarcodeJob(job *work.Job) error {
 	if err := job.ArgError(); err != nil {
 		db, _ := config.ConnectToDB()
 		importRepo := repositories.NewImportRepository(db)
-		_, err := importRepo.Update(importId, &map[string]interface{}{"status": constant.ImportStatusCompleted, "error_message": "Failed"})
+		_, err := importRepo.Update(importId, &map[string]interface{}{"status": constant.ImportStatusCompleted, "status_message": "Failed"})
 		defer func() {
 			dbInstance, _ := db.DB()
 			_ = dbInstance.Close()
@@ -72,7 +72,7 @@ func ImportBarcodeJob(job *work.Job) error {
 
 	importRepo := repositories.NewImportRepository(db)
 
-	row, err := importRepo.Update(importId, &map[string]interface{}{"status": constant.ImportStatusCompleted, "error_message": "Completed"})
+	row, err := importRepo.Update(importId, &map[string]interface{}{"status": constant.ImportStatusCompleted, "status_message": "Completed"})
 	if err == nil {
 		if err = os.Remove(row.FileName); err != nil {
 			return err
@@ -179,7 +179,7 @@ func (i Import) doInsertJob(workerIndex, counter int, db *gorm.DB, values []inte
 				if err := recover(); err != nil {
 					*outerError = fmt.Errorf("outer error %v", err)
 					importRepo := repositories.NewImportRepository(db)
-					importRepo.Update(i.ImportID, &map[string]interface{}{"status": constant.ImportStatusFailed, "error_message": err})
+					importRepo.Update(i.ImportID, &map[string]interface{}{"status": constant.ImportStatusFailed, "status_message": err})
 				}
 			}()
 
@@ -197,7 +197,7 @@ func (i Import) doInsertJob(workerIndex, counter int, db *gorm.DB, values []inte
 			err := db.WithContext(context.Background()).Exec(query, values...).Error
 			if err != nil {
 				importRepo := repositories.NewImportRepository(db)
-				importRepo.Update(i.ImportID, &map[string]interface{}{"status": constant.ImportStatusFailed, "error_message": err.Error()})
+				importRepo.Update(i.ImportID, &map[string]interface{}{"status": constant.ImportStatusFailed, "status_message": err.Error()})
 				log.Fatal(err.Error())
 			}
 		}(&outerError)
