@@ -11,6 +11,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -49,10 +50,16 @@ func ImportBarcodeJob(job *work.Job) error {
 	table := job.ArgString("table")
 	importId := job.ArgInt64("import_id")
 	headers := job.ArgString("headers")
+	withAssign := job.ArgBool("with_assign")
+	eventId := job.ArgInt64("event_id")
+	ticketTypeId := job.ArgInt64("ticket_type_id")
+	sessions := job.ArgString("sessions")
+	gates := job.ArgString("gates")
+
 	if err := job.ArgError(); err != nil {
 		db, _ := config.ConnectToDB()
 		importRepo := repositories.NewImportRepository(db)
-		_, err := importRepo.Update(importId, &map[string]interface{}{"status": constant.ImportStatusCompleted, "status_message": "Failed"})
+		_, err := importRepo.Update(importId, &map[string]interface{}{"status": constant.ImportStatusFailed, "status_message": "Failed"})
 		defer func() {
 			dbInstance, _ := db.DB()
 			_ = dbInstance.Close()
@@ -76,6 +83,33 @@ func ImportBarcodeJob(job *work.Job) error {
 	if err == nil {
 		if err = os.Remove(row.FileName); err != nil {
 			return err
+		}
+		// dispatch other job (if any)
+
+		if withAssign {
+			sessionSlice := make([]int64, len(strings.Split(sessions, ",")))
+			for i, str := range strings.Split(sessions, ",") {
+				num, err := strconv.ParseInt(str, 10, 64)
+				if err != nil {
+					fmt.Println("Error converting string to integer:", err)
+				}
+				sessionSlice[i] = num
+			}
+
+			gateSlice := make([]int64, len(strings.Split(gates, ",")))
+			for i, str := range strings.Split(gates, ",") {
+				num, err := strconv.ParseInt(str, 10, 64)
+				if err != nil {
+					fmt.Println("Error converting string to integer:", err)
+				}
+				gateSlice[i] = num
+			}
+
+			barcodeRepo := repositories.NewBarcodeRepository(db)
+			_, err := barcodeRepo.AssignBarcodesWithEvent(importId, eventId, ticketTypeId, sessionSlice, gateSlice)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	defer func() {
@@ -189,7 +223,7 @@ func (i Import) doInsertJob(workerIndex, counter int, db *gorm.DB, values []inte
 				strings.Join(generateQuestionsMark(len(i.Headers)), ",")+",?",
 			)
 
-			fmt.Println("=> do insert")
+			// fmt.Println("=> do insert")
 
 			importId := []interface{}{i.ImportID}
 			values = append(values, importId...)
@@ -206,7 +240,7 @@ func (i Import) doInsertJob(workerIndex, counter int, db *gorm.DB, values []inte
 		}
 	}
 
-	if counter%100 == 0 {
-		fmt.Println("=> worker", workerIndex, "inserted", counter, "data")
-	}
+	// if counter%100 == 0 {
+	// 	fmt.Println("=> worker", workerIndex, "inserted", counter, "data")
+	// }
 }

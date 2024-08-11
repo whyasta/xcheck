@@ -1,14 +1,15 @@
 package models
 
 type Import struct {
-	ID             int64            `gorm:"column:id; primary_key; not null" mapstructure:"id" json:"id"`
-	FileName       string           `gorm:"column:file_name" mapstructure:"file_name" json:"file_name" validate:"required,min=3,max=20"`
-	UploadFileName string           `gorm:"column:upload_file_name" mapstructure:"upload_file_name" json:"upload_file_name" validate:"required,min=3,max=20"`
-	ImportedAt     string           `gorm:"column:imported_at" mapstructure:"imported_at" json:"imported_at" validate:"required,min=3,max=20"`
-	Status         string           `gorm:"column:status" mapstructure:"status" json:"status" validate:"required,min=3,max=20"`
-	StatusMessage  string           `gorm:"column:status_message" mapstructure:"status_message" json:"status_message" validate:"required,min=3,max=20"`
-	EventID        *int64           `gorm:"column:event_id"  mapstructure:"event_id" json:"event_id"`
-	BarcodeList    []*ImportBarcode `gorm:"foreignKey:import_id;references:id" json:"barcode_list"`
+	ID             int64  `gorm:"column:id; primary_key; not null" mapstructure:"id" json:"id"`
+	FileName       string `gorm:"column:file_name" mapstructure:"file_name" json:"file_name" validate:"required,min=3,max=20"`
+	UploadFileName string `gorm:"column:upload_file_name" mapstructure:"upload_file_name" json:"upload_file_name" validate:"required,min=3,max=20"`
+	ImportedAt     string `gorm:"column:imported_at" mapstructure:"imported_at" json:"imported_at" validate:"required,min=3,max=20"`
+	Status         string `gorm:"column:status" mapstructure:"status" json:"status" validate:"required,min=3,max=20"`
+	StatusMessage  string `gorm:"column:status_message" mapstructure:"status_message" json:"status_message" validate:"required,min=3,max=20"`
+	EventID        *int64 `gorm:"column:event_id"  mapstructure:"event_id" json:"event_id"`
+	// TotalBarcode   int64            `gorm:"column:total_barcode"  mapstructure:"total_barcode" json:"total_barcode"`
+	BarcodeList []*ImportBarcode `gorm:"foreignKey:import_id;references:id" json:"barcode_list"`
 	CommonModel
 }
 

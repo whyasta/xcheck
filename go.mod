@@ -15,7 +15,7 @@ require (
 	github.com/vearne/gin-timeout v0.2.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.25.0
-	golang.org/x/sync v0.7.0
+	golang.org/x/sync v0.8.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.25.11
@@ -30,6 +30,7 @@ require (
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.4 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
+	github.com/go-gorm/caches/v4 v4.0.5 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/goccy/go-json v0.10.3 // indirect
@@ -60,7 +61,7 @@ require (
 	golang.org/x/exp v0.0.0-20240707233637-46b078467d37 // indirect
 	golang.org/x/net v0.27.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
-	golang.org/x/text v0.16.0 // indirect
+	golang.org/x/text v0.17.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect

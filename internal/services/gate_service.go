@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bigmind/xcheck-be/internal/dto"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/repositories"
 	"bigmind/xcheck-be/utils"
@@ -16,15 +17,15 @@ func NewGateService(r repositories.GateRepository) *GateService {
 	return &GateService{r}
 }
 
-func (s *GateService) CreateGate(data *models.Gate) (models.Gate, error) {
+func (s *GateService) CreateGate(data *dto.GateRequestDto) (models.Gate, error) {
 	return s.r.Save(data)
 }
 
-func (s *GateService) CreateBulkGate(gates *[]models.Gate) ([]models.Gate, error) {
+func (s *GateService) CreateBulkGate(gates *[]dto.GateRequestDto) ([]models.Gate, error) {
 	return s.r.BulkSave(gates)
 }
 
-func (s *GateService) UpdateGate(eventId int64, id int64, data *map[string]interface{}) (models.Gate, error) {
+func (s *GateService) UpdateGate(eventId int64, id int64, data *dto.GateRequestDto) (models.Gate, error) {
 	var filters = []utils.Filter{
 		{
 			Property:  "event_id",

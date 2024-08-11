@@ -51,6 +51,16 @@ func (f *Filter) FilterResult(operator string, db *gorm.DB) *gorm.DB {
 	}
 
 	query := fmt.Sprintf("%s %s ?", f.Property, f.Operation)
+
+	if strings.ToLower(f.Operation) == "json_contains" {
+		query = fmt.Sprintf("%s(%s, ?)", f.Operation, f.Property)
+	}
+
+	if strings.ToLower(f.Operation) == "has" {
+		propValue := strings.Split(f.Property, ".")
+		query = fmt.Sprintf("EXISTS (SELECT 1 FROM %s WHERE %s = ?)", propValue[0], propValue[1])
+	}
+
 	// log.Println(query, f.Value)
 	if strings.ToLower(operator) == "or" {
 		return db.Or(query, f.Value)

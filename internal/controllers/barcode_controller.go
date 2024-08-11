@@ -8,8 +8,10 @@ import (
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -44,6 +46,23 @@ func (r BarcodeController) GetAllUploads(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, response.Success, "", rows, &meta))
+}
+
+func (r BarcodeController) GetUploadByID(c *gin.Context) {
+	defer utils.ResponseHandler(c)
+	uid, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		utils.PanicException(response.InvalidRequest, err.Error())
+		return
+	}
+
+	model, err := r.importService.GetImportByID(int64(uid))
+	if err != nil {
+		utils.PanicException(response.DataNotFound, errors.New("data not found").Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", model))
 }
 
 func (r BarcodeController) UploadBarcodes(c *gin.Context) {
@@ -242,4 +261,97 @@ func (r BarcodeController) ScanBarcode(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, status, message, utils.Null()))
+}
+
+func (r BarcodeController) GetEventBarcodes(c *gin.Context) {
+	defer utils.ResponseHandler(c)
+
+	eventId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		utils.PanicException(response.InvalidRequest, err.Error())
+		return
+	}
+
+	pageParams, filter, sort := MakePageFilterQueryParams(c.Request.URL.Query(), []string{"event_id"})
+
+	filter = append(filter, utils.Filter{
+		Property:  "event_id",
+		Operation: "=",
+		Value:     strconv.Itoa(eventId),
+	})
+
+	rows, count, err := r.barcodeService.GetAllBarcodes(pageParams, filter, sort)
+
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	meta := utils.MetaResponse{
+		PagingInfo: utils.PagingInfo{
+			Page:  pageParams.GetPage(count),
+			Limit: pageParams.GetLimit(count),
+			Total: int(count),
+		},
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, response.Success, "", rows, &meta))
+}
+
+func (r BarcodeController) ImportEventBarcodes(c *gin.Context) {
+	defer utils.ResponseHandler(c)
+
+	eventId, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		utils.PanicException(response.InvalidRequest, err.Error())
+		return
+	}
+
+	// Multipart form
+	form, err := c.MultipartForm()
+	if err != nil {
+		utils.PanicException(response.InvalidRequest, err.Error())
+		return
+	}
+	files := form.File["files"]
+	ticketTypeId, _ := strconv.ParseInt(c.PostForm("ticket_type_id"), 10, 64)
+	sessions := c.PostForm("sessions")
+	gates := c.PostForm("gates")
+
+	if len(files) == 0 {
+		utils.PanicException(response.InvalidRequest, "file not found")
+		return
+	}
+
+	tempFile := utils.TempFileName("files", "barcode", ".csv")
+	message := "failed"
+
+	fmt.Println("start => ", len(files))
+	for _, file := range files {
+		// filename := filepath.Join("files", file.Filename)
+		err := c.SaveUploadedFile(file, tempFile)
+		if err != nil {
+			utils.PanicException(response.InvalidRequest, fmt.Sprintf("upload file err: %s", err.Error()))
+			return
+		}
+		importFile, err := r.importService.CreateImport(&models.Import{
+			FileName:       tempFile,
+			UploadFileName: files[0].Filename,
+			ImportedAt:     time.Now().Format("2006-01-02 15:04:05"),
+			Status:         string(constant.ImportStatusPending),
+			StatusMessage:  "",
+		})
+		if err != nil {
+			utils.PanicException(response.InvalidRequest, err.Error())
+			return
+		}
+
+		message = fmt.Sprintf("Uploaded successfully %d files", len(files))
+		_, err = r.importService.DoImportJobWithAssign(importFile.ID, eventId, ticketTypeId, sessions, gates)
+		if err != nil {
+			utils.PanicException(response.InvalidRequest, err.Error())
+			return
+		}
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, message, utils.Null()))
 }

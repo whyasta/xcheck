@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bigmind/xcheck-be/internal/constant/response"
+	"bigmind/xcheck-be/internal/dto"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
@@ -13,7 +14,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/mitchellh/mapstructure"
 )
 
 type GateController struct {
@@ -44,8 +44,8 @@ func (r GateController) CreateGate(c *gin.Context) {
 		return
 	}
 
-	var gate *models.Gate
-	var bulk []models.Gate
+	var gate *dto.GateRequestDto
+	var bulk []dto.GateRequestDto
 
 	jsons := make([]byte, c.Request.ContentLength)
 	if _, err := c.Request.Body.Read(jsons); err != nil {
@@ -71,8 +71,8 @@ func (r GateController) CreateGate(c *gin.Context) {
 			validate.RegisterValidation("date", utils.DateValidation)
 			err := validate.Struct(&item)
 			if err != nil {
-				errors := err.(validator.ValidationErrors)
-				utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+				utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", err.Error()))
+				// errors := err.(validator.ValidationErrors)
 				return
 			}
 		}
@@ -220,24 +220,26 @@ func (r GateController) UpdateGate(c *gin.Context) {
 		return
 	}
 
-	var event *models.Gate
-	var request = make(map[string]interface{})
+	// var gate *models.Gate
+	// var request = make(map[string]interface{})
+	var request dto.GateRequestDto
 
 	// event.EventID = int64(eventId)
 
 	c.Next()
 	c.BindJSON(&request)
 
-	request["event_id"] = int64(eventId)
-	mapstructure.Decode(request, &event)
+	request.EventID = int64(eventId)
+	// mapstructure.Decode(request, &gate)
 
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	err = validate.Struct(event)
-	if err != nil {
-		errors := err.(validator.ValidationErrors)
-		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
-		return
-	}
+	// validate := validator.New(validator.WithRequiredStructEnabled())
+	// err = validate.Struct(gate)
+	// if err != nil {
+	// 	utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", err.Error()))
+	// 	// errors := err.(validator.ValidationErrors)
+	// 	// utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+	// 	return
+	// }
 
 	fmt.Println(request)
 

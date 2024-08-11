@@ -7,6 +7,7 @@ type ImportDto struct {
 	ImportedAt     string              `gorm:"column:imported_at" mapstructure:"imported_at" json:"imported_at" validate:"required,min=3,max=20"`
 	Status         string              `gorm:"column:status" mapstructure:"status" json:"status" validate:"required,min=3,max=20"`
 	StatusMessage  string              `gorm:"column:status_message" mapstructure:"status_message" json:"status_message" validate:"required,min=3,max=20"`
+	EventID        *int64              `gorm:"column:event_id"  mapstructure:"event_id" json:"event_id"`
 	BarcodeList    []*ImportBarcodeDto `gorm:"foreignKey:import_id;references:id" json:"barcode_list"`
 }
 

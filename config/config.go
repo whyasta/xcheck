@@ -46,6 +46,13 @@ func ConnectToDB() (*gorm.DB, error) {
 		log.Fatal("Error connecting to database. Error: ", err)
 		return nil, err
 	}
+
+	// cache
+	// cachesPlugin := &caches.Caches{Conf: &caches.Config{
+	// 	Easer: true,
+	// }}
+	// _ = db.Use(cachesPlugin)
+
 	sqlDB, err := db.DB()
 
 	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.

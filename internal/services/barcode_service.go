@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"time"
 )
 
 type BarcodeService struct {
@@ -48,33 +47,23 @@ func (s *BarcodeService) UpdateBarcode(eventId int64, id int64, data *map[string
 }
 
 func (s *BarcodeService) DownloadBarcodes(pageParams *utils.Paginate, eventId int64, sessionId int64, gateId int64) ([]models.Barcode, int64, error) {
-	gateAllocations, _, err := s.s.FindAll(utils.NewPaginate(999999, 1), *utils.NewFilters([]utils.Filter{
+	// json_contains(sessions, '1') AND
+	// json_contains(gates, '2')
+	barcodes, count, err := s.r.FindAllWithRelations(pageParams, *utils.NewFilters([]utils.Filter{
 		{
 			Property:  "event_id",
 			Operation: "=",
 			Value:     strconv.Itoa(int(eventId)),
 		},
 		{
-			Property:  "session_id",
-			Operation: "=",
+			Property:  "barcode_sessions.session_id",
+			Operation: "has",
 			Value:     strconv.Itoa(int(sessionId)),
 		},
 		{
-			Property:  "gate_id",
-			Operation: "=",
+			Property:  "barcode_gates.gate_id",
+			Operation: "has",
 			Value:     strconv.Itoa(int(gateId)),
-		},
-	}), []utils.Sort{})
-
-	if len(gateAllocations) == 0 || err != nil {
-		return []models.Barcode{}, 0, errors.New("barcode not found")
-	}
-
-	barcodes, count, err := s.r.FindAll([]string{"GateAllocation"}, pageParams, *utils.NewFilters([]utils.Filter{
-		{
-			Property:  "gateAllocation_id",
-			Operation: "=",
-			Value:     strconv.Itoa(int(eventId)),
 		},
 	}), []utils.Sort{})
 
@@ -90,7 +79,7 @@ func (s *BarcodeService) UploadBarcodeLogs(logs *[]dto.BarcodeUploadLogDto) erro
 }
 
 func (s *BarcodeService) GetAllBarcodes(pageParams *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Barcode, int64, error) {
-	return s.r.FindAll([]string{"GateAllocation"}, pageParams, filters, sorts)
+	return s.r.FindAllWithRelations(pageParams, filters, sorts)
 }
 
 func (s *BarcodeService) GetBarcodeByID(uid int64) (models.Barcode, error) {
@@ -121,27 +110,27 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 		return false, result, err
 	}
 
-	if result.GateAllocation.EventID != eventId {
-		return false, result, errors.New("wrong event")
-	}
+	// if result.GateAllocation.EventID != eventId {
+	// 	return false, result, errors.New("Wrong event")
+	// }
 
-	if result.GateAllocation.GateID != gateId {
-		return false, result, errors.New("wrong gate")
-	}
+	// if result.GateAllocation.GateID != gateId {
+	// 	return false, result, errors.New("Wrong gate")
+	// }
 
-	fmt.Println("now", time.Now())
-	fmt.Println("start", result.GateAllocation.Session.SessionStart)
-	fmt.Println("end", result.GateAllocation.Session.SessionEnd)
+	// fmt.Println("now", time.Now())
+	// fmt.Println("start", result.GateAllocation.Session.SessionStart)
+	// fmt.Println("end", result.GateAllocation.Session.SessionEnd)
 
-	if time.Now().After(result.GateAllocation.Session.SessionEnd) {
-		// update barcode to expired
-		s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagExpired})
-		return false, result, errors.New("session ended")
-	}
+	// if time.Now().After(result.GateAllocation.Session.SessionEnd) {
+	// 	// update barcode to expired
+	// 	s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagExpired})
+	// 	return false, result, errors.New("Session ended")
+	// }
 
-	if !utils.TimeIsBetween(time.Now(), result.GateAllocation.Session.SessionStart, result.GateAllocation.Session.SessionEnd) {
-		return false, result, errors.New("not in session time")
-	}
+	// if !utils.TimeIsBetween(time.Now(), result.GateAllocation.Session.SessionStart, result.GateAllocation.Session.SessionEnd) {
+	// 	return false, result, errors.New("Not in session time")
+	// }
 
 	// update barcode to valid
 	// s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagUsed})
