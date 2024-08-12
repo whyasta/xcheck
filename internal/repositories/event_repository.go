@@ -146,12 +146,12 @@ func (repo *eventRepository) Summary(id int64) dto.EventSummary {
 	// var totalCheckIn int64
 	// var totalCheckOut int64
 
-	subQuery := repo.base.GetDB().Select("gateAllocation_id").Where("event_id = ?", id).Table("gateAllocations")
+	// subQuery := repo.base.GetDB().Select("gateAllocation_id").Where("event_id = ?", id).Table("gateAllocations")
 	err := repo.base.GetDB().Table("barcodes").
 		Select("count(id) as total_barcode",
 			"SUM(CASE WHEN current_status = 'IN' THEN 1 ELSE 0 END) as total_check_in",
 			"SUM(CASE WHEN current_status = 'OUT' THEN 1 ELSE 0 END) as total_check_out").
-		Where("gateAllocation_id IN (?)", subQuery).
+		Where("event_id = ?", id).
 		Scan(&result).
 		Error
 	if err != nil {

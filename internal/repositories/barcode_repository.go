@@ -203,6 +203,13 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importId int64, eventId i
 				var gate = models.Gate{
 					ID: gateItem,
 				}
+				// gateIds = append(gateIds, gate)
+
+				repo.base.GetDB().
+					Table("gates").
+					Where("id = ?", gateItem).
+					First(&gate)
+
 				gateIds = append(gateIds, gate)
 			}
 			err = repo.base.GetDB().Debug().

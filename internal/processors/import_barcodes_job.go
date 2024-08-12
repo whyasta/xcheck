@@ -68,7 +68,7 @@ func ImportBarcodeJob(job *work.Job) error {
 		return err
 	}
 
-	fmt.Println("=> import barcode job", []interface{}{csvFile, table, importId, headers})
+	fmt.Println("=> import barcode job", []interface{}{csvFile, table, importId, headers, withAssign, eventId, ticketTypeId, sessions, gates})
 	db, _ := config.ConnectToDB()
 
 	importJob := NewImport(db, importId, table, csvFile, strings.Split(headers, ","))
