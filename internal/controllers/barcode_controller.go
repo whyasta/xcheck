@@ -249,16 +249,25 @@ func (r BarcodeController) ScanBarcode(c *gin.Context) {
 		return
 	}
 
+	// message := string(result.CurrentStatus)
 	message := string(result.CurrentStatus)
 	status := response.Success
 
-	if firstCheckin {
-		status = response.Checkin
-	} else if result.CurrentStatus == constant.BarcodeStatusIn {
-		status = response.ReCheckin
+	if action == constant.BarcodeStatusIn {
+		if firstCheckin {
+			message = "RE_CHECKIN"
+		} else {
+			message = "CHECKIN"
+		}
 	} else {
-		status = response.Checkout
+		message = "CHECKOUT"
 	}
+
+	// else if result.CurrentStatus == constant.BarcodeStatusIn {
+	// 	status = response.ReCheckin
+	// } else {
+	// 	status = response.Checkout
+	// }
 
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, status, message, utils.Null()))
 }

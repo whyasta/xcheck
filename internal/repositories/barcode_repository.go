@@ -285,11 +285,7 @@ func (repo *barcodeRepository) CreateLog(eventId int64, userId int64, barcode st
 	// action := constant.BarcodeStatusIn
 	firstCheckin := false
 	if currentStatus == constant.BarcodeStatusNull {
-		action = constant.BarcodeStatusIn
 		firstCheckin = true
-	} else if currentStatus == constant.BarcodeStatusIn {
-		// action = constant.BarcodeStatusOut //tidak ada checkout
-		action = constant.BarcodeStatusIn
 	}
 
 	log := models.BarcodeLog{
