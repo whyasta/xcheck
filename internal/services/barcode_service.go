@@ -8,7 +8,9 @@ import (
 	"bigmind/xcheck-be/utils"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
+	"time"
 )
 
 type BarcodeService struct {
@@ -106,31 +108,45 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 	// }
 
 	result, err := s.r.Scan(barcode)
+	log.Println(result)
+
 	if err != nil {
 		return false, result, err
 	}
 
-	// if result.GateAllocation.EventID != eventId {
-	// 	return false, result, errors.New("Wrong event")
-	// }
+	if result.EventID != eventId {
+		return false, result, errors.New("Wrong event")
+	}
 
-	// if result.GateAllocation.GateID != gateId {
-	// 	return false, result, errors.New("Wrong gate")
-	// }
+	// check gate
+	validGate := false
+	for _, i := range result.Gates {
+		if i.ID == gateId {
+			validGate = true
+			break
+		}
+	}
 
-	// fmt.Println("now", time.Now())
-	// fmt.Println("start", result.GateAllocation.Session.SessionStart)
-	// fmt.Println("end", result.GateAllocation.Session.SessionEnd)
+	if !validGate {
+		return false, result, errors.New("Barcode " + barcode + " is not allowed at this gate")
+	}
 
-	// if time.Now().After(result.GateAllocation.Session.SessionEnd) {
-	// 	// update barcode to expired
-	// 	s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagExpired})
-	// 	return false, result, errors.New("Session ended")
-	// }
+	for _, i := range result.Sessions {
+		fmt.Println("check session", i.Sessioname)
+		fmt.Println("now", time.Now())
+		fmt.Println("start", i.SessionStart)
+		fmt.Println("end", i.SessionEnd)
 
-	// if !utils.TimeIsBetween(time.Now(), result.GateAllocation.Session.SessionStart, result.GateAllocation.Session.SessionEnd) {
-	// 	return false, result, errors.New("Not in session time")
-	// }
+		if time.Now().After(i.SessionEnd) {
+			// update barcode to expired
+			s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagExpired})
+			return false, result, errors.New("Barcode " + barcode + " session has ended")
+		}
+
+		if !utils.TimeIsBetween(time.Now(), i.SessionStart, i.SessionEnd) {
+			return false, result, errors.New("Barcode " + barcode + " is not within the session time")
+		}
+	}
 
 	// update barcode to valid
 	// s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagUsed})

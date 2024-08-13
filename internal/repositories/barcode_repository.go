@@ -261,12 +261,19 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importId int64, eventId i
 
 func (repo *barcodeRepository) Scan(barcode string) (models.Barcode, error) {
 	var result models.Barcode
-	err := repo.base.GetDB().
-		Joins("GateAllocation").
-		Joins("GateAllocation.Session").
-		Where("barcode = ?", barcode).
-		First(&result).
-		Error
+
+	tx := repo.base.GetDB().
+		Table("barcodes")
+
+	tx = tx.Preload("TicketType", func(tx2 *gorm.DB) *gorm.DB {
+		return tx2.Omit("EventID")
+	}).Preload("Gates", func(tx2 *gorm.DB) *gorm.DB {
+		return tx2.Omit("EventID")
+	}).Preload("Sessions", func(tx2 *gorm.DB) *gorm.DB {
+		return tx2.Omit("EventID")
+	})
+
+	err := tx.First(&result).Error
 	if err != nil {
 		return result, errors.New("Barcode " + barcode + " not found")
 	}
