@@ -8,7 +8,6 @@ import (
 	"bigmind/xcheck-be/utils"
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"time"
 )
@@ -108,12 +107,9 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 	// }
 
 	result, err := s.r.Scan(barcode)
-	log.Println(result)
-
 	if err != nil {
 		return false, result, err
 	}
-
 	if result.EventID != eventId {
 		return false, result, errors.New("Wrong event")
 	}

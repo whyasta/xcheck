@@ -273,7 +273,7 @@ func (repo *barcodeRepository) Scan(barcode string) (models.Barcode, error) {
 		return tx2.Omit("EventID")
 	})
 
-	err := tx.First(&result).Error
+	err := tx.Where("barcode = ?", barcode).First(&result).Error
 	if err != nil {
 		return result, errors.New("Barcode " + barcode + " not found")
 	}

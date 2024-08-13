@@ -48,7 +48,7 @@ func (s *EventService) GetFilteredEvents(pageParams *utils.Paginate, filters []u
 			Gates:       item.Gates,
 			Sessions:    item.Sessions,
 			EventSummary: dto.EventSummary{
-				TotalBarcode:  1,
+				TotalBarcode:  0,
 				TotalCheckIn:  0,
 				TotalCheckOut: 0,
 			},
