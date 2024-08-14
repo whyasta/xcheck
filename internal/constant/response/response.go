@@ -11,6 +11,7 @@ const (
 	UnknownError
 	InvalidRequest
 	Unauthorized
+	SessionExpired
 	Checkin
 	ReCheckin
 	Checkout
@@ -18,9 +19,9 @@ const (
 )
 
 func (r ResponseStatus) GetResponseStatus() string {
-	return [...]string{"SUCCESS", "DATA_NOT_FOUND", "UNKNOWN_ERROR", "INVALID_REQUEST", "UNAUTHORIZED", "CHECKIN", "RE_CHECKIN", "CHECKOUT", "FAILED"}[r-1]
+	return [...]string{"SUCCESS", "DATA_NOT_FOUND", "UNKNOWN_ERROR", "INVALID_REQUEST", "UNAUTHORIZED", "SESSION_EXPIRED", "CHECKIN", "RE_CHECKIN", "CHECKOUT", "FAILED"}[r-1]
 }
 
 func (r ResponseStatus) GetResponseMessage() string {
-	return [...]string{"Success", "Data Not Found", "Unknown Error", "Invalid Request", "Unauthorized", "CHECKIN", "RE_CHECKIN", "CHECKOUT", "FAILED"}[r-1]
+	return [...]string{"Success", "Data Not Found", "Unknown Error", "Invalid Request", "Unauthorized", "SESSION_EXPIRED", "CHECKIN", "RE_CHECKIN", "CHECKOUT", "FAILED"}[r-1]
 }

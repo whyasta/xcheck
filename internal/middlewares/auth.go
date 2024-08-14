@@ -11,9 +11,13 @@ import (
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		err := utils.TokenValid(c)
+		err, expired := utils.TokenValid(c)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, utils.BuildResponse(http.StatusUnauthorized, response.Unauthorized, err.Error(), utils.Null()))
+			if expired {
+				c.JSON(http.StatusUnauthorized, utils.BuildResponse(http.StatusUnauthorized, response.SessionExpired, err.Error(), utils.Null()))
+			} else {
+				c.JSON(http.StatusUnauthorized, utils.BuildResponse(http.StatusUnauthorized, response.Unauthorized, err.Error(), utils.Null()))
+			}
 			c.Abort()
 			return
 		}
@@ -23,10 +27,14 @@ func AuthMiddleware() gin.HandlerFunc {
 
 func AuthMiddlewareWithController(controllers *controllers.Controller) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		err := utils.TokenValid(c)
+		err, expired := utils.TokenValid(c)
 		if err != nil {
 			//c.String(http.StatusUnauthorized, "Unauthorized")
-			c.JSON(http.StatusUnauthorized, utils.BuildResponse(http.StatusUnauthorized, response.Unauthorized, err.Error(), utils.Null()))
+			if expired {
+				c.JSON(http.StatusUnauthorized, utils.BuildResponse(http.StatusUnauthorized, response.SessionExpired, err.Error(), utils.Null()))
+			} else {
+				c.JSON(http.StatusUnauthorized, utils.BuildResponse(http.StatusUnauthorized, response.Unauthorized, err.Error(), utils.Null()))
+			}
 			c.Abort()
 			return
 		}

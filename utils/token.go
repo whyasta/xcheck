@@ -20,6 +20,11 @@ type AuthDetails struct {
 	UserId   uint64
 }
 
+type Claims struct {
+	UserId uint64 `json:"user_id"`
+	jwt.RegisteredClaims
+}
+
 func GenerateTokenUuid(authD *AuthDetails) (map[string]string, error) {
 	tokenLifespan := config.GetConfig().GetInt("AUTH_JWT_EXPIRE")
 
@@ -83,14 +88,14 @@ func GenerateToken(user *models.User) (map[string]string, error) {
 
 }
 
-func TokenValid(c *gin.Context) error {
+func TokenValid(c *gin.Context) (error, bool) {
 	tokenString := ExtractToken(c)
 
 	// log.Println("tokenString: ", tokenString)
 	// log.Println("jwtSecret: ", config.GetConfig().GetString("auth.jwtSecret"))
 
 	if tokenString == "" {
-		return errors.New("unauthorized")
+		return errors.New("unauthorized"), false
 	}
 
 	// check blacklist or not
@@ -106,13 +111,30 @@ func TokenValid(c *gin.Context) error {
 		return []byte(config.GetConfig().GetString("AUTH_JWT_SECRET")), nil
 	})
 	if err != nil {
-		return err
+		if strings.Contains(err.Error(), "expired") {
+			return err, true
+		}
+		return err, false
 	}
+
+	// claims, ok := token.Claims.(jwt.MapClaims)
+	// if !ok || !token.Valid {
+	// 	return errors.New("Invalid token")
+	// }
+
+	// now := jwt.NewNumericDate(time.Now())
+	// exp, err := claims.GetExpirationTime()
+	// if err != nil {
+	// 	return err
+	// }
+	// if time.Now().After(exp.Time) {
+	// 	return errors.New("token expired")
+	// }
 
 	// uid, authId, err := ExtractTokenID(c)
 	// user, err := u.service.GetUserByAuth(uid, authId)
 
-	return nil
+	return nil, false
 }
 
 func ExtractToken(c *gin.Context) string {
