@@ -33,7 +33,7 @@ func GenerateTokenUuid(authD *AuthDetails) (map[string]string, error) {
 	claims["auth_uuid"] = authD.AuthUuid
 	claims["user_id"] = authD.UserId
 	claims["sub"] = authD.UserId
-	claims["exp"] = time.Now().Add(time.Hour * time.Duration(tokenLifespan)).Unix()
+	claims["exp"] = time.Now().Add(time.Minute * time.Duration(tokenLifespan)).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := token.SignedString([]byte(config.GetConfig().GetString("AUTH_JWT_SECRET")))
 	if err != nil {
@@ -65,7 +65,7 @@ func GenerateToken(user *models.User) (map[string]string, error) {
 	claims["auth_uuid"] = uuid.New().String()
 	claims["user_id"] = user.ID
 	claims["sub"] = user.ID
-	claims["exp"] = time.Now().Add(time.Hour * time.Duration(tokenLifespan)).Unix()
+	claims["exp"] = time.Now().Add(time.Minute * time.Duration(tokenLifespan)).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := token.SignedString([]byte(config.GetConfig().GetString("AUTH_JWT_SECRET")))
 	if err != nil {
