@@ -5,6 +5,7 @@ variables:
 
 stages:
   - deploy_dev
+  - deploy_dev_local
   - deploy_prod
 
 deploy_dev:
@@ -28,6 +29,20 @@ cleanup_dev:
     - bm-dev-kris
   script:
     - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
+
+deploy_dev_local:
+  stage: deploy_dev_local
+  environment:
+    name: dev
+  tags:
+    - bm-dev-kris
+  variables:
+    VERSION: $CI_PIPELINE_IID
+  script:
+    - touch .env
+    - echo "$ENV_LOCAL" >> .env
+    - docker compose -f docker-compose-local.yml up -d
+  when: manual
 
 deploy_prod:
   stage: deploy_prod

@@ -1,0 +1,26 @@
+version: '3'
+services:
+    app-local:
+        image: xcheck
+        container_name: xcheck_be_service_local
+        restart: unless-stopped
+        tty: true
+        ports:
+            - '9100:9052'
+        working_dir: /app
+        networks:
+            - external-network
+
+    redis-db-local:
+        image: redis:latest
+        restart: always
+        ports:
+          - "36379:6379"
+        networks:
+            - external-network
+
+#Docker Networks
+networks:
+    external-network:
+        external: true
+        name: external-network
