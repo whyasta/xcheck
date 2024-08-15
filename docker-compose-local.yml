@@ -1,6 +1,9 @@
 version: '3'
 services:
     app-local:
+        build:
+            context: .
+            dockerfile: Dockerfile
         image: xcheck
         container_name: xcheck_be_service_local
         restart: unless-stopped
