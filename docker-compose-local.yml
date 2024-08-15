@@ -13,6 +13,8 @@ services:
         working_dir: /app
         networks:
             - external-network
+        volumes:
+            - ./.env:/app/.env
 
     redis-db-local:
         image: redis:latest

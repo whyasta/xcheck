@@ -21,14 +21,14 @@ deploy_dev:
     - echo "$ENV" >> .env
     - docker compose up -d --build
 
-# cleanup_dev:
-#   stage: deploy_dev
-#   environment:
-#     name: dev
-#   tags:
-#     - bm-dev-kris
-#   script:
-#     - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
+cleanup_dev:
+  stage: deploy_dev
+  environment:
+    name: dev
+  tags:
+    - bm-dev-kris
+  script:
+    - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
 
 deploy_dev_local:
   stage: deploy_dev_local
@@ -41,7 +41,7 @@ deploy_dev_local:
   script:
     - touch .env
     - echo "$ENV_LOCAL" >> .env
-    - docker compose -f docker-compose-local.yml up -d --build
+    - docker compose -f docker-compose-local.yml up -d
   when: manual
 
 deploy_prod:
