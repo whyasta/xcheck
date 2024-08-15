@@ -33,5 +33,8 @@ func main() {
 	// docs.SwaggerInfo.BasePath = "/"
 	// docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
+	server_env := config.GetConfig().GetString("APP_ENV")
+	fmt.Printf("server environment: %s\n", server_env)
+
 	server.Init()
 }

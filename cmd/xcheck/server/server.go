@@ -44,7 +44,7 @@ func Init() {
 	services := services.RegisterServices(db)
 
 	r := NewRouter(services)
-	log.Printf("Starting server " + configEnv.GetString("SERVER_ADDRESS") + " at port :" + configEnv.GetString("SERVER_PORT") + "\n")
+	log.Printf("Starting server " + configEnv.GetString("APP_ENV") + ":" + configEnv.GetString("SERVER_ADDRESS") + " at port :" + configEnv.GetString("SERVER_PORT") + "\n")
 	//r.Run(configEnv.GetString("SERVER_ADDRESS") + ":" + configEnv.GetString("SERVER_PORT"))
 	srv := &http.Server{
 		Addr:         configEnv.GetString("SERVER_ADDRESS") + ":" + configEnv.GetString("SERVER_PORT"),

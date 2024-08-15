@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bigmind/xcheck-be/checks"
+	"bigmind/xcheck-be/config"
 	"errors"
 	"net/http"
 	"sync"
@@ -21,8 +22,7 @@ func (h HealthController) Init(c *gin.Context) {
 	// config.GetEnqueuer().Enqueue("test", work.Q{
 	// 	"email_address": "qjDpS@example.com",
 	// })
-
-	c.JSON(http.StatusOK, gin.H{"message": "pong"})
+	c.JSON(http.StatusOK, gin.H{"message": "pong from " + config.GetConfig().GetString("APP_ENV")})
 }
 
 func (h HealthController) Status(checks []checks.Check, failureNotification *checks.FailureNotification) gin.HandlerFunc {
