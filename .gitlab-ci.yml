@@ -41,7 +41,7 @@ deploy_dev_local:
   script:
     - touch .env
     - echo "$ENV_LOCAL" >> .env
-    - docker compose -f docker-compose-local.yml up -d
+    - docker compose -f docker-compose-local.yml up -d --build
   when: manual
 
 deploy_prod:

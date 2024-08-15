@@ -4,7 +4,7 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-        image: xcheck
+        image: xcheck-local
         container_name: xcheck_be_service_local
         restart: unless-stopped
         tty: true
@@ -13,8 +13,6 @@ services:
         working_dir: /app
         networks:
             - external-network
-        volumes:
-            - ./.env:/app/.env
 
     redis-db-local:
         image: redis:latest
