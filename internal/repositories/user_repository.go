@@ -11,7 +11,8 @@ import (
 type UserRepository interface {
 	// GetByID(id int) (*models.User, error)
 	Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.User, int64, error)
-	FindAll(params map[string]interface{}) ([]models.User, error)
+	//FindAll(params map[string]interface{}) ([]models.User, error)
+	FindAll(paginate *utils.Paginate, filter []utils.Filter, sorts []utils.Sort) ([]models.User, int64, error)
 
 	Save(user *models.User) (models.User, error)
 	FindByUsername(username string) (models.User, error)
@@ -31,28 +32,6 @@ func NewUserRepository(db *gorm.DB) *userRepository {
 	return &userRepository{
 		db: db,
 	}
-}
-
-func (repo *userRepository) FindAll(params map[string]interface{}) ([]models.User, error) {
-	var users []models.User
-	// fmt.Println(params)
-	err := repo.db.
-		// Scopes(NewPaginate(params["limit"], params["page"]).PaginatedResult).
-		// Preload("Role").
-		Joins("Role").
-		Where(params).
-		Find(&users).
-		Error
-
-	if err != nil {
-		return nil, err
-	}
-
-	for i := range users {
-		users[i].Password = ""
-	}
-
-	return users, nil
 }
 
 func (repo *userRepository) Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.User, int64, error) {
@@ -80,6 +59,42 @@ func (repo *userRepository) Paginate(paginate *utils.Paginate, params map[string
 	tx.Count(&count)
 
 	return users, count, nil
+}
+
+func (repo *userRepository) FindAll(paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.User, int64, error) {
+	var records []models.User
+	var count int64
+
+	tx := repo.db.
+		Scopes(paginate.PaginatedResult)
+
+	tx = tx.Preload("Role").Omit("Password", "AuthUuids")
+
+	if len(filters) > 0 {
+		for _, filter := range filters {
+			newFilter := utils.NewFilter(filter.Property, filter.Operation, filter.Collation, filter.Value, filter.Items)
+			tx = newFilter.FilterResult("", tx)
+		}
+	}
+
+	// log.Println("sorts: ", sorts)
+	if len(sorts) > 0 {
+		for _, sort := range sorts {
+			newSort := utils.NewSort(sort.Property, sort.Direction)
+			tx = newSort.SortResult(tx)
+		}
+	}
+
+	tx = tx.Find(&records)
+
+	if len(filters) <= 0 {
+		tx.Limit(-1).Offset(-1)
+	}
+	tx.Count(&count)
+
+	err := tx.Error
+
+	return records, count, err
 }
 
 func (repo *userRepository) Save(user *models.User) (models.User, error) {

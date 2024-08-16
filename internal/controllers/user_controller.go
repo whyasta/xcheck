@@ -37,11 +37,16 @@ func NewUserController(service *services.UserService) *UserController {
 // 200:
 func (u UserController) GetAllUser(c *gin.Context) {
 	// params := MakeQueryParams(c.Request.URL.Query(), []string{"role_id"})
-	pageParams, params := MakePaginationQueryParams(c.Request.URL.Query(), []string{"role_id"})
+	pageParams, filter, sort := MakePageFilterQueryParams(c.Request.URL.Query(), []string{"role_id"})
+
+	// pageParams, params := MakePaginationQueryParams(c.Request.URL.Query(), []string{"role_id"})
 
 	// fmt.Println(pageParams)
 	// allUsers, err := u.service.GetAllUser(params)
-	allUsers, count, err := u.service.GetPaginateAllUser(pageParams, params)
+	//allUsers, count, err := u.service.GetPaginateAllUser(pageParams, params)
+
+	allUsers, count, err := u.service.GetPaginateAllUser(pageParams, filter, sort)
+
 	if err != nil {
 		fmt.Println("Error:", err)
 		return

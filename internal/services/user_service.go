@@ -35,14 +35,13 @@ func NewUserService(u repositories.UserRepository, b repositories.BaseRepository
 	return &UserService{u, b}
 }
 
-func (s *UserService) GetAllUser(params map[string]interface{}) ([]models.User, error) {
-	result, err := s.u.FindAll(params)
-	return result, err
-}
+// func (s *UserService) GetPaginateAllUser(pageParams *utils.Paginate, params map[string]interface{}) ([]models.User, int64, error) {
+// 	result, count, err := s.u.Paginate(pageParams, params)
+// 	return result, count, err
+// }
 
-func (s *UserService) GetPaginateAllUser(pageParams *utils.Paginate, params map[string]interface{}) ([]models.User, int64, error) {
-	result, count, err := s.u.Paginate(pageParams, params)
-	return result, count, err
+func (s *UserService) GetPaginateAllUser(pageParams *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.User, int64, error) {
+	return s.u.FindAll(pageParams, filters, sorts)
 }
 
 func (s *UserService) CreateUser(user *models.User) (models.User, error) {
