@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"gorm.io/gorm/clause"
 )
@@ -174,6 +175,13 @@ func (s *SyncService) SyncDownloadEventByID(uid int64) error {
 			return err
 		}
 	}
+
+	// update event last sync time
+	err = s.repoBase.GetDB().Table("events").Where("id = ?", eventDto.ID).Update("last_synced_at", time.Now()).Error
+	if err != nil {
+		return err
+	}
+
 	// s.repoBase.GetDB().Table("barcodes").Create(&response.Data)
 
 	return nil

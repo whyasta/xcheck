@@ -21,6 +21,7 @@ type EventResponse struct {
 	Status       int                 `json:"status"`
 	StartDate    string              `json:"start_date"`
 	EndDate      string              `json:"end_date"`
+	LastSyncAt   *time.Time          `json:"last_sync_at"`
 	TicketTypes  []models.TicketType `json:"ticket_types"`
 	Gates        []models.Gate       `json:"gates"`
 	Sessions     []models.Session    `json:"sessions"`
