@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type BarcodeRepository interface {
@@ -310,6 +311,8 @@ func (repo *barcodeRepository) CreateLog(eventId int64, userId int64, gateId int
 }
 
 func (repo *barcodeRepository) CreateBulkLog(barcodes *[]models.BarcodeLog) error {
-	var err = repo.base.GetDB().Table("barcode_logs").Create(&barcodes).Error
+	var err = repo.base.GetDB().Table("barcode_logs").Clauses(clause.OnConflict{
+		Columns: []clause.Column{{Name: "id"}},
+	}).Create(&barcodes).Error
 	return err
 }
