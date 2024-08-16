@@ -12,9 +12,12 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+
+	"gorm.io/gorm/clause"
 )
 
 type SyncService struct {
+	repoBase       repositories.BaseRepository
 	repoEvent      repositories.EventRepository
 	repoTicketType repositories.TicketTypeRepository
 	repoGate       repositories.GateRepository
@@ -22,10 +25,10 @@ type SyncService struct {
 }
 
 func NewSyncService(
-	r repositories.EventRepository, r2 repositories.TicketTypeRepository,
+	base repositories.BaseRepository, r repositories.EventRepository, r2 repositories.TicketTypeRepository,
 	r3 repositories.GateRepository, r4 repositories.SessionRepository,
 ) *SyncService {
-	return &SyncService{r, r2, r3, r4}
+	return &SyncService{base, r, r2, r3, r4}
 }
 
 func (s *SyncService) SyncEvents() (utils.APIResponse[map[string]interface{}], int64, error) {
@@ -133,6 +136,45 @@ func (s *SyncService) SyncEventByID(uid int64) error {
 			return err
 		}
 	}
+
+	// Barcodes
+	client = &http.Client{}
+	req, err = HttpRequest("GET", config.GetAppConfig().CLOUD_BASE_URL+"/events/"+strconv.Itoa(int(uid))+"/barcodes?page=1&limit=200")
+	if err != nil {
+		return err
+	}
+	res, err = client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	fmt.Println(config.GetAppConfig().CLOUD_BASE_URL + "/events/" + strconv.Itoa(int(uid)) + "/barcodes?page=1&limit=200")
+	response = &utils.APIResponse[map[string]interface{}]{
+		Data: models.Event{},
+	}
+	derr = json.NewDecoder(res.Body).Decode(response)
+	if derr != nil {
+		return derr
+	}
+
+	var barcodes []models.Barcode
+	b, _ = json.Marshal(response.Data)
+	if err := json.Unmarshal(b, &barcodes); err != nil {
+		return err
+	}
+	if len(barcodes) > 0 {
+		// delete unused barcodes
+		s.repoBase.GetDB().Where("current_status = ?", "").Select(clause.Associations).Delete(&barcodes)
+
+		err = s.repoBase.GetDB().Table("barcodes").Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "id"}},
+		}).Create(&barcodes).Error
+		if err != nil {
+			return err
+		}
+	}
+	// s.repoBase.GetDB().Table("barcodes").Create(&response.Data)
 
 	return nil
 }

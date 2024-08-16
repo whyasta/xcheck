@@ -9,13 +9,13 @@ import (
 )
 
 type Repository struct {
+	Base           BaseRepository
 	User           *userRepository
 	Role           *roleRepository
 	Event          *eventRepository
 	TicketType     *ticketTypeRepository
 	Gate           *gateRepository
 	Session        *sessionRepository
-	Base           *baseRepository
 	Import         *importRepository
 	Barcode        *barcodeRepository
 	GateAllocation *gateAllocationRepository
@@ -32,6 +32,7 @@ func NewRepository(db *gorm.DB) *Repository {
 		GateAllocation: NewGateAllocationRepository(db),
 		Import:         NewImportRepository(db),
 		Barcode:        NewBarcodeRepository(db),
+		Base:           NewBaseRepository(db, new(interface{})),
 	}
 }
 

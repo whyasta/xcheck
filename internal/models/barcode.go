@@ -20,7 +20,6 @@ type Barcode struct {
 
 	// GateAllocationID int64                  `gorm:"column:gateAllocation_id" json:"gateAllocation_id"`
 	// GateAllocation   *GateAllocation        `gorm:"foreignKey:id;references:gate_allocation_id" json:"gateAllocation"`
-	CommonModel
 }
 
 type BarcodeAssignment struct {

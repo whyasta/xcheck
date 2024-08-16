@@ -11,6 +11,6 @@ func SyncRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
 	group.Use(middlewares.AuthMiddleware())
 	{
 		group.GET("/events", controllers.SyncController.SyncEvents)
-		group.GET("/events/:id", controllers.SyncController.SyncEventByID)
+		group.POST("/events/:id", controllers.SyncController.SyncEventByID)
 	}
 }
