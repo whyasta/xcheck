@@ -21,6 +21,7 @@ type Controller struct {
 	GateAllocationController *GateAllocationController
 	SessionController        *SessionController
 	BarcodeController        *BarcodeController
+	SyncController           *SyncController
 }
 
 func NewController(
@@ -37,6 +38,7 @@ func NewController(
 		GateAllocationController: NewGateAllocationController(services.GateAllocationService),
 		SessionController:        NewSessionController(services.SessionService),
 		BarcodeController:        NewBarcodeController(services.ImportService, services.BarcodeService),
+		SyncController:           NewSyncController(services.SyncService),
 	}
 }
 

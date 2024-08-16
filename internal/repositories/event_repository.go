@@ -32,7 +32,7 @@ func NewEventRepository(db *gorm.DB) *eventRepository {
 func (repo *eventRepository) Save(eventDto *dto.EventRequest) (models.Event, error) {
 	if eventDto.ID != 0 {
 		var result = models.Event{}
-		var err = repo.base.GetDB().Save(&eventDto).First(&result).Error
+		var err = repo.base.GetDB().Table("events").Save(&eventDto).First(&result).Error
 		return result, err
 	}
 

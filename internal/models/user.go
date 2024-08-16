@@ -24,7 +24,7 @@ type UserLogin struct {
 
 // swagger:model
 type SignedResponse struct {
-	Token string `json:"token"`
+	AccessToken string `json:"access_token"`
 }
 
 // swagger:model

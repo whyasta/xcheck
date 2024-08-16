@@ -1,0 +1,179 @@
+package services
+
+import (
+	"bigmind/xcheck-be/config"
+	"bigmind/xcheck-be/internal/dto"
+	"bigmind/xcheck-be/internal/models"
+	"bigmind/xcheck-be/internal/repositories"
+	"bigmind/xcheck-be/utils"
+	"bytes"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"net/http"
+	"strconv"
+)
+
+type SyncService struct {
+	repoEvent      repositories.EventRepository
+	repoTicketType repositories.TicketTypeRepository
+	repoGate       repositories.GateRepository
+	repoSession    repositories.SessionRepository
+}
+
+func NewSyncService(
+	r repositories.EventRepository, r2 repositories.TicketTypeRepository,
+	r3 repositories.GateRepository, r4 repositories.SessionRepository,
+) *SyncService {
+	return &SyncService{r, r2, r3, r4}
+}
+
+func (s *SyncService) SyncEvents() (utils.APIResponse[map[string]interface{}], int64, error) {
+	client := &http.Client{}
+	req, err := HttpRequest("GET", config.GetAppConfig().CLOUD_BASE_URL+"/events?page=1&limit=999999&filter=[{\"prop\":\"status\",\"opr\":\"=\",\"val\":\"1\"}]")
+	if err != nil {
+		return utils.APIResponse[map[string]interface{}]{}, 0, err
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		return utils.APIResponse[map[string]interface{}]{}, 0, err
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return utils.APIResponse[map[string]interface{}]{}, 0, errors.New("request failed with status: " + res.Status)
+	}
+
+	response := &utils.APIResponse[map[string]interface{}]{
+		Data: []models.Event{},
+	}
+	derr := json.NewDecoder(res.Body).Decode(response)
+	if derr != nil {
+		return utils.APIResponse[map[string]interface{}]{}, 0, err
+	}
+
+	// fmt.Println(response.Data)
+
+	return *response, 0, nil
+}
+
+func (s *SyncService) SyncEventByID(uid int64) error {
+	client := &http.Client{}
+	req, err := HttpRequest("GET", config.GetAppConfig().CLOUD_BASE_URL+"/events/"+strconv.Itoa(int(uid)))
+	if err != nil {
+		return err
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	response := &utils.APIResponse[map[string]interface{}]{
+		Data: models.Event{},
+	}
+	derr := json.NewDecoder(res.Body).Decode(response)
+	if derr != nil {
+		return derr
+	}
+	// b, _ := json.Marshal(response)
+	// fmt.Println(string(b))
+
+	m, _ := response.Data.(map[string]interface{})
+
+	// Event
+	eventDto := dto.EventRequest{
+		ID:        int64(m["id"].(float64)),
+		EventName: m["event_name"].(string),
+		StartDate: m["start_date"].(string),
+		EndDate:   m["end_date"].(string),
+		Status:    int(m["status"].(float64)),
+	}
+	_, err = s.repoEvent.Save(&eventDto)
+	if err != nil {
+		return err
+	}
+
+	// Ticket Types
+	var tiketTypes []models.TicketType
+	b, _ := json.Marshal(m["ticket_types"])
+	if err := json.Unmarshal(b, &tiketTypes); err != nil {
+		return err
+	}
+	if len(tiketTypes) > 0 {
+		_, err = s.repoTicketType.BulkSave(&tiketTypes)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Gates
+	var gates []dto.GateRequestDto
+	b, _ = json.Marshal(m["gates"])
+	if err := json.Unmarshal(b, &gates); err != nil {
+		return err
+	}
+	if len(gates) > 0 {
+		_, err = s.repoGate.BulkSave(&gates)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Sessions
+	var sessions []models.Session
+	b, _ = json.Marshal(m["sessions"])
+	if err := json.Unmarshal(b, &sessions); err != nil {
+		return err
+	}
+	if len(sessions) > 0 {
+		_, err = s.repoSession.BulkSave(&sessions)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func HttpRequest(method string, url string) (*http.Request, error) {
+	body := []byte(`{
+        "username": "admin",
+        "password": "admin"
+    }`)
+
+	req, err := http.NewRequest("POST", config.GetAppConfig().CLOUD_BASE_URL+"/auth/signin", bytes.NewBuffer(body))
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return nil, err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		fmt.Println("HTTP Error:", res.Status)
+		return nil, errors.New("request failed with status: " + res.Status)
+	}
+
+	token := &models.SignedResponse{}
+	derr := json.NewDecoder(res.Body).Decode(token)
+	if derr != nil {
+		return nil, err
+	}
+
+	req, err = http.NewRequest(method, url, nil)
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return nil, err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer "+token.AccessToken)
+
+	return req, nil
+}

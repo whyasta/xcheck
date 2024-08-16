@@ -13,6 +13,24 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+type AppConfig struct {
+	DATABASE_HOST     string
+	DATABASE_PORT     string
+	DATABASE_USER     string
+	DATABASE_PASSWORD string
+	DATABASE_NAME     string
+	AUTH_JWT_SECRET   string
+	AUTH_JWT_EXPIRE   int
+	AUTH_JWT_ISSUER   string
+	SERVER_ADDRESS    string
+	SERVER_PORT       string
+	APP_ENV           string
+	REDIS_HOST        string
+	REDIS_PORT        string
+	REDIS_QUEUE       string
+	CLOUD_BASE_URL    string
+}
+
 var config *viper.Viper
 
 func Init(env string) {
@@ -79,4 +97,24 @@ func GetDsn() string {
 
 func GetConfig() *viper.Viper {
 	return config
+}
+
+func GetAppConfig() *AppConfig {
+	return &AppConfig{
+		DATABASE_HOST:     GetConfig().GetString("DATABASE_HOST"),
+		DATABASE_PORT:     GetConfig().GetString("DATABASE_PORT"),
+		DATABASE_USER:     GetConfig().GetString("DATABASE_USER"),
+		DATABASE_PASSWORD: GetConfig().GetString("DATABASE_PASSWORD"),
+		DATABASE_NAME:     GetConfig().GetString("DATABASE_NAME"),
+		AUTH_JWT_SECRET:   GetConfig().GetString("AUTH_JWT_SECRET"),
+		AUTH_JWT_EXPIRE:   GetConfig().GetInt("AUTH_JWT_EXPIRE"),
+		AUTH_JWT_ISSUER:   GetConfig().GetString("AUTH_JWT_ISSUER"),
+		SERVER_ADDRESS:    GetConfig().GetString("SERVER_ADDRESS"),
+		SERVER_PORT:       GetConfig().GetString("SERVER_PORT"),
+		APP_ENV:           GetConfig().GetString("APP_ENV"),
+		REDIS_HOST:        GetConfig().GetString("REDIS_HOST"),
+		REDIS_PORT:        GetConfig().GetString("REDIS_PORT"),
+		REDIS_QUEUE:       GetConfig().GetString("REDIS_QUEUE"),
+		CLOUD_BASE_URL:    GetConfig().GetString("CLOUD_BASE_URL"),
+	}
 }

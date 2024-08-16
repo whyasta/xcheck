@@ -16,5 +16,6 @@ func InitRoutes(
 	RoleRoutes(router.Group("/roles"), controllers)
 	EventRoutes(router.Group("/events"), controllers)
 	BarcodeRoutes(router.Group("/barcodes"), controllers)
+	SyncRoutes(router.Group("/sync"), controllers)
 	return router
 }

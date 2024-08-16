@@ -35,12 +35,18 @@ func (repo *gateRepository) Save(gate *dto.GateRequestDto) (models.Gate, error) 
 }
 
 func (repo *gateRepository) BulkSave(gates *[]dto.GateRequestDto) ([]models.Gate, error) {
-	result, err := BaseInsert(*repo.base.GetDB(), *gates)
-	rows := make([]models.Gate, 0)
-	for i, item := range result {
-		rows[i] = *item.ToEntity()
+	// result, err := BaseInsert(*repo.base.GetDB(), *gates)
+	var result []models.Gate
+	for _, item := range *gates {
+		result = append(result, *item.ToEntity())
 	}
-	return rows, err
+
+	var err = repo.base.GetDB().Table("gates").Omit("users").Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"gate_name"}),
+	}).Create(&result).Error
+
+	return result, err
 }
 
 func (repo *gateRepository) FindByID(id int64) (models.Gate, error) {

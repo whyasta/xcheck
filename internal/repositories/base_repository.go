@@ -129,6 +129,7 @@ func (br *baseRepository) CommonUpdate(table string, params map[string]interface
 
 func BaseInsert[M any](db gorm.DB, item M) (M, error) {
 	var result = reflect.ValueOf(item).Interface().(M)
+
 	var err = db.Create(&result).Error
 	return result, err
 }

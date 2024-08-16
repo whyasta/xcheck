@@ -5,6 +5,7 @@ import (
 	"bigmind/xcheck-be/utils"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type TicketTypeRepository interface {
@@ -31,7 +32,11 @@ func (repo *ticketTypeRepository) Save(ticketType *models.TicketType) (models.Ti
 }
 
 func (repo *ticketTypeRepository) BulkSave(ticketTypes *[]models.TicketType) ([]models.TicketType, error) {
-	return BaseInsert(*repo.base.GetDB(), *ticketTypes)
+	//return BaseInsert(*repo.base.GetDB(), *ticketTypes)
+	var err = repo.base.GetDB().Table("ticket_types").Clauses(clause.OnConflict{
+		Columns: []clause.Column{{Name: "id"}},
+	}).Create(&ticketTypes).Error
+	return *ticketTypes, err
 }
 
 func (repo *ticketTypeRepository) FindByID(id int64) (models.TicketType, error) {

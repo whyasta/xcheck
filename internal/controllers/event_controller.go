@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bigmind/xcheck-be/config"
 	"bigmind/xcheck-be/internal/constant/response"
 	"bigmind/xcheck-be/internal/dto"
 	"bigmind/xcheck-be/internal/services"
@@ -232,6 +233,23 @@ func (r EventController) DeleteEvent(c *gin.Context) {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
+
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", utils.Null()))
+}
+
+func (r EventController) SyncDownload(c *gin.Context) {
+	defer utils.ResponseHandler(c)
+
+	if config.GetAppConfig().APP_ENV != "local" {
+		c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", utils.Null()))
+		return
+	}
+
+	// res, err := r.service.SyncDownload()
+	// if err != nil {
+	// 	utils.PanicException(response.InvalidRequest, err.Error())
+	// 	return
+	// }
 
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", utils.Null()))
 }

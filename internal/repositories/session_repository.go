@@ -5,6 +5,7 @@ import (
 	"bigmind/xcheck-be/utils"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type SessionRepository interface {
@@ -31,7 +32,13 @@ func (repo *sessionRepository) Save(session *models.Session) (models.Session, er
 }
 
 func (repo *sessionRepository) BulkSave(sessions *[]models.Session) ([]models.Session, error) {
-	return BaseInsert(*repo.base.GetDB(), *sessions)
+	var err = repo.base.GetDB().Table("sessions").Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "id"}},
+		DoUpdates: clause.AssignmentColumns([]string{"session_name", "session_start", "session_end"}),
+	}).Create(&sessions).Error
+	return *sessions, err
+
+	// return BaseInsert(*repo.base.GetDB(), *sessions)
 }
 
 func (repo *sessionRepository) FindByID(id int64) (models.Session, error) {
