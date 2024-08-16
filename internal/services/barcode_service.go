@@ -148,6 +148,10 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 		return false, result, errors.New("Barcode " + barcode + " must be checked in first")
 	}
 
+	if action == constant.BarcodeStatusIn && result.CurrentStatus == constant.BarcodeStatusIn {
+		return false, result, errors.New("Barcode " + barcode + " already checked in")
+	}
+
 	// update barcode to valid
 	// s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagUsed})
 	firstCheckin, err := s.r.CreateLog(eventId, userId, barcode, result.CurrentStatus, action)
