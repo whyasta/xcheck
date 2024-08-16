@@ -13,7 +13,7 @@ type BarcodeDownloadDto struct {
 }
 
 type BarcodeUploadLogDto struct {
-	ID        *int64                 `json:"id,omitempty"`
+	ID        int64                  `json:"id,omitempty"`
 	Barcode   string                 `gorm:"column:barcode" json:"barcode" validate:"required"`
 	ScannedAt time.Time              `gorm:"->:false;column:scanned_at" json:"scanned_at,omitempty"`
 	GateID    int64                  `gorm:"column:gate_id" mapstructure:"gate_id" json:"gate_id" validate:"required"`
@@ -40,7 +40,7 @@ type BarcodeUploadDto struct {
 
 func (s *BarcodeUploadLogDto) ToEntity() *models.BarcodeLog {
 	return &models.BarcodeLog{
-		ID:        *s.ID,
+		ID:        s.ID,
 		Barcode:   s.Barcode,
 		ScannedAt: s.ScannedAt,
 		ScannedBy: s.ScannedBy,
