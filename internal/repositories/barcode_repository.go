@@ -4,7 +4,6 @@ import (
 	"bigmind/xcheck-be/internal/constant"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/utils"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -312,12 +311,15 @@ func (repo *barcodeRepository) CreateLog(eventId int64, userId int64, gateId int
 }
 
 func (repo *barcodeRepository) CreateBulkLog(barcodes *[]models.BarcodeLog) error {
-	if len(*barcodes) > 0 {
-		var err = repo.base.GetDB().Table("barcode_logs").Clauses(clause.OnConflict{
+	var err error
+	if (len(*barcodes)) > 0 {
+		err := repo.base.GetDB().Table("barcode_logs").Clauses(clause.OnConflict{
 			Columns: []clause.Column{{Name: "id"}},
 		}).Create(&barcodes).Error
 
-		return err
+		if err != nil {
+			return err
+		}
 	}
 
 	var logs []models.Barcode
@@ -326,15 +328,15 @@ func (repo *barcodeRepository) CreateBulkLog(barcodes *[]models.BarcodeLog) erro
 		Select("barcode", "action as current_status", "scanned_at").
 		Where("scanned_at IN (?)", subQuery1).
 		Find(&logs)
-	b, _ := json.Marshal(logs)
-	fmt.Println(string(b))
 
 	for _, item := range logs {
-		repo.base.GetDB().Table("barcodes").Where("barcode = ?", item.Barcode).
+		err := repo.base.GetDB().Table("barcodes").Where("barcode = ?", item.Barcode).
 			Update("current_status", item.CurrentStatus).
-			Update("flag", constant.BarcodeFlagUsed)
-
+			Update("flag", constant.BarcodeFlagUsed).Error
+		if err != nil {
+			return err
+		}
 	}
 
-	return nil
+	return err
 }
