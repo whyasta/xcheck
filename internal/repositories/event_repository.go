@@ -5,6 +5,7 @@ import (
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/utils"
 
+	"github.com/mitchellh/mapstructure"
 	"gorm.io/gorm"
 )
 
@@ -17,6 +18,7 @@ type EventRepository interface {
 	Delete(uid int64) (models.Event, error)
 	FindByID(uid int64) (models.Event, error)
 	Summary(uid int64) dto.EventSummary
+	Report(uid int64) (dto.EventReportResponse, error)
 }
 
 type eventRepository struct {
@@ -152,11 +154,33 @@ func (repo *eventRepository) Summary(id int64) dto.EventSummary {
 			"SUM(CASE WHEN current_status = 'IN' THEN 1 ELSE 0 END) as total_check_in",
 			"SUM(CASE WHEN current_status = 'OUT' THEN 1 ELSE 0 END) as total_check_out").
 		Where("event_id = ?", id).
+		Omit("total_ticket_type").
 		Scan(&result).
 		Error
 	if err != nil {
 		return dto.EventSummary{}
 	}
+
+	var ticketType []struct {
+		TicketTypeName string `json:"ticket_type_name" mapstructure:"ticket_type_name"`
+		TotalBarcode   int    `json:"total_barcode" mapstructure:"total_barcode"`
+		TotalCheckIn   int    `json:"total_check_in" mapstructure:"total_check_in"`
+		TotalCheckOut  int    `json:"total_check_out" mapstructure:"total_check_out"`
+	}
+
+	var jsonTicketType []map[string]interface{}
+	repo.base.GetDB().Table("ticket_types").
+		Select("ticket_type_name",
+			"count(barcode) as total_barcode",
+			"SUM(CASE WHEN current_status = 'IN' THEN 1 ELSE 0 END) as total_check_in",
+			"SUM(CASE WHEN current_status = 'OUT' THEN 1 ELSE 0 END) as total_check_out").
+		Joins("join barcodes on barcodes.ticket_type_id = ticket_types.id").
+		Where("barcodes.event_id = ?", id).
+		Group("barcodes.ticket_type_id").
+		Scan(&ticketType)
+
+	mapstructure.Decode(ticketType, &jsonTicketType)
+	result.TotalTicketType = jsonTicketType
 
 	// repo.base.GetDB().Table("barcode_logs").
 	// 	Select("count(barcode) as total_check_in").
@@ -173,4 +197,16 @@ func (repo *eventRepository) Summary(id int64) dto.EventSummary {
 	// result.TotalCheckIn = totalCheckIn
 	// result.TotalCheckOut = totalCheckOut
 	return result
+}
+
+func (repo *eventRepository) Report(id int64) (dto.EventReportResponse, error) {
+	var result = dto.EventReportResponse{}
+
+	tx := repo.base.GetDB().Table("events")
+	err := tx.First(&result, "id = ?", id).Error
+	//data, err := BaseFindByID[map[string]interface{}](*repo.base.GetDB(), "events", id, []string{""})
+
+	result.EventSummary = repo.Summary(id)
+
+	return result, err
 }

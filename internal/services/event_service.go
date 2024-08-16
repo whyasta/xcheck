@@ -87,3 +87,7 @@ func (s *EventService) GetEventByID(uid int64) (dto.EventResponse, error) {
 func (s *EventService) Delete(uid int64) (models.Event, error) {
 	return s.r.Delete(uid)
 }
+
+func (s *EventService) Report(uid int64) (dto.EventReportResponse, error) {
+	return s.r.Report(uid)
+}

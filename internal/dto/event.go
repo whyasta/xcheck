@@ -29,9 +29,10 @@ type EventResponse struct {
 }
 
 type EventSummary struct {
-	TotalBarcode  int64 `json:"total_barcode"`
-	TotalCheckIn  int64 `json:"total_check_in"`
-	TotalCheckOut int64 `json:"total_check_out"`
+	TotalBarcode    int64                    `json:"total_barcode"`
+	TotalCheckIn    int64                    `json:"total_check_in"`
+	TotalCheckOut   int64                    `json:"total_check_out"`
+	TotalTicketType []map[string]interface{} `json:"total_ticket_type"`
 }
 
 type EventUpdateDto struct {
@@ -68,4 +69,17 @@ func (s *EventRequest) ToEntity() *models.Event {
 		StartDate: start,
 		EndDate:   end,
 	}
+}
+
+type EventReportResponse struct {
+	ID           int64      `json:"id"`
+	EventName    string     `json:"event_name" validate:"required,min=5,max=100"`
+	Status       int        `json:"status"`
+	StartDate    string     `json:"start_date"`
+	EndDate      string     `json:"end_date"`
+	LastSyncedAt *time.Time `json:"last_synced_at"`
+	// TicketTypes  []models.TicketType `gorm:"foreignKey:event_id;references:id" json:"ticket_types"`
+	// Gates        []models.Gate       `gorm:"foreignKey:event_id;references:id" json:"gates"`
+	// Sessions     []models.Session    `gorm:"foreignKey:event_id;references:id" json:"sessions"`
+	EventSummary `json:"summary"`
 }

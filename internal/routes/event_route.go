@@ -30,6 +30,8 @@ func EventRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
 		group.GET("/:id/barcodes", controllers.BarcodeController.GetEventBarcodes)
 		group.POST("/:id/barcodes/import", controllers.BarcodeController.ImportEventBarcodes)
 
+		group.GET("/:id/report", controllers.EventController.ReportEvent)
+
 		// group.GET("/:id/gate-allocations", controllers.GateAllocationController.GetAllGateAllocations)
 		// group.POST("/:id/gate-allocations", controllers.GateAllocationController.CreateGateAllocation)
 		// group.POST("/:id/gate-allocations/:gateAllocationId", controllers.GateAllocationController.UpdateGateAllocation)
