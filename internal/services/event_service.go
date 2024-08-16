@@ -74,6 +74,7 @@ func (s *EventService) GetEventByID(uid int64) (dto.EventResponse, error) {
 		Gates:        res.Gates,
 		Sessions:     res.Sessions,
 		EventSummary: s.r.Summary(res.ID),
+		LastSyncedAt: res.LastSyncedAt,
 		// EventSummary: dto.EventSummary{
 		// 	TotalBarcode:  0,
 		// 	TotalCheckIn:  0,
