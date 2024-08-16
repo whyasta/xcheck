@@ -52,7 +52,9 @@ func (s *UserService) CreateUser(user *models.User) (models.User, error) {
 }
 
 func (s *UserService) GetUserByID(uid int64) (models.User, error) {
-	return s.u.FindByID(uid)
+	user, err := s.u.FindByID(uid)
+	user.Password = ""
+	return user, err
 }
 
 // func (s *UserService) GetUserByUsername(uname string) (models.User, error) {
