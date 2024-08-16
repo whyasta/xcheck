@@ -154,7 +154,7 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 
 	// update barcode to valid
 	// s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagUsed})
-	firstCheckin, err := s.r.CreateLog(eventId, userId, barcode, result.CurrentStatus, action)
+	firstCheckin, err := s.r.CreateLog(eventId, userId, gateId, barcode, result.CurrentStatus, action)
 	if err != nil {
 		return false, result, err
 	}

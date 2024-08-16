@@ -29,10 +29,11 @@ type BarcodeAssignment struct {
 }
 
 type BarcodeLog struct {
-	EventID   int64
-	Barcode   string
-	ScannedAt time.Time
-	GateID    int64
-	ScannedBy int64
-	Action    constant.BarcodeStatus
+	ID        int64                  `json:"id,omitempty"`
+	EventID   int64                  `json:"event_id"`
+	Barcode   string                 `json:"barcode"`
+	ScannedAt time.Time              `json:"scanned_at"`
+	GateID    int64                  `json:"gate_id"`
+	ScannedBy int64                  `json:"scanned_by"`
+	Action    constant.BarcodeStatus `json:"action"`
 }

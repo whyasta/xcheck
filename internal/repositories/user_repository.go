@@ -11,8 +11,8 @@ import (
 type UserRepository interface {
 	// GetByID(id int) (*models.User, error)
 	Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.User, int64, error)
-
 	FindAll(params map[string]interface{}) ([]models.User, error)
+
 	Save(user *models.User) (models.User, error)
 	FindByUsername(username string) (models.User, error)
 	FindByID(uid int64) (models.User, error)

@@ -36,7 +36,7 @@ func (s SyncController) SyncEvents(c *gin.Context) {
 	c.JSON(http.StatusOK, data)
 }
 
-func (s SyncController) SyncEventByID(c *gin.Context) {
+func (s SyncController) SyncDownloadEventByID(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
 	if config.GetAppConfig().APP_ENV != "local" {
@@ -50,7 +50,29 @@ func (s SyncController) SyncEventByID(c *gin.Context) {
 		return
 	}
 
-	err = s.service.SyncEventByID(int64(uid))
+	err = s.service.SyncDownloadEventByID(int64(uid))
+	if err != nil {
+		utils.PanicException(response.InvalidRequest, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", utils.Null()))
+}
+
+func (s SyncController) SyncUploadEventByID(c *gin.Context) {
+	defer utils.ResponseHandler(c)
+
+	if config.GetAppConfig().APP_ENV != "local" {
+		utils.PanicException(response.InvalidRequest, errors.New("Service Unavailable").Error())
+		return
+	}
+
+	uid, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		utils.PanicException(response.InvalidRequest, err.Error())
+		return
+	}
+
+	err = s.service.SyncUploadEventByID(int64(uid))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return

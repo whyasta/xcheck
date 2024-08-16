@@ -33,7 +33,7 @@ func NewSyncService(
 
 func (s *SyncService) SyncEvents() (utils.APIResponse[map[string]interface{}], int64, error) {
 	client := &http.Client{}
-	req, err := HttpRequest("GET", config.GetAppConfig().CLOUD_BASE_URL+"/events?page=1&limit=999999&filter=[{\"prop\":\"status\",\"opr\":\"=\",\"val\":\"1\"}]")
+	req, err := HttpRequest("GET", config.GetAppConfig().CLOUD_BASE_URL+"/events?page=1&limit=999999&filter=[{\"prop\":\"status\",\"opr\":\"=\",\"val\":\"1\"}]", nil)
 	if err != nil {
 		return utils.APIResponse[map[string]interface{}]{}, 0, err
 	}
@@ -61,9 +61,9 @@ func (s *SyncService) SyncEvents() (utils.APIResponse[map[string]interface{}], i
 	return *response, 0, nil
 }
 
-func (s *SyncService) SyncEventByID(uid int64) error {
+func (s *SyncService) SyncDownloadEventByID(uid int64) error {
 	client := &http.Client{}
-	req, err := HttpRequest("GET", config.GetAppConfig().CLOUD_BASE_URL+"/events/"+strconv.Itoa(int(uid)))
+	req, err := HttpRequest("GET", config.GetAppConfig().CLOUD_BASE_URL+"/events/"+strconv.Itoa(int(uid)), nil)
 	if err != nil {
 		return err
 	}
@@ -139,7 +139,7 @@ func (s *SyncService) SyncEventByID(uid int64) error {
 
 	// Barcodes
 	client = &http.Client{}
-	req, err = HttpRequest("GET", config.GetAppConfig().CLOUD_BASE_URL+"/events/"+strconv.Itoa(int(uid))+"/barcodes?page=1&limit=200")
+	req, err = HttpRequest("GET", config.GetAppConfig().CLOUD_BASE_URL+"/events/"+strconv.Itoa(int(uid))+"/barcodes?page=1&limit=200", nil)
 	if err != nil {
 		return err
 	}
@@ -149,7 +149,7 @@ func (s *SyncService) SyncEventByID(uid int64) error {
 	}
 	defer res.Body.Close()
 
-	fmt.Println(config.GetAppConfig().CLOUD_BASE_URL + "/events/" + strconv.Itoa(int(uid)) + "/barcodes?page=1&limit=200")
+	//fmt.Println(config.GetAppConfig().CLOUD_BASE_URL + "/events/" + strconv.Itoa(int(uid)) + "/barcodes?page=1&limit=200")
 	response = &utils.APIResponse[map[string]interface{}]{
 		Data: models.Event{},
 	}
@@ -165,7 +165,7 @@ func (s *SyncService) SyncEventByID(uid int64) error {
 	}
 	if len(barcodes) > 0 {
 		// delete unused barcodes
-		s.repoBase.GetDB().Where("current_status = ?", "").Select(clause.Associations).Delete(&barcodes)
+		s.repoBase.GetDB().Where("current_status = ?", "").Select("Gates", "Sessions").Omit("TicketType").Delete(&barcodes)
 
 		err = s.repoBase.GetDB().Table("barcodes").Clauses(clause.OnConflict{
 			Columns: []clause.Column{{Name: "id"}},
@@ -179,7 +179,49 @@ func (s *SyncService) SyncEventByID(uid int64) error {
 	return nil
 }
 
-func HttpRequest(method string, url string) (*http.Request, error) {
+func (s *SyncService) SyncUploadEventByID(uid int64) error {
+	var barcodeLogs []models.BarcodeLog
+	s.repoBase.GetDB().Table("barcode_logs").Where("event_id = ?", uid).Find(&barcodeLogs)
+
+	if len(barcodeLogs) <= 0 {
+		return nil
+	}
+
+	body, err := json.Marshal(barcodeLogs)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	fmt.Println(string(body))
+	client := &http.Client{}
+	req, err := HttpRequest("POST", config.GetAppConfig().CLOUD_BASE_URL+"/barcodes/sync/upload", body)
+	if err != nil {
+		return err
+	}
+
+	res, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	response := &utils.APIResponse[map[string]interface{}]{
+		Data: map[string]interface{}{},
+	}
+	derr := json.NewDecoder(res.Body).Decode(response)
+	if derr != nil {
+		return derr
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return errors.New(res.Status + " - " + response.Message)
+	}
+
+	return nil
+}
+
+func HttpRequest(method string, url string, payload []byte) (*http.Request, error) {
 	body := []byte(`{
         "username": "admin",
         "password": "admin"
@@ -209,7 +251,7 @@ func HttpRequest(method string, url string) (*http.Request, error) {
 		return nil, err
 	}
 
-	req, err = http.NewRequest(method, url, nil)
+	req, err = http.NewRequest(method, url, bytes.NewReader(payload))
 	if err != nil {
 		fmt.Println("Error creating request:", err)
 		return nil, err
