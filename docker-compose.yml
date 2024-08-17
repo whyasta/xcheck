@@ -1,10 +1,10 @@
 version: '3'
 services:
     app:
-        build:
-            context: .
-            dockerfile: Dockerfile
-        image: xcheck
+        # build:
+        #     context: .
+        #     dockerfile: Dockerfile
+        image: xcheck-api
         container_name: xcheck_be_service
         restart: unless-stopped
         tty: true

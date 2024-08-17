@@ -1,51 +1,61 @@
 image: docker
 
 variables:
-  SERVICE_NAME: xcheck
+  SERVICE_NAME: xcheck-api
 
 stages:
-  - deploy_dev
-  - deploy_dev_local
-  - deploy_prod
+  - build
+  - deploy
 
-deploy_dev:
-  stage: deploy_dev
+build:
+  stage: build
   environment:
     name: dev
   tags:
     - bm-dev-kris
   variables:
     VERSION: $CI_PIPELINE_IID
+  only:
+    refs:
+      - main
   script:
     - touch .env
     - echo "$ENV" >> .env
-    - docker compose up -d --build
+    - docker docker build -t xcheck-api .
 
-# cleanup_dev:
-#   stage: deploy_dev
-#   environment:
-#     name: dev
-#   tags:
-#     - bm-dev-kris
-#   script:
-#     - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
-
-deploy_dev_local:
-  stage: deploy_dev_local
+build_local:
+  stage: build
   environment:
     name: dev
   tags:
     - bm-dev-kris
   variables:
     VERSION: $CI_PIPELINE_IID
+  only:
+    refs:
+      - main
   script:
     - touch .env
     - echo "$ENV_LOCAL" >> .env
-    - docker compose -f docker-compose-local.yml up -d --build
-  when: manual
+    - docker docker build -t xcheck-api-local .
+
+deploy_dev:
+  stage: deploy
+  environment:
+    name: dev
+  tags:
+    - bm-dev-kris
+  variables:
+    VERSION: $CI_PIPELINE_IID
+  only:
+    refs:
+      - main
+  script:
+    - docker compose -f docker-compose.yml up -d
+    - docker compose -f docker-compose-local.yml up -d
 
 deploy_prod:
-  stage: deploy_prod
+  stage: deploy
   environment:
     name: prod
   tags:
@@ -61,3 +71,12 @@ deploy_prod:
     - echo "$ENV" >> .env
     - docker compose up -d --build
   when: manual
+
+cleanup:
+  stage: deploy
+  environment:
+    name: dev
+  tags:
+    - bm-dev-kris
+  script:
+    - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
