@@ -1,11 +1,9 @@
 package controllers
 
 import (
-	"bigmind/xcheck-be/config"
 	"bigmind/xcheck-be/internal/constant/response"
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -27,22 +25,12 @@ func (s SyncController) SyncDownload(c *gin.Context) {
 func (s SyncController) SyncEvents(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	if config.GetAppConfig().APP_ENV != "local" {
-		utils.PanicException(response.InvalidRequest, errors.New("Service Unavailable").Error())
-		return
-	}
-
 	data, _, _ := s.service.SyncEvents()
 	c.JSON(http.StatusOK, data)
 }
 
 func (s SyncController) SyncDownloadEventByID(c *gin.Context) {
 	defer utils.ResponseHandler(c)
-
-	if config.GetAppConfig().APP_ENV != "local" {
-		utils.PanicException(response.InvalidRequest, errors.New("Service Unavailable").Error())
-		return
-	}
 
 	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -61,11 +49,6 @@ func (s SyncController) SyncDownloadEventByID(c *gin.Context) {
 func (s SyncController) SyncUploadEventByID(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	if config.GetAppConfig().APP_ENV != "local" {
-		utils.PanicException(response.InvalidRequest, errors.New("Service Unavailable").Error())
-		return
-	}
-
 	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
@@ -82,11 +65,6 @@ func (s SyncController) SyncUploadEventByID(c *gin.Context) {
 
 func (s SyncController) SyncUsers(c *gin.Context) {
 	defer utils.ResponseHandler(c)
-
-	if config.GetAppConfig().APP_ENV != "local" {
-		utils.PanicException(response.InvalidRequest, errors.New("Service Unavailable").Error())
-		return
-	}
 
 	err := s.service.SyncUsers()
 	if err != nil {
