@@ -21,7 +21,7 @@ build:
   script:
     - touch .env
     - echo "$ENV" >> .env
-    - docker docker build -t xcheck-api .
+    - docker build -t xcheck-api .
 
 build_local:
   stage: build
@@ -37,7 +37,7 @@ build_local:
   script:
     - touch .env
     - echo "$ENV_LOCAL" >> .env
-    - docker docker build -t xcheck-api-local .
+    - docker build -t xcheck-api-local .
 
 deploy_dev:
   stage: deploy
