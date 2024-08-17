@@ -13,5 +13,6 @@ func SyncRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
 		group.GET("/events", controllers.SyncController.SyncEvents)
 		group.POST("/download/events/:id", controllers.SyncController.SyncDownloadEventByID)
 		group.POST("/upload/events/:id", controllers.SyncController.SyncUploadEventByID)
+		group.POST("/users", controllers.SyncController.SyncUsers)
 	}
 }

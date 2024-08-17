@@ -79,3 +79,19 @@ func (s SyncController) SyncUploadEventByID(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", utils.Null()))
 }
+
+func (s SyncController) SyncUsers(c *gin.Context) {
+	defer utils.ResponseHandler(c)
+
+	if config.GetAppConfig().APP_ENV != "local" {
+		utils.PanicException(response.InvalidRequest, errors.New("Service Unavailable").Error())
+		return
+	}
+
+	err := s.service.SyncUsers()
+	if err != nil {
+		utils.PanicException(response.InvalidRequest, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", utils.Null()))
+}

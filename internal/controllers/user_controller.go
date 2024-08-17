@@ -156,3 +156,24 @@ func (r UserController) UpdateUser(c *gin.Context) {
 	result.Password = ""
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
 }
+
+func (u UserController) GetAllUserSync(c *gin.Context) {
+	pageParams, filter, sort := MakePageFilterQueryParams(c.Request.URL.Query(), []string{"role_id"})
+
+	allUsers, count, err := u.service.GetAllUserSync(pageParams, filter, sort)
+
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	meta := utils.MetaResponse{
+		PagingInfo: utils.PagingInfo{
+			Page:  pageParams.GetPage(count),
+			Limit: pageParams.GetLimit(count),
+			Total: int(count),
+		},
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, response.Success, "", allUsers, &meta))
+}

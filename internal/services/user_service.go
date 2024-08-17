@@ -44,6 +44,10 @@ func (s *UserService) GetPaginateAllUser(pageParams *utils.Paginate, filters []u
 	return s.u.FindAll(pageParams, filters, sorts)
 }
 
+func (s *UserService) GetAllUserSync(pageParams *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.User, int64, error) {
+	return s.u.FindAllSync(pageParams, filters, sorts)
+}
+
 func (s *UserService) CreateUser(user *models.User) (models.User, error) {
 	hash, _ := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
 	user.Password = string(hash)

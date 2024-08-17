@@ -229,6 +229,48 @@ func (s *SyncService) SyncUploadEventByID(uid int64) error {
 	return nil
 }
 
+func (s *SyncService) SyncUsers() error {
+	client := &http.Client{}
+	req, err := HttpRequest("GET", config.GetAppConfig().CLOUD_BASE_URL+"/users/sync?page=1&limit=999999", nil)
+	if err != nil {
+		return err
+	}
+	res, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	response := &utils.APIResponse[map[string]interface{}]{
+		Data: []models.User{},
+	}
+	derr := json.NewDecoder(res.Body).Decode(response)
+	if derr != nil {
+		return derr
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return errors.New(res.Status + " - " + response.Message)
+	}
+
+	var users []models.User
+	b, _ := json.Marshal(response.Data)
+	if err := json.Unmarshal(b, &users); err != nil {
+		return err
+	}
+	if len(users) > 0 {
+		err = s.repoBase.GetDB().Table("users").Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "id"}},
+			DoUpdates: clause.AssignmentColumns([]string{"email", "role_id", "password"}),
+		}).Create(&users).Error
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func HttpRequest(method string, url string, payload []byte) (*http.Request, error) {
 	body := []byte(`{
         "username": "admin",
