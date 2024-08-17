@@ -53,6 +53,9 @@ deploy_dev:
   script:
     - docker compose -f docker-compose.yml up -d
     - docker compose -f docker-compose-local.yml up -d
+  needs:
+    - build
+    - build_local
 
 deploy_prod:
   stage: deploy
@@ -72,11 +75,11 @@ deploy_prod:
     - docker compose up -d --build
   when: manual
 
-cleanup:
-  stage: deploy
-  environment:
-    name: dev
-  tags:
-    - bm-dev-kris
-  script:
-    - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
+# cleanup:
+#   stage: deploy
+#   environment:
+#     name: dev
+#   tags:
+#     - bm-dev-kris
+#   script:
+#     - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
