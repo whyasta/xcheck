@@ -21,7 +21,7 @@ type BarcodeRepository interface {
 	FindByID(uid int64) (models.Barcode, error)
 	AssignBarcodes(importId int64, assignId int64, ticketTypeId int64) (int64, error)
 	Scan(barcode string) (models.Barcode, error)
-	CreateLog(eventId int64, userId int64, gateId int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus) (bool, error)
+	CreateLog(eventId int64, userId int64, gateId int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus, device string) (bool, error)
 	CreateBulkLog(barcodes *[]models.BarcodeLog) error
 }
 
@@ -61,6 +61,8 @@ func (repo *barcodeRepository) FindAllWithRelations(paginate *utils.Paginate, fi
 		return tx2.Omit("EventID")
 	}).Preload("Sessions", func(tx2 *gorm.DB) *gorm.DB {
 		return tx2.Omit("EventID")
+	}).Preload("LatestScan", func(tx2 *gorm.DB) *gorm.DB {
+		return tx2.Joins("JOIN users ON users.id = barcode_logs.scanned_by").Select("users.username as scanned_by_name", "barcode_logs.*").Omit("ID", "EventID")
 	})
 
 	if len(filters) > 0 {
@@ -187,7 +189,12 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importId int64, eventId i
 			})
 		}
 
-		result = repo.base.GetDB().Omit("Sessions", "Gates").Create(&barcodes)
+		result = repo.base.GetDB().Omit("Sessions", "Gates").
+			Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "event_id"}, {Name: "barcode"}},
+				DoNothing: true,
+			}).
+			Create(&barcodes)
 
 		err = result.Error
 		if err != nil {
@@ -283,7 +290,7 @@ func (repo *barcodeRepository) Scan(barcode string) (models.Barcode, error) {
 	return result, err
 }
 
-func (repo *barcodeRepository) CreateLog(eventId int64, userId int64, gateId int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus) (bool, error) {
+func (repo *barcodeRepository) CreateLog(eventId int64, userId int64, gateId int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus, device string) (bool, error) {
 	// action := constant.BarcodeStatusIn
 	firstCheckin := false
 	if currentStatus == constant.BarcodeStatusNull {
@@ -297,6 +304,7 @@ func (repo *barcodeRepository) CreateLog(eventId int64, userId int64, gateId int
 		ScannedBy: userId,
 		EventID:   eventId,
 		GateID:    gateId,
+		Device:    device,
 	}
 
 	var err = repo.base.GetDB().Table("barcode_logs").Create(&log).Error
