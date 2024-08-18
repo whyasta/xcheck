@@ -213,9 +213,9 @@ func BasePaginateWithFilter[M any](db gorm.DB, joins []string, paginate *utils.P
 
 	tx = tx.Find(&records)
 
-	if len(filters) <= 0 {
-		tx.Limit(-1).Offset(-1)
-	}
+	// if len(filters) <= 0 {
+	// }
+	tx.Limit(-1).Offset(-1)
 	tx.Count(&count)
 
 	err := tx.Error

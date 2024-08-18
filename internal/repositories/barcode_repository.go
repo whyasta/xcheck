@@ -79,9 +79,10 @@ func (repo *barcodeRepository) FindAllWithRelations(paginate *utils.Paginate, fi
 
 	tx = tx.Find(&records)
 
-	if len(filters) <= 0 {
-		tx.Limit(-1).Offset(-1)
-	}
+	// fmt.Println(filters)
+	// if len(filters) <= 0 {
+	// }
+	tx.Limit(-1).Offset(-1)
 	tx.Count(&count)
 
 	err := tx.Error

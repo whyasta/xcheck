@@ -141,6 +141,11 @@ func MakeFilterQueryParams(params map[string][]string) []utils.Filter {
 		// fmt.Println(filters)
 	}
 
+	// for i := 0; i < len(filters); i++ {
+	//     if ()
+	//     filters[i].Value = utils.QuoteValue(filters[i].Value)
+	// }
+
 	return filters
 }
 
