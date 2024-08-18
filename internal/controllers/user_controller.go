@@ -36,6 +36,7 @@ func NewUserController(service *services.UserService) *UserController {
 //
 // 200:
 func (u UserController) GetAllUser(c *gin.Context) {
+	defer utils.ResponseHandler(c)
 	// params := MakeQueryParams(c.Request.URL.Query(), []string{"role_id"})
 	pageParams, filter, sort := MakePageFilterQueryParams(c.Request.URL.Query(), []string{"role_id"})
 
