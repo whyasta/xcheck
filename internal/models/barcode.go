@@ -9,6 +9,7 @@ type LatestScan struct {
 	Barcode       string                 `json:"barcode"`
 	ScannedAt     time.Time              `json:"scanned_at"`
 	GateID        int64                  `json:"gate_id"`
+	GateName      string                 `json:"gate_name"`
 	ScannedBy     int64                  `json:"scanned_by"`
 	Device        string                 `json:"device"`
 	Action        constant.BarcodeStatus `json:"action"`

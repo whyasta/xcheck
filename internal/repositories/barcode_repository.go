@@ -62,7 +62,9 @@ func (repo *barcodeRepository) FindAllWithRelations(paginate *utils.Paginate, fi
 	}).Preload("Sessions", func(tx2 *gorm.DB) *gorm.DB {
 		return tx2.Omit("EventID")
 	}).Preload("LatestScan", func(tx2 *gorm.DB) *gorm.DB {
-		return tx2.Joins("JOIN users ON users.id = barcode_logs.scanned_by").Select("users.username as scanned_by_name", "barcode_logs.*").Omit("ID", "EventID")
+		return tx2.Joins("JOIN users ON users.id = barcode_logs.scanned_by").
+			Joins("JOIN gates ON gates.id = barcode_logs.gate_id").
+			Select("users.username as scanned_by_name", "barcode_logs.*", "gates.gate_name")
 	})
 
 	if len(filters) > 0 {
