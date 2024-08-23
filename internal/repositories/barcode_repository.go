@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"bigmind/xcheck-be/internal/constant"
+	"bigmind/xcheck-be/internal/constant/response"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/utils"
 	"errors"
@@ -20,7 +21,7 @@ type BarcodeRepository interface {
 	FindAllWithRelations(paginate *utils.Paginate, filter []utils.Filter, sorts []utils.Sort) ([]models.Barcode, int64, error)
 	FindByID(uid int64) (models.Barcode, error)
 	AssignBarcodes(importId int64, assignId int64, ticketTypeId int64) (int64, error)
-	Scan(barcode string) (models.Barcode, error)
+	Scan(barcode string) (models.Barcode, response.ResponseStatus, error)
 	CreateLog(eventId int64, userId int64, gateId int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus, device string) (bool, error)
 	CreateBulkLog(barcodes *[]models.BarcodeLog) error
 }
@@ -270,7 +271,7 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importId int64, eventId i
 	return count, err
 }
 
-func (repo *barcodeRepository) Scan(barcode string) (models.Barcode, error) {
+func (repo *barcodeRepository) Scan(barcode string) (models.Barcode, response.ResponseStatus, error) {
 	var result models.Barcode
 
 	tx := repo.base.GetDB().
@@ -286,10 +287,10 @@ func (repo *barcodeRepository) Scan(barcode string) (models.Barcode, error) {
 
 	err := tx.Where("barcode = ?", barcode).First(&result).Error
 	if err != nil {
-		return result, errors.New("Barcode " + barcode + " not found")
+		return result, response.EC01, errors.New("Barcode " + barcode + " not found")
 	}
 
-	return result, err
+	return result, response.Checkin, err
 }
 
 func (repo *barcodeRepository) CreateLog(eventId int64, userId int64, gateId int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus, device string) (bool, error) {

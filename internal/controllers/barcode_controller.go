@@ -253,9 +253,10 @@ func (r BarcodeController) ScanBarcode(c *gin.Context) {
 	b, _ := json.Marshal(scan)
 	fmt.Println(string(b))
 
-	firstCheckin, result, err := r.barcodeService.ScanBarcode(userId, scan.EventID, scan.GateID, scan.Barcode, action, scan.Device)
+	firstCheckin, result, rc, err := r.barcodeService.ScanBarcode(userId, scan.EventID, scan.GateID, scan.Barcode, action, scan.Device)
 	if err != nil {
-		utils.PanicException(response.InvalidRequest, err.Error())
+		//newError = errors.New(rc.GetResponseStatus() + " " + err.Error())
+		utils.PanicException(rc, fmt.Sprintf(rc.GetResponseStatus()+" - "+rc.GetResponseMessage(), scan.Barcode))
 		return
 	}
 

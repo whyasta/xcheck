@@ -104,6 +104,12 @@ func ResponseHandler(c *gin.Context) {
 		key := strArr[0]
 		msg := strings.Trim(strArr[1], " ")
 
+		if key == "EC01" || key == "EC02" || key == "EC03" || key == "EC04" || key == "EC05" {
+			c.JSON(http.StatusBadRequest, BuildResponse_(http.StatusNotFound, key, msg, Null(), nil))
+			c.Abort()
+			return
+		}
+
 		switch key {
 		case
 			response.DataNotFound.GetResponseStatus():
