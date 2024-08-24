@@ -2,7 +2,6 @@ image: docker
 
 variables:
   SERVICE_NAME: xcheck-api
-  REPO: registry.bigmind.id
 
 stages:
   - build
@@ -10,29 +9,19 @@ stages:
 
 build:
   stage: build
-  image:
-    name: gcr.io/kaniko-project/executor:v1.23.2-debug
-    entrypoint: [""]
   environment:
     name: dev
   tags:
     - bm-dev-kris
-  before_script:
-    - if [ "$CI_COMMIT_BRANCH" ==  "main" ]; then VERSION=$CI_COMMIT_BRANCH; else VERSION=$CI_COMMIT_TAG; fi;
+  variables:
+    VERSION: $CI_PIPELINE_IID
   only:
     refs:
-      - tags
       - main
   script:
     - touch .env
     - echo "$ENV" >> .env
-    - /kaniko/executor
-      --context $CI_PROJECT_DIR
-      --dockerfile $CI_PROJECT_DIR/Dockerfile
-      --destination $REPO/$SERVICE_NAME:$VERSION
-      --cache=true
-      --cache-ttl=720h
-    #- docker build -t xcheck-api .
+    - docker build -t xcheck-api .
 
 build_local:
   stage: build
@@ -49,7 +38,6 @@ build_local:
     - touch .env
     - echo "$ENV_LOCAL" >> .env
     - docker build -t xcheck-api-local .
-  when: manual
 
 deploy_dev:
   stage: deploy
@@ -65,10 +53,9 @@ deploy_dev:
   script:
     - docker compose -f docker-compose.yml up -d
     - docker compose -f docker-compose-local.yml up -d
-  when: manual
-  #needs:
-  #  - build
-  #  - build_local
+  needs:
+    - build
+    - build_local
 
 deploy_prod:
   stage: deploy
