@@ -71,9 +71,8 @@ deploy_dev:
   only:
     refs:
       - main
-  before_script:
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > ~/.docker/config.json
   script:
+    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
     - docker compose -f docker-compose.yml up -d
     - docker compose -f docker-compose-local.yml up -d
   #when: manual
