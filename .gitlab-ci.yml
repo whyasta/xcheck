@@ -28,7 +28,10 @@ build:
       --dockerfile $CI_PROJECT_DIR/Dockerfile
       --destination ${CI_REGISTRY_IMAGE}:$VERSION
       --cache=true
+      --compressed-caching=false
+      --cache-dir=/cache
       --cache-ttl=720h
+      --cleanup
 
 build_local:
   stage: build
@@ -48,13 +51,16 @@ build_local:
       - main
   script:
     - touch .env
-    - echo "$ENV" >> .env
+    - echo "$ENV_LOCAL" >> .env
     - /kaniko/executor
       --context $CI_PROJECT_DIR
       --dockerfile $CI_PROJECT_DIR/Dockerfile
       --destination ${CI_REGISTRY_IMAGE}:$VERSION-local
       --cache=true
+      --compressed-caching=false
+      --cache-dir=/cache
       --cache-ttl=720h
+      --cleanup
 
 deploy_dev:
   stage: deploy
@@ -65,6 +71,8 @@ deploy_dev:
   only:
     refs:
       - main
+  before_script:
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > ~/.docker/config.json
   script:
     - docker compose -f docker-compose.yml up -d
     - docker compose -f docker-compose-local.yml up -d
