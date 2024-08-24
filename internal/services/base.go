@@ -39,7 +39,7 @@ func NewService(
 		GateService:           NewGateService(repositories.Gate),
 		SessionService:        NewSessionService(repositories.Session),
 		ImportService:         NewImportService(repositories.Import),
-		BarcodeService:        NewBarcodeService(repositories.Barcode, repositories.GateAllocation),
+		BarcodeService:        NewBarcodeService(repositories.Barcode, repositories.Gate, repositories.Session),
 		GateAllocationService: NewGateAllocationService(repositories.GateAllocation),
 	}
 }

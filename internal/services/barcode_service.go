@@ -15,11 +15,12 @@ import (
 
 type BarcodeService struct {
 	r repositories.BarcodeRepository
-	s repositories.GateAllocationRepository
+	g repositories.GateRepository
+	s repositories.SessionRepository
 }
 
-func NewBarcodeService(r repositories.BarcodeRepository, s repositories.GateAllocationRepository) *BarcodeService {
-	return &BarcodeService{r, s}
+func NewBarcodeService(r repositories.BarcodeRepository, s repositories.GateRepository, s2 repositories.SessionRepository) *BarcodeService {
+	return &BarcodeService{r, s, s2}
 }
 
 func (s *BarcodeService) CreateBarcode(data *models.Barcode) (models.Barcode, error) {
@@ -112,7 +113,7 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 		return false, result, responseStatus, err
 	}
 	if result.EventID != eventId {
-		return false, result, response.Checkin, errors.New("Wrong event")
+		return false, result, response.EC01, errors.New("EC01 - Barcode " + barcode + " not found!")
 	}
 
 	// check gate
@@ -125,7 +126,8 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 	}
 
 	if !validGate {
-		return false, result, response.EC04, errors.New(response.EC05.GetResponseMessage())
+		gate, _ := s.g.FindByID(gateId)
+		return false, result, response.EC04, fmt.Errorf("EC04 - "+response.EC05.GetResponseMessage(), gate.GateName)
 	}
 
 	for _, i := range result.Sessions {
@@ -137,20 +139,20 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 		if time.Now().After(i.SessionEnd) {
 			// update barcode to expired
 			s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagExpired})
-			return false, result, response.EC04, errors.New("Barcode " + barcode + " session has ended")
+			return false, result, response.EC04, errors.New("EC04 - Barcode " + barcode + " session has ended")
 		}
 
 		if !utils.TimeIsBetween(time.Now(), i.SessionStart, i.SessionEnd) {
-			return false, result, response.EC04, errors.New("Barcode " + barcode + " is not within the session time")
+			return false, result, response.EC04, errors.New("EC04 - Barcode " + barcode + " is not within the session time")
 		}
 	}
 
 	if action == constant.BarcodeStatusOut && result.CurrentStatus == constant.BarcodeStatusNull {
-		return false, result, response.EC03, errors.New("Barcode " + barcode + " must be checked in first")
+		return false, result, response.EC11, errors.New("EC11 - Barcode " + barcode + " not checked-in yet!")
 	}
 
 	if action == constant.BarcodeStatusIn && result.CurrentStatus == constant.BarcodeStatusIn {
-		return false, result, response.EC03, errors.New("Barcode " + barcode + " already checked in")
+		return false, result, response.EC03, errors.New("EC03 - Barcode " + barcode + " not allowed to re-enter!")
 	}
 
 	// update barcode to valid
