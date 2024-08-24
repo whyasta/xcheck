@@ -52,7 +52,7 @@ build_local:
     - /kaniko/executor
       --context $CI_PROJECT_DIR
       --dockerfile $CI_PROJECT_DIR/Dockerfile
-      --destination ${CI_REGISTRY_IMAGE}-local:$VERSION
+      --destination ${CI_REGISTRY_IMAGE}:$VERSION-local
       --cache=true
       --cache-ttl=720h
 
