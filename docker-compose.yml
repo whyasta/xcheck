@@ -1,11 +1,8 @@
 version: '3'
 services:
     app:
-        # build:
-        #     context: .
-        #     dockerfile: Dockerfile
-        image: xcheck-api
-        container_name: xcheck_be_service
+        image: registry.bigmind.id/bigmind1/xcheck/xcheck-backend:main
+        container_name: xcheck-backend
         restart: unless-stopped
         tty: true
         ports:

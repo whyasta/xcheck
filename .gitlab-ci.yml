@@ -23,32 +23,38 @@ build:
   script:
     - touch .env
     - echo "$ENV" >> .env
-    - echo $CI_REGISTRY
-    - export
     - /kaniko/executor
       --context $CI_PROJECT_DIR
       --dockerfile $CI_PROJECT_DIR/Dockerfile
       --destination ${CI_REGISTRY_IMAGE}:$VERSION
       --cache=true
       --cache-ttl=720h
-    #- docker build -t xcheck-api .
 
 build_local:
   stage: build
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
   environment:
     name: dev
   tags:
     - bm-dev-kris
-  variables:
-    VERSION: $CI_PIPELINE_IID
+  before_script:
+    - if [ "$CI_COMMIT_BRANCH" ==  "main" ]; then VERSION=$CI_COMMIT_BRANCH; else VERSION=$CI_COMMIT_TAG; fi;
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
   only:
     refs:
+      - tags
       - main
   script:
     - touch .env
-    - echo "$ENV_LOCAL" >> .env
-    - docker build -t xcheck-api-local .
-  when: manual
+    - echo "$ENV" >> .env
+    - /kaniko/executor
+      --context $CI_PROJECT_DIR
+      --dockerfile $CI_PROJECT_DIR/Dockerfile
+      --destination ${CI_REGISTRY_IMAGE}-local:$VERSION
+      --cache=true
+      --cache-ttl=720h
 
 deploy_dev:
   stage: deploy
@@ -56,18 +62,16 @@ deploy_dev:
     name: dev
   tags:
     - bm-dev-kris
-  variables:
-    VERSION: $CI_PIPELINE_IID
   only:
     refs:
       - main
   script:
     - docker compose -f docker-compose.yml up -d
     - docker compose -f docker-compose-local.yml up -d
-  when: manual
-  #needs:
-  #  - build
-  #  - build_local
+  #when: manual
+  needs:
+    - build
+    - build_local
 
 deploy_prod:
   stage: deploy

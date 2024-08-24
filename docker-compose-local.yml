@@ -1,11 +1,8 @@
 version: '3'
 services:
     app-local:
-        # build:
-        #     context: .
-        #     dockerfile: Dockerfile
-        image: xcheck-api-local
-        container_name: xcheck_be_service_local
+        image: registry.bigmind.id/bigmind1/xcheck/xcheck-backend:main
+        container_name: xcheck-backend-local
         restart: unless-stopped
         tty: true
         ports:
