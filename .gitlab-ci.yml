@@ -1,9 +1,5 @@
 image: docker
 
-variables:
-  SERVICE_NAME: xcheck-api
-  REPO: registry.bigmind.id
-
 stages:
   - build
   - deploy
@@ -27,10 +23,12 @@ build:
   script:
     - touch .env
     - echo "$ENV" >> .env
+    - echo $CI_REGISTRY
+    - export
     - /kaniko/executor
       --context $CI_PROJECT_DIR
       --dockerfile $CI_PROJECT_DIR/Dockerfile
-      --destination $REPO/$SERVICE_NAME:$VERSION
+      --destination ${CI_REGISTRY_IMAGE}:$VERSION
       --cache=true
       --cache-ttl=720h
     #- docker build -t xcheck-api .
