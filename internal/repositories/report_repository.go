@@ -117,14 +117,19 @@ func (repo *reportRepository) UniqueByTicketType(eventId int64, ticketTypeIds []
 	// 	Group("u.ticket_type_name").
 	// 	Scan(&data).Error
 
-	err := repo.db.Table("barcodes").
+	query := repo.db.Table("barcodes").
 		Select("ticket_type_id", "ticket_type_name",
 			"SUM(CASE WHEN current_status = 'IN' THEN 1 ELSE 0 END) as check_in_count",
 			"SUM(CASE WHEN current_status = 'OUT' THEN 1 ELSE 0 END) as check_out_count").
 		Joins("join ticket_types on ticket_types.id = barcodes.ticket_type_id").
 		Group("barcodes.ticket_type_id").
-		Scan(&data).Error
+		Where("barcodes.event_id = ?", eventId)
 
+	if len(ticketTypeIds) > 0 {
+		query = query.Where("ticket_type_id in (?)", ticketTypeIds)
+	}
+
+	err := query.Scan(&data).Error
 	if err != nil {
 		return nil, err
 	}
