@@ -1,7 +1,7 @@
 version: '3'
 services:
     app:
-        image: registry.bigmind.id/bigmind1/xcheck/xcheck-backend:main
+        image: ${CI_REGISTRY_IMAGE}:$VERSION
         container_name: xcheck-backend
         restart: unless-stopped
         tty: true
