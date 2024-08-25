@@ -32,7 +32,7 @@ type EventSummary struct {
 	TotalBarcode    int64                    `json:"total_barcode"`
 	TotalCheckIn    int64                    `json:"total_check_in"`
 	TotalCheckOut   int64                    `json:"total_check_out"`
-	TotalTicketType []map[string]interface{} `json:"total_ticket_type"`
+	TotalTicketType []map[string]interface{} `json:"total_ticket_type" gorm:"serializer:json"`
 }
 
 type EventUpdateDto struct {
