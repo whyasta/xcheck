@@ -19,6 +19,7 @@ type Repository struct {
 	Import         *importRepository
 	Barcode        *barcodeRepository
 	GateAllocation *gateAllocationRepository
+	Report         *reportRepository
 }
 
 func NewRepository(db *gorm.DB) *Repository {
@@ -33,6 +34,7 @@ func NewRepository(db *gorm.DB) *Repository {
 		Import:         NewImportRepository(db),
 		Barcode:        NewBarcodeRepository(db),
 		Base:           NewBaseRepository(db, new(interface{})),
+		Report:         NewReportRepository(db),
 	}
 }
 

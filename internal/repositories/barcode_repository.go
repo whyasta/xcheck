@@ -22,7 +22,7 @@ type BarcodeRepository interface {
 	FindByID(uid int64) (models.Barcode, error)
 	AssignBarcodes(importId int64, assignId int64, ticketTypeId int64) (int64, error)
 	Scan(barcode string) (models.Barcode, response.ResponseStatus, error)
-	CreateLog(eventId int64, userId int64, gateId int64, ticketTypeId int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus, device string) (bool, error)
+	CreateLog(eventId int64, userId int64, gateId int64, ticketTypeId int64, sessionId int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus, device string) (bool, error)
 	CreateBulkLog(barcodes *[]models.BarcodeLog) error
 }
 
@@ -293,7 +293,7 @@ func (repo *barcodeRepository) Scan(barcode string) (models.Barcode, response.Re
 	return result, response.Checkin, err
 }
 
-func (repo *barcodeRepository) CreateLog(eventId int64, userId int64, gateId int64, ticketTypeId int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus, device string) (bool, error) {
+func (repo *barcodeRepository) CreateLog(eventId int64, userId int64, gateId int64, ticketTypeId int64, sessionId int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus, device string) (bool, error) {
 	// action := constant.BarcodeStatusIn
 	firstCheckin := false
 	if currentStatus == constant.BarcodeStatusNull {
@@ -309,6 +309,7 @@ func (repo *barcodeRepository) CreateLog(eventId int64, userId int64, gateId int
 		GateID:       gateId,
 		Device:       device,
 		TicketTypeID: ticketTypeId,
+		SessionID:    sessionId,
 	}
 
 	var err = repo.base.GetDB().Table("barcode_logs").Create(&log).Error

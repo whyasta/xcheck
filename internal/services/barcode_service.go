@@ -130,6 +130,8 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 		return false, result, response.EC04, fmt.Errorf("EC04 - "+response.EC05.GetResponseMessage(), gate.GateName)
 	}
 
+	// check session
+	currentSession := int64(0)
 	for _, i := range result.Sessions {
 		fmt.Println("check session", i.Sessioname)
 		fmt.Println("now", time.Now())
@@ -144,8 +146,13 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 
 		if !utils.TimeIsBetween(time.Now(), i.SessionStart, i.SessionEnd) {
 			return false, result, response.EC04, errors.New("EC04 - Barcode " + barcode + " is not within the session time")
+		} else {
+			currentSession = i.ID
+			break
 		}
 	}
+
+	fmt.Println("current session", currentSession)
 
 	if action == constant.BarcodeStatusOut && result.CurrentStatus == constant.BarcodeStatusNull {
 		return false, result, response.EC11, errors.New("EC11 - Barcode " + barcode + " not checked-in yet!")
@@ -157,7 +164,7 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 
 	// update barcode to valid
 	// s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagUsed})
-	firstCheckin, err := s.r.CreateLog(eventId, userId, gateId, result.TicketTypeID, barcode, result.CurrentStatus, action, device)
+	firstCheckin, err := s.r.CreateLog(eventId, userId, gateId, result.TicketTypeID, currentSession, barcode, result.CurrentStatus, action, device)
 	if err != nil {
 		return false, result, response.UnknownError, err
 	}

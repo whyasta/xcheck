@@ -46,12 +46,13 @@ type BarcodeAssignment struct {
 
 type BarcodeLog struct {
 	ID           int64                  `json:"id,omitempty"`
-	EventID      int64                  `json:"event_id"`
 	Barcode      string                 `json:"barcode"`
-	ScannedAt    time.Time              `json:"scanned_at"`
+	EventID      int64                  `json:"event_id"`
 	GateID       int64                  `json:"gate_id"`
-	ScannedBy    int64                  `json:"scanned_by"`
-	Device       string                 `json:"device"`
 	TicketTypeID int64                  `json:"ticket_type_id"`
+	SessionID    int64                  `json:"session_id"`
+	ScannedBy    int64                  `json:"scanned_by"`
+	ScannedAt    time.Time              `json:"scanned_at"`
+	Device       string                 `json:"device"`
 	Action       constant.BarcodeStatus `json:"action"`
 }

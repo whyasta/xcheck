@@ -22,6 +22,7 @@ type Controller struct {
 	SessionController        *SessionController
 	BarcodeController        *BarcodeController
 	SyncController           *SyncController
+	ReportController         *ReportController
 }
 
 func NewController(
@@ -39,6 +40,7 @@ func NewController(
 		SessionController:        NewSessionController(services.SessionService),
 		BarcodeController:        NewBarcodeController(services.ImportService, services.BarcodeService),
 		SyncController:           NewSyncController(services.SyncService),
+		ReportController:         NewReportController(services.ReportService),
 	}
 }
 
