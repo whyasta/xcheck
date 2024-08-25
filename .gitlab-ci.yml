@@ -28,7 +28,6 @@ build:
       --dockerfile $CI_PROJECT_DIR/Dockerfile
       --destination ${CI_REGISTRY_IMAGE}:$VERSION
       --cache=true
-      --compressed-caching=false
       --cache-dir=/cache
       --cache-ttl=720h
       --cleanup
@@ -57,7 +56,6 @@ build_local:
       --dockerfile $CI_PROJECT_DIR/Dockerfile
       --destination ${CI_REGISTRY_IMAGE}:$VERSION-local
       --cache=true
-      --compressed-caching=false
       --cache-dir=/cache
       --cache-ttl=720h
       --cleanup
