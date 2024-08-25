@@ -13,13 +13,15 @@ type BarcodeDownloadDto struct {
 }
 
 type BarcodeUploadLogDto struct {
-	ID        int64                  `json:"id,omitempty"`
-	Barcode   string                 `gorm:"column:barcode" json:"barcode" validate:"required"`
-	ScannedAt time.Time              `gorm:"->:false;column:scanned_at" json:"scanned_at,omitempty"`
-	GateID    int64                  `gorm:"column:gate_id" mapstructure:"gate_id" json:"gate_id" validate:"required"`
-	EventID   int64                  `gorm:"column:event_id" mapstructure:"event_id" json:"event_id" validate:"required"`
-	ScannedBy int64                  `gorm:"column:scanned_by" mapstructure:"scanned_by" json:"scanned_by" validate:"required"`
-	Action    constant.BarcodeStatus `gorm:"column:action" mapstructure:"action" json:"action" validate:"required"`
+	ID           int64                  `json:"id,omitempty"`
+	Barcode      string                 `gorm:"column:barcode" json:"barcode" validate:"required"`
+	ScannedAt    time.Time              `gorm:"->:false;column:scanned_at" json:"scanned_at,omitempty"`
+	GateID       int64                  `gorm:"column:gate_id" mapstructure:"gate_id" json:"gate_id" validate:"required"`
+	EventID      int64                  `gorm:"column:event_id" mapstructure:"event_id" json:"event_id" validate:"required"`
+	TicketTypeID int64                  `gorm:"column:ticket_type_id" mapstructure:"ticket_type_id" json:"ticket_type_id" validate:"required"`
+	SessionID    int64                  `gorm:"column:session_id" mapstructure:"session_id" json:"session_id" validate:"required"`
+	ScannedBy    int64                  `gorm:"column:scanned_by" mapstructure:"scanned_by" json:"scanned_by" validate:"required"`
+	Action       constant.BarcodeStatus `gorm:"column:action" mapstructure:"action" json:"action" validate:"required"`
 }
 
 type BarcodeResponseDto struct {
@@ -40,12 +42,14 @@ type BarcodeUploadDto struct {
 
 func (s *BarcodeUploadLogDto) ToEntity() *models.BarcodeLog {
 	return &models.BarcodeLog{
-		ID:        s.ID,
-		Barcode:   s.Barcode,
-		ScannedAt: s.ScannedAt,
-		ScannedBy: s.ScannedBy,
-		Action:    s.Action,
-		GateID:    s.GateID,
-		EventID:   s.EventID,
+		ID:           s.ID,
+		Barcode:      s.Barcode,
+		ScannedAt:    s.ScannedAt,
+		ScannedBy:    s.ScannedBy,
+		Action:       s.Action,
+		GateID:       s.GateID,
+		EventID:      s.EventID,
+		TicketTypeID: s.TicketTypeID,
+		SessionID:    s.SessionID,
 	}
 }

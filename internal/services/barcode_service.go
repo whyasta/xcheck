@@ -93,7 +93,7 @@ func (s *BarcodeService) Delete(uid int64) (models.Barcode, error) {
 	return s.r.Delete(uid)
 }
 
-func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, barcode string, action constant.BarcodeStatus, device string) (bool, models.Barcode, response.ResponseStatus, error) {
+func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, barcode string, action constant.BarcodeStatus, device string) (bool, models.BarcodeLog, response.ResponseStatus, error) {
 	fmt.Printf("START SCAN => BARCODE:%s, EVENT:%d, GATE:%d", barcode, eventId, gateId)
 	// _, count, _ := s.r.FindAll([]string{"GateAllocation"}, utils.NewPaginate(10, 1), *utils.NewFilters([]utils.Filter{
 	// 	{
@@ -110,10 +110,10 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 
 	result, responseStatus, err := s.r.Scan(barcode)
 	if err != nil {
-		return false, result, responseStatus, err
+		return false, models.BarcodeLog{}, responseStatus, err
 	}
 	if result.EventID != eventId {
-		return false, result, response.EC01, errors.New("EC01 - Barcode " + barcode + " not found!")
+		return false, models.BarcodeLog{}, response.EC01, errors.New("EC01 - Barcode " + barcode + " not found!")
 	}
 
 	// check gate
@@ -127,7 +127,7 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 
 	if !validGate {
 		gate, _ := s.g.FindByID(gateId)
-		return false, result, response.EC04, fmt.Errorf("EC04 - "+response.EC05.GetResponseMessage(), gate.GateName)
+		return false, models.BarcodeLog{}, response.EC04, fmt.Errorf("EC04 - "+response.EC05.GetResponseMessage(), gate.GateName)
 	}
 
 	// check session
@@ -141,11 +141,11 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 		if time.Now().After(i.SessionEnd) {
 			// update barcode to expired
 			s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagExpired})
-			return false, result, response.EC04, errors.New("EC04 - Barcode " + barcode + " session has ended")
+			return false, models.BarcodeLog{}, response.EC04, errors.New("EC04 - Barcode " + barcode + " session has ended")
 		}
 
 		if !utils.TimeIsBetween(time.Now(), i.SessionStart, i.SessionEnd) {
-			return false, result, response.EC04, errors.New("EC04 - Barcode " + barcode + " is not within the session time")
+			return false, models.BarcodeLog{}, response.EC04, errors.New("EC04 - Barcode " + barcode + " is not within the session time")
 		} else {
 			currentSession = i.ID
 			break
@@ -155,23 +155,23 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 	fmt.Println("current session", currentSession)
 
 	if action == constant.BarcodeStatusOut && result.CurrentStatus == constant.BarcodeStatusNull {
-		return false, result, response.EC11, errors.New("EC11 - Barcode " + barcode + " not checked-in yet!")
+		return false, models.BarcodeLog{}, response.EC11, errors.New("EC11 - Barcode " + barcode + " not checked-in yet!")
 	}
 
 	if action == constant.BarcodeStatusIn && result.CurrentStatus == constant.BarcodeStatusIn {
-		return false, result, response.EC03, errors.New("EC03 - Barcode " + barcode + " not allowed to re-enter!")
+		return false, models.BarcodeLog{}, response.EC03, errors.New("EC03 - Barcode " + barcode + " not allowed to re-enter!")
 	}
 
 	// update barcode to valid
 	// s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagUsed})
-	firstCheckin, err := s.r.CreateLog(eventId, userId, gateId, result.TicketTypeID, currentSession, barcode, result.CurrentStatus, action, device)
+	resultLog, firstCheckin, err := s.r.CreateLog(eventId, userId, gateId, result.TicketTypeID, currentSession, barcode, result.CurrentStatus, action, device)
 	if err != nil {
-		return false, result, response.UnknownError, err
+		return false, models.BarcodeLog{}, response.UnknownError, err
 	}
 
-	result, err = s.r.FindByID(result.ID)
+	// result, err = s.r.FindByID(result.ID)
 
-	return firstCheckin, result, response.UnknownError, err
+	return firstCheckin, resultLog, response.UnknownError, err
 }
 
 func (s *BarcodeService) AssignBarcodes(importId int64, assignId int64, ticketTypeId int64) (bool, error) {

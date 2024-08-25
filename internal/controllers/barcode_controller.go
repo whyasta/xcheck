@@ -261,7 +261,7 @@ func (r BarcodeController) ScanBarcode(c *gin.Context) {
 	}
 
 	var message string
-	_ = string(result.CurrentStatus)
+	// _ = string(result.CurrentStatus)
 
 	// message = string(result.CurrentStatus)
 	status := response.Success
