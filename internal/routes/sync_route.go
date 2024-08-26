@@ -8,7 +8,7 @@ import (
 )
 
 func SyncRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
-	group.Use(middlewares.AuthMiddleware(), middlewares.LocalModeMiddleware())
+	group.Use(middlewares.AuthMiddleware(), middlewares.LocalModeMiddleware(), middlewares.DeviceMiddleware())
 	{
 		group.GET("/events", controllers.SyncController.SyncEvents)
 		group.POST("/download/events/:id", controllers.SyncController.SyncDownloadEventByID)

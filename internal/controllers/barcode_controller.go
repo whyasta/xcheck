@@ -248,6 +248,12 @@ func (r BarcodeController) ScanBarcode(c *gin.Context) {
 		if scan.Device == "" {
 			scan.Device = "cms"
 		}
+
+		val, exist := c.Get("device")
+		if exist {
+			fmt.Println(val)
+			scan.Device = val.(string)
+		}
 	}
 
 	b, _ := json.Marshal(scan)

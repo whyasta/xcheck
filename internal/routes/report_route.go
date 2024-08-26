@@ -8,7 +8,7 @@ import (
 )
 
 func ReportRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
-	group.Use(middlewares.AuthMiddleware())
+	group.Use(middlewares.AuthMiddleware(), middlewares.DeviceMiddleware())
 	{
 		group.GET("/traffic-visitor", controllers.ReportController.ReportTrafficVisitor)
 		group.GET("/unique-visitor", controllers.ReportController.ReportUniqueVisitor)

@@ -8,7 +8,7 @@ import (
 )
 
 func BarcodeRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
-	group.Use(middlewares.AuthMiddleware())
+	group.Use(middlewares.AuthMiddleware(), middlewares.DeviceMiddleware())
 	{
 		group.GET("/uploads", controllers.BarcodeController.GetAllUploads)
 		group.GET("/uploads/:id", controllers.BarcodeController.GetUploadByID)
