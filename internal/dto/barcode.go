@@ -40,6 +40,20 @@ type BarcodeUploadDto struct {
 	Data []BarcodeUploadLogDto `gorm:"column:data" json:"data" validate:"required,dive"`
 }
 
+type BarcodeLogResponseDto struct {
+	ID            int64                  `json:"id,omitempty"`
+	Barcode       string                 `json:"barcode"`
+	EventID       int64                  `json:"event_id"`
+	GateID        int64                  `json:"gate_id"`
+	TicketTypeID  int64                  `json:"ticket_type_id"`
+	SessionID     int64                  `json:"session_id"`
+	ScannedBy     int64                  `json:"scanned_by"`
+	ScannedAt     time.Time              `json:"scanned_at"`
+	Device        string                 `json:"device"`
+	Action        constant.BarcodeStatus `json:"action"`
+	CurrentStatus constant.BarcodeStatus `json:"current_status"`
+}
+
 func (s *BarcodeUploadLogDto) ToEntity() *models.BarcodeLog {
 	return &models.BarcodeLog{
 		ID:           s.ID,

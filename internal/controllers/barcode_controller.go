@@ -260,6 +260,19 @@ func (r BarcodeController) ScanBarcode(c *gin.Context) {
 		return
 	}
 
+	responseLog := dto.BarcodeLogResponseDto{
+		Barcode:       result.Barcode,
+		EventID:       result.EventID,
+		GateID:        result.GateID,
+		TicketTypeID:  result.TicketTypeID,
+		SessionID:     result.SessionID,
+		ScannedBy:     result.ScannedBy,
+		ScannedAt:     result.ScannedAt,
+		Device:        scan.Device,
+		Action:        action,
+		CurrentStatus: action,
+	}
+
 	var message string
 	// _ = string(result.CurrentStatus)
 
@@ -282,7 +295,7 @@ func (r BarcodeController) ScanBarcode(c *gin.Context) {
 	// 	status = response.Checkout
 	// }
 
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, status, message, result))
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, status, message, responseLog))
 }
 
 func (r BarcodeController) GetEventBarcodes(c *gin.Context) {
