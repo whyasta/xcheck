@@ -261,6 +261,7 @@ func (r BarcodeController) ScanBarcode(c *gin.Context) {
 	}
 
 	responseLog := dto.BarcodeLogResponseDto{
+		ID:            result.ID,
 		Barcode:       result.Barcode,
 		EventID:       result.EventID,
 		GateID:        result.GateID,
