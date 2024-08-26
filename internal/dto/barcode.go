@@ -52,6 +52,7 @@ type BarcodeLogResponseDto struct {
 	Device        string                 `json:"device"`
 	Action        constant.BarcodeStatus `json:"action"`
 	CurrentStatus constant.BarcodeStatus `json:"current_status"`
+	Flag          constant.BarcodeFlag   `json:"flag"`
 }
 
 func (s *BarcodeUploadLogDto) ToEntity() *models.BarcodeLog {

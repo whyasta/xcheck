@@ -272,6 +272,7 @@ func (r BarcodeController) ScanBarcode(c *gin.Context) {
 		Device:        scan.Device,
 		Action:        action,
 		CurrentStatus: action,
+		Flag:          constant.BarcodeFlagUsed,
 	}
 
 	var message string
