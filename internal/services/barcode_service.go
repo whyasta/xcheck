@@ -108,7 +108,7 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 	// 	return false, errors.New("invalid barcode")
 	// }
 
-	result, responseStatus, err := s.r.Scan(barcode)
+	result, responseStatus, err := s.r.Scan(eventId, barcode)
 	if err != nil {
 		return false, models.BarcodeLog{}, responseStatus, err
 	}

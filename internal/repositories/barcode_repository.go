@@ -21,7 +21,7 @@ type BarcodeRepository interface {
 	FindAllWithRelations(paginate *utils.Paginate, filter []utils.Filter, sorts []utils.Sort) ([]models.Barcode, int64, error)
 	FindByID(uid int64) (models.Barcode, error)
 	AssignBarcodes(importId int64, assignId int64, ticketTypeId int64) (int64, error)
-	Scan(barcode string) (models.Barcode, response.ResponseStatus, error)
+	Scan(eventId int64, barcode string) (models.Barcode, response.ResponseStatus, error)
 	CreateLog(eventId int64, userId int64, gateId int64, ticketTypeId int64, sessionId int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus, device string) (models.BarcodeLog, bool, error)
 	CreateBulkLog(barcodes *[]models.BarcodeLog) error
 }
@@ -271,7 +271,7 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importId int64, eventId i
 	return count, err
 }
 
-func (repo *barcodeRepository) Scan(barcode string) (models.Barcode, response.ResponseStatus, error) {
+func (repo *barcodeRepository) Scan(eventId int64, barcode string) (models.Barcode, response.ResponseStatus, error) {
 	var result models.Barcode
 
 	tx := repo.base.GetDB().
