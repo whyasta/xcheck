@@ -170,7 +170,7 @@ func (s *SyncService) SyncDownloadEventByID(uid int64) error {
 
 		err = s.repoBase.GetDB().Table("barcodes").Clauses(clause.OnConflict{
 			Columns: []clause.Column{{Name: "id"}},
-		}).Create(&barcodes).Error
+		}).Omit("LatestScan").Create(&barcodes).Error
 		if err != nil {
 			return err
 		}

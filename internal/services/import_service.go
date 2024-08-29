@@ -24,7 +24,7 @@ func (s *ImportService) CreateImport(data *models.Import) (models.Import, error)
 	return s.r.Save(data)
 }
 
-func (s *ImportService) UpdateStatusImport(id int64, status string, errorMessage string) (models.Import, error) {
+func (s *ImportService) UpdateStatusImport(id int64, status constant.ImportStatus, errorMessage string) (models.Import, error) {
 	return s.r.Update(id, &map[string]interface{}{"status": status, "status_message": errorMessage})
 }
 
@@ -62,14 +62,14 @@ func (s *ImportService) DoImportJob(id int64) (models.Import, error) {
 	return row, err
 }
 
-func (s *ImportService) DoImportJobWithAssign(id int64, eventId int64, ticketTypeId int64, sessions string, gates string) (models.Import, error) {
+func (s *ImportService) DoImportJobWithAssign(id int64, eventId int64, ticketTypeId int64, sessions string, gates string) (*work.Job, models.Import, error) {
 	fmt.Println("DoImportJob")
 	row, err := s.r.Update(id, &map[string]interface{}{"status": constant.ImportStatusProcessing, "status_message": "Processing file"})
 	if err != nil {
-		return models.Import{}, err
+		return &work.Job{}, models.Import{}, err
 	}
 
-	config.GetEnqueuer().Enqueue("import_barcode", work.Q{
+	job, err := config.GetEnqueuer().Enqueue("import_barcode", work.Q{
 		"import_id":      id,
 		"headers":        "barcode",
 		"csv_file":       row.FileName,
@@ -80,7 +80,10 @@ func (s *ImportService) DoImportJobWithAssign(id int64, eventId int64, ticketTyp
 		"sessions":       sessions,
 		"gates":          gates,
 	})
-	return row, err
+	if err != nil {
+		return &work.Job{}, models.Import{}, err
+	}
+	return job, row, err
 }
 
 func (s *ImportService) GetAllImports(paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Import, int64, error) {

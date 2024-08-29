@@ -3,7 +3,6 @@ package main
 import (
 	"bigmind/xcheck-be/config"
 	"bigmind/xcheck-be/internal/processors"
-	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -29,7 +28,7 @@ type Context struct {
 // }
 
 func main() {
-	fmt.Println("Running job queue")
+	log.Println("Running job queue")
 	config.Init("production")
 
 	pool := work.NewWorkerPool(Context{}, 10, "xcheck", config.NewRedis())
@@ -44,13 +43,13 @@ func main() {
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
 	<-signalChan
 
-	fmt.Println("Stop the pool")
+	log.Println("Stop the pool")
 
 	// Stop the pool
 	pool.Stop()
 }
 
 func (c *Context) Log(job *work.Job, next work.NextMiddlewareFunc) error {
-	log.Println("Starting job: ", job.Name)
+	log.Printf("Starting job: %s - %s", job.ID, job.Name)
 	return next()
 }

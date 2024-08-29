@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bigmind/xcheck-be/config"
 	"bigmind/xcheck-be/internal/constant"
 	"bigmind/xcheck-be/internal/constant/response"
 	"bigmind/xcheck-be/internal/dto"
@@ -389,7 +390,47 @@ func (r BarcodeController) ImportEventBarcodes(c *gin.Context) {
 		}
 
 		message = fmt.Sprintf("Uploaded successfully %d files", len(files))
-		_, err = r.importService.DoImportJobWithAssign(importFile.ID, eventId, ticketTypeId, sessions, gates)
+		job, _, err := r.importService.DoImportJobWithAssign(importFile.ID, eventId, ticketTypeId, sessions, gates)
+		// row, err := r.importService.UpdateStatusImport(importFile.ID, constant.ImportStatusProcessing, "Processing file")
+		// if err != nil {
+		// 	utils.PanicException(response.InvalidRequest, err.Error())
+		// 	return
+		// }
+
+		// params := work.Q{
+		// 	"import_id":      importFile.ID,
+		// 	"headers":        "barcode",
+		// 	"csv_file":       row.FileName,
+		// 	"table":          "raw_barcodes",
+		// 	"with_assign":    true,
+		// 	"event_id":       eventId,
+		// 	"ticket_type_id": ticketTypeId,
+		// 	"sessions":       sessions,
+		// 	"gates":          gates,
+		// }
+
+		// job := &work.Job{
+		// 	Name:       "importBarcodes",
+		// 	ID:         uuid.New().String(),
+		// 	EnqueuedAt: time.Now().Unix(),
+		// 	Args:       params,
+		// }
+
+		// xcheck:jobs:import_barcode:0c55cd4b17c8ba0b026b7fac:inprogress
+		for {
+			val, _ := config.NewRedis().Get().Do("LLEN", "xcheck:jobs:import_barcode")
+			if val.(int64) == 1 {
+				fmt.Println("Job inprogress, waiting...")
+				time.Sleep(1 * time.Second) // Wait before checking again
+			} else {
+				fmt.Printf("Job completed")
+				break
+			}
+		}
+
+		fmt.Println("xcheck:jobs:import_barcode:" + job.ID + ":inprogress")
+
+		// err = processors.ImportBarcodeJob(job)
 		if err != nil {
 			utils.PanicException(response.InvalidRequest, err.Error())
 			return
