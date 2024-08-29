@@ -35,6 +35,8 @@ type TrafficVisitorSummary struct {
 }
 
 type GateInChart struct {
-	DateTime string `json:"date_time"`
-	Total    int64  `json:"total"`
+	DateTime       string `json:"date_time"`
+	Total          int64  `json:"total"`
+	UniqueInCount  int64  `json:"unique_in_count"`
+	TrafficInCount int64  `json:"traffic_in_count"`
 }

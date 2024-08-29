@@ -141,7 +141,10 @@ func (repo *reportRepository) GateIn(eventId int64) ([]dto.GateInChart, error) {
 	var data []dto.GateInChart
 
 	err := repo.db.Table("barcode_logs").
-		Select("DATE_FORMAT(scanned_at, '%Y-%m-%d %H.%i') AS date_time", "COUNT(DISTINCT barcode) as total").
+		Debug().
+		Select("DATE_FORMAT(scanned_at, '%Y-%m-%d %H.%i') AS date_time", "COUNT(DISTINCT barcode) as total",
+			"DATE_FORMAT(scanned_at, '%Y-%m-%d %H.%i') AS date_time", "COUNT(DISTINCT barcode) as unique_in_count",
+			"SUM(CASE WHEN barcode_logs.action = 'IN' THEN 1 ELSE 0 END) as traffic_in_count").
 		Where("barcode_logs.event_id = ?", eventId).
 		Where("barcode_logs.action = ?", "IN").
 		Group("DATE_FORMAT(scanned_at, '%Y-%m-%d %H.%i')").Scan(&data).Error
