@@ -370,72 +370,53 @@ func (r BarcodeController) ImportEventBarcodes(c *gin.Context) {
 	message := "failed"
 
 	fmt.Println("start => ", len(files))
-	for _, file := range files {
-		// filename := filepath.Join("files", file.Filename)
-		err := c.SaveUploadedFile(file, tempFile)
-		if err != nil {
-			utils.PanicException(response.InvalidRequest, fmt.Sprintf("upload file err: %s", err.Error()))
-			return
-		}
-		importFile, err := r.importService.CreateImport(&models.Import{
-			FileName:       tempFile,
-			UploadFileName: files[0].Filename,
-			ImportedAt:     time.Now().Format("2006-01-02 15:04:05"),
-			Status:         string(constant.ImportStatusPending),
-			StatusMessage:  "",
-		})
-		if err != nil {
-			utils.PanicException(response.InvalidRequest, err.Error())
-			return
-		}
 
-		message = fmt.Sprintf("Uploaded successfully %d files", len(files))
-		job, _, err := r.importService.DoImportJobWithAssign(importFile.ID, eventId, ticketTypeId, sessions, gates)
-		// row, err := r.importService.UpdateStatusImport(importFile.ID, constant.ImportStatusProcessing, "Processing file")
-		// if err != nil {
-		// 	utils.PanicException(response.InvalidRequest, err.Error())
-		// 	return
-		// }
+	err = c.SaveUploadedFile(files[0], tempFile)
+	if err != nil {
+		utils.PanicException(response.InvalidRequest, fmt.Sprintf("upload file err: %s", err.Error()))
+		return
+	}
+	importFile, err := r.importService.CreateImport(&models.Import{
+		FileName:       tempFile,
+		UploadFileName: files[0].Filename,
+		ImportedAt:     time.Now().Format("2006-01-02 15:04:05"),
+		Status:         string(constant.ImportStatusPending),
+		StatusMessage:  "",
+	})
+	if err != nil {
+		utils.PanicException(response.InvalidRequest, err.Error())
+		return
+	}
 
-		// params := work.Q{
-		// 	"import_id":      importFile.ID,
-		// 	"headers":        "barcode",
-		// 	"csv_file":       row.FileName,
-		// 	"table":          "raw_barcodes",
-		// 	"with_assign":    true,
-		// 	"event_id":       eventId,
-		// 	"ticket_type_id": ticketTypeId,
-		// 	"sessions":       sessions,
-		// 	"gates":          gates,
-		// }
+	message = fmt.Sprintf("Uploaded successfully %d files", len(files))
+	_, _, err = r.importService.DoImportJobWithAssign(importFile.ID, eventId, ticketTypeId, sessions, gates)
 
-		// job := &work.Job{
-		// 	Name:       "importBarcodes",
-		// 	ID:         uuid.New().String(),
-		// 	EnqueuedAt: time.Now().Unix(),
-		// 	Args:       params,
-		// }
-
-		// xcheck:jobs:import_barcode:0c55cd4b17c8ba0b026b7fac:inprogress
-		for {
-			val, _ := config.NewRedis().Get().Do("LLEN", "xcheck:jobs:import_barcode")
-			if val.(int64) == 1 {
-				fmt.Println("Job inprogress, waiting...")
-				time.Sleep(1 * time.Second) // Wait before checking again
-			} else {
-				fmt.Printf("Job completed")
-				break
+	for {
+		val, _ := config.NewRedis().Get().Do("LLEN", "xcheck:jobs:import_barcode")
+		if val.(int64) == 1 {
+			fmt.Println("Job inprogress, waiting...")
+			time.Sleep(1 * time.Second) // Wait before checking again
+		} else {
+			// check DB
+			importRow, _ := r.importService.GetImportByID(importFile.ID)
+			if importRow.Status != string(constant.ImportStatusAssigned) {
+				fmt.Println("Job status not assigned, waiting...")
+				time.Sleep(1 * time.Second)
+				continue
 			}
-		}
-
-		fmt.Println("xcheck:jobs:import_barcode:" + job.ID + ":inprogress")
-
-		// err = processors.ImportBarcodeJob(job)
-		if err != nil {
-			utils.PanicException(response.InvalidRequest, err.Error())
-			return
+			break
 		}
 	}
 
-	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, message, utils.Null()))
+	fmt.Println("Job completed")
+
+	// err = processors.ImportBarcodeJob(job)
+	if err != nil {
+		utils.PanicException(response.InvalidRequest, err.Error())
+		return
+	}
+
+	uploadResponse, _ := r.importService.GetUploadResult(importFile.ID)
+
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, message, uploadResponse))
 }

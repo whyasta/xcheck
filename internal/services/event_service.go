@@ -38,6 +38,16 @@ func (s *EventService) GetFilteredEvents(pageParams *utils.Paginate, filters []u
 
 	rows := []dto.EventResponse{}
 	for _, item := range result {
+		// var gates []dto.EventGateResponse
+		// for _, gate := range item.Gates {
+		// 	gates = append(gates, dto.EventGateResponse{
+		// 		ID:          gate.ID,
+		// 		GateName:    gate.GateName,
+		// 		EventID:     int64(item.ID),
+		// 		TicketTypes: s.r.GateTicketTypes(int64(item.ID), gate.ID),
+		// 	})
+		// }
+
 		rows = append(rows, dto.EventResponse{
 			ID:          item.ID,
 			EventName:   item.EventName,
@@ -64,17 +74,28 @@ func (s *EventService) GetEventByID(uid int64) (dto.EventResponse, error) {
 		return dto.EventResponse{}, err
 	}
 
+	// var gates []dto.EventGateResponse
+	// for _, gate := range res.Gates {
+	// 	gates = append(gates, dto.EventGateResponse{
+	// 		ID:          gate.ID,
+	// 		GateName:    gate.GateName,
+	// 		EventID:     int64(res.ID),
+	// 		TicketTypes: s.r.GateTicketTypes(int64(res.ID), gate.ID),
+	// 	})
+	// }
+	gates := models.Gates(res.Gates)
 	row := dto.EventResponse{
-		ID:           res.ID,
-		EventName:    res.EventName,
-		Status:       res.Status,
-		StartDate:    res.StartDate.Format("2006-01-02"),
-		EndDate:      res.EndDate.Format("2006-01-02"),
-		TicketTypes:  res.TicketTypes,
-		Gates:        res.Gates,
-		Sessions:     res.Sessions,
-		EventSummary: s.r.Summary(res.ID),
-		LastSyncedAt: res.LastSyncedAt,
+		ID:              res.ID,
+		EventName:       res.EventName,
+		Status:          res.Status,
+		StartDate:       res.StartDate.Format("2006-01-02"),
+		EndDate:         res.EndDate.Format("2006-01-02"),
+		TicketTypes:     res.TicketTypes,
+		Gates:           res.Gates,
+		Sessions:        res.Sessions,
+		EventSummary:    s.r.Summary(res.ID),
+		LastSyncedAt:    res.LastSyncedAt,
+		GateTicketTypes: s.r.GateTicketTypes(res.ID, gates.IdList()),
 		// EventSummary: dto.EventSummary{
 		// 	TotalBarcode:  0,
 		// 	TotalCheckIn:  0,

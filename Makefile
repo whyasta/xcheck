@@ -72,8 +72,12 @@ run: build
 
 ## job: run the work job
 .PHONY: job
-job: build
-	/tmp/bin/${BINARY_JOB_NAME}
+job:
+	go run github.com/air-verse/air@latest \
+		--build.cmd "make build" --build.bin "/tmp/bin/${BINARY_JOB_NAME}" --build.delay "100" \
+		--build.exclude_dir "" \
+		--build.include_ext "go, tpl, tmpl, html, css, scss, js, ts, sql, jpeg, jpg, gif, png, bmp, svg, webp, ico" \
+		--misc.clean_on_exit "true"
 
 ## run/live: run the application with reloading on file changes
 .PHONY: run/live

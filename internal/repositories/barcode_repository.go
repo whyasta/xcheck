@@ -157,11 +157,13 @@ func (repo *barcodeRepository) AssignBarcodes(importId int64, assignId int64, ti
 	return count, err
 }
 
-func (repo *barcodeRepository) AssignBarcodesWithEvent(importId int64, eventId int64, ticketTypeId int64, sessions []int64, gates []int64) (int64, error) {
+func (repo *barcodeRepository) AssignBarcodesWithEvent(importId int64, eventId int64, ticketTypeId int64, sessions []int64, gates []int64) (int64, int64, int64, error) {
 	var importBarcodes []models.ImportBarcode
 
 	var err error
 	var count int64
+	var failedCount int64
+	var duplicateCount int64
 
 	// Begin transaction
 	repo.base.GetDB().Transaction(func(tx *gorm.DB) error {
@@ -171,7 +173,6 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importId int64, eventId i
 			Updates(map[string]interface{}{"assign_status": 1})
 
 		err = result.Error
-		count = result.RowsAffected
 
 		repo.base.GetDB().
 			Table("raw_barcodes").
@@ -183,6 +184,19 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importId int64, eventId i
 		// for each barcode
 		barcodes := []models.Barcode{}
 		for _, item := range importBarcodes {
+			var exists bool
+			err = repo.base.GetDB().Debug().Table("barcodes").Select("count(*) > 0").Where("event_id = ? AND barcode = ?", eventId, item.Barcode).
+				Find(&exists).
+				Error
+			if err != nil {
+				fmt.Println(err)
+			}
+			fmt.Printf("exists: %s %v\n", item.Barcode, exists)
+			if exists {
+				duplicateCount++
+				continue
+			}
+
 			barcodes = append(barcodes, models.Barcode{
 				Barcode:       item.Barcode,
 				EventID:       eventId,
@@ -192,83 +206,92 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importId int64, eventId i
 			})
 		}
 
-		result = repo.base.GetDB().Omit("Sessions", "Gates").
-			Clauses(clause.OnConflict{
-				Columns:   []clause.Column{{Name: "event_id"}, {Name: "barcode"}},
-				DoNothing: true,
-			}).
-			Create(&barcodes)
+		if len(barcodes) > 0 {
 
-		err = result.Error
-		if err != nil {
-			fmt.Println(err)
-			return err
-		}
+			result = repo.base.GetDB().Omit("Sessions", "Gates").
+				Clauses(clause.OnConflict{
+					Columns:   []clause.Column{{Name: "event_id"}, {Name: "barcode"}},
+					DoNothing: true,
+				}).
+				Create(&barcodes)
 
-		for _, item := range barcodes {
-			var barcode = models.Barcode{
-				ID: item.ID,
-			}
-
-			gateIds := []models.Gate{}
-			for _, gateItem := range gates {
-				var gate = models.Gate{
-					ID: gateItem,
-				}
-				// gateIds = append(gateIds, gate)
-
-				repo.base.GetDB().
-					Table("gates").
-					Where("id = ?", gateItem).
-					First(&gate)
-
-				gateIds = append(gateIds, gate)
-			}
-			err = repo.base.GetDB().Debug().
-				Model(&barcode).
-				Association("Gates").
-				Replace(gateIds)
+			err = result.Error
 			if err != nil {
 				fmt.Println(err)
 			}
 
-			sessionIds := []models.Session{}
-			for _, sessItem := range sessions {
-				var session = models.Session{
-					ID: sessItem,
+			for _, item := range barcodes {
+				var barcode = models.Barcode{
+					ID: item.ID,
 				}
 
-				repo.base.GetDB().
-					Table("sessions").
-					Where("id = ?", sessItem).
-					First(&session)
+				gateIds := []models.Gate{}
+				for _, gateItem := range gates {
+					var gate = models.Gate{
+						ID: gateItem,
+					}
+					// gateIds = append(gateIds, gate)
 
-				sessionIds = append(sessionIds, session)
+					repo.base.GetDB().
+						Table("gates").
+						Where("id = ?", gateItem).
+						First(&gate)
+
+					gateIds = append(gateIds, gate)
+				}
+				err = repo.base.GetDB().Debug().
+					Model(&barcode).
+					Association("Gates").
+					Replace(gateIds)
+				if err != nil {
+					fmt.Println(err)
+				}
+
+				sessionIds := []models.Session{}
+				for _, sessItem := range sessions {
+					var session = models.Session{
+						ID: sessItem,
+					}
+
+					repo.base.GetDB().
+						Table("sessions").
+						Where("id = ?", sessItem).
+						First(&session)
+
+					sessionIds = append(sessionIds, session)
+				}
+
+				err = repo.base.GetDB().Debug().
+					Model(&barcode).
+					Omit("Sessions.session_start").
+					Omit("Sessions.session_end").
+					Association("Sessions").
+					Replace(sessionIds)
+				if err != nil {
+					fmt.Println(err)
+				}
 			}
 
-			err = repo.base.GetDB().Debug().
-				Model(&barcode).
-				Omit("Sessions.session_start").
-				Omit("Sessions.session_end").
-				Association("Sessions").
-				Replace(sessionIds)
-			if err != nil {
-				fmt.Println(err)
-			}
+			count = result.RowsAffected
 		}
-
-		count = result.RowsAffected
 
 		result = repo.base.GetDB().
 			Table("imports").
 			Where("id = ?", importId).
-			Updates(map[string]interface{}{"status": constant.ImportStatusAssigned})
+			Updates(map[string]interface{}{
+				"status":          constant.ImportStatusAssigned,
+				"success_count":   count,
+				"failed_count":    failedCount,
+				"duplicate_count": duplicateCount,
+			})
 
 		err = result.Error
 		return err
 	})
 
-	return count, err
+	fmt.Println(count, failedCount, duplicateCount)
+
+	return count, failedCount, duplicateCount, err
 }
 
 func (repo *barcodeRepository) Scan(eventId int64, barcode string) (models.Barcode, response.ResponseStatus, error) {

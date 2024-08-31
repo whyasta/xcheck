@@ -5,7 +5,6 @@ import (
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/utils"
 
-	"github.com/mitchellh/mapstructure"
 	"gorm.io/gorm"
 )
 
@@ -19,6 +18,7 @@ type EventRepository interface {
 	FindByID(uid int64) (models.Event, error)
 	Summary(uid int64) dto.EventSummary
 	Report(uid int64) (dto.EventReportResponse, error)
+	GateTicketTypes(uid int64, gateIds []int64) []dto.EventGateTicketTypeResponse
 }
 
 type eventRepository struct {
@@ -151,8 +151,8 @@ func (repo *eventRepository) Summary(id int64) dto.EventSummary {
 	// subQuery := repo.base.GetDB().Select("gateAllocation_id").Where("event_id = ?", id).Table("gateAllocations")
 	err := repo.base.GetDB().Table("barcodes").
 		Select("count(id) as total_barcode",
-			"SUM(CASE WHEN current_status = 'IN' THEN 1 ELSE 0 END) as total_check_in",
-			"SUM(CASE WHEN current_status = 'OUT' THEN 1 ELSE 0 END) as total_check_out").
+			"SUM(CASE WHEN current_status = 'IN' THEN 1 ELSE 0 END) as ongoing_check_in",
+			"SUM(CASE WHEN current_status = 'OUT' THEN 1 ELSE 0 END) as ongoing_check_out").
 		Where("event_id = ?", id).
 		Omit("total_ticket_type").
 		Scan(&result).
@@ -161,26 +161,47 @@ func (repo *eventRepository) Summary(id int64) dto.EventSummary {
 		return dto.EventSummary{}
 	}
 
-	var ticketType []struct {
-		TicketTypeName string `json:"ticket_type_name" mapstructure:"ticket_type_name"`
-		TotalBarcode   int    `json:"total_barcode" mapstructure:"total_barcode"`
-		TotalCheckIn   int    `json:"total_check_in" mapstructure:"total_check_in"`
-		TotalCheckOut  int    `json:"total_check_out" mapstructure:"total_check_out"`
+	type UniqueCheck struct {
+		TotalCheckIn  int64 `json:"total_check_in" mapstructure:"total_check_in"`
+		TotalCheckOut int64 `json:"total_check_out" mapstructure:"total_check_out"`
 	}
 
-	var jsonTicketType []map[string]interface{}
-	repo.base.GetDB().Table("ticket_types").
-		Select("ticket_type_name",
-			"count(barcode) as total_barcode",
-			"SUM(CASE WHEN current_status = 'IN' THEN 1 ELSE 0 END) as total_check_in",
-			"SUM(CASE WHEN current_status = 'OUT' THEN 1 ELSE 0 END) as total_check_out").
-		Joins("join barcodes on barcodes.ticket_type_id = ticket_types.id").
-		Where("barcodes.event_id = ?", id).
-		Group("barcodes.ticket_type_id").
-		Scan(&ticketType)
+	var uniqueCheck UniqueCheck
+	err = repo.base.GetDB().Table("barcode_logs").
+		Select("SUM(CASE WHEN action = 'IN' THEN 1 ELSE 0 END) as total_check_in",
+			"SUM(CASE WHEN action = 'OUT' THEN 1 ELSE 0 END) as total_check_out").
+		Where("event_id = ?", id).
+		Scan(&uniqueCheck).
+		Error
+	if err != nil {
+		return dto.EventSummary{}
+	}
 
-	mapstructure.Decode(ticketType, &jsonTicketType)
-	result.TotalTicketType = jsonTicketType
+	result.TotalCheckIn = uniqueCheck.TotalCheckIn
+	result.TotalCheckOut = uniqueCheck.TotalCheckOut
+
+	/*
+		var ticketType []struct {
+			TicketTypeName string `json:"ticket_type_name" mapstructure:"ticket_type_name"`
+			TotalBarcode   int    `json:"total_barcode" mapstructure:"total_barcode"`
+			TotalCheckIn   int    `json:"total_check_in" mapstructure:"total_check_in"`
+			TotalCheckOut  int    `json:"total_check_out" mapstructure:"total_check_out"`
+		}
+
+		var jsonTicketType []map[string]interface{}
+		repo.base.GetDB().Table("ticket_types").
+			Select("ticket_type_name",
+				"count(barcode) as total_barcode",
+				"SUM(CASE WHEN current_status = 'IN' THEN 1 ELSE 0 END) as total_check_in",
+				"SUM(CASE WHEN current_status = 'OUT' THEN 1 ELSE 0 END) as total_check_out").
+			Joins("join barcodes on barcodes.ticket_type_id = ticket_types.id").
+			Where("barcodes.event_id = ?", id).
+			Group("barcodes.ticket_type_id").
+			Scan(&ticketType)
+
+		mapstructure.Decode(ticketType, &jsonTicketType)
+		result.TotalTicketType = jsonTicketType
+	*/
 
 	// repo.base.GetDB().Table("barcode_logs").
 	// 	Select("count(barcode) as total_check_in").
@@ -209,4 +230,16 @@ func (repo *eventRepository) Report(id int64) (dto.EventReportResponse, error) {
 	result.EventSummary = repo.Summary(id)
 
 	return result, err
+}
+
+func (repo *eventRepository) GateTicketTypes(eventId int64, gateIds []int64) []dto.EventGateTicketTypeResponse {
+	var result = []dto.EventGateTicketTypeResponse{}
+	repo.base.GetDB().Raw("SELECT DISTINCT bg.gate_id, g.gate_name, barcodes.ticket_type_id, tt.ticket_type_name FROM barcodes "+
+		"JOIN ticket_types tt ON tt.id = barcodes.ticket_type_id "+
+		"JOIN barcode_gates bg ON bg.barcode_id = barcodes.id "+
+		"JOIN gates g ON g.id = bg.gate_id "+
+		"WHERE bg.gate_id IN (?) and barcodes.event_id = ? GROUP BY bg.gate_id, tt.id", gateIds, eventId).
+		Scan(&result)
+	return result
+	//result := repo.base.GetDB().
 }

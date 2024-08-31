@@ -3,6 +3,7 @@ package services
 import (
 	"bigmind/xcheck-be/config"
 	"bigmind/xcheck-be/internal/constant"
+	"bigmind/xcheck-be/internal/dto"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/repositories"
 	"bigmind/xcheck-be/utils"
@@ -106,4 +107,12 @@ func (s *ImportService) CheckValid(importId int64, assignId int64) (bool, error)
 	}
 
 	return valid, err
+}
+
+func (s *ImportService) DeleteImport(id int64) (models.Import, error) {
+	return s.r.Delete(id)
+}
+
+func (s *ImportService) GetUploadResult(id int64) (dto.UploadResponse, error) {
+	return s.r.GetUploadResult(id)
 }

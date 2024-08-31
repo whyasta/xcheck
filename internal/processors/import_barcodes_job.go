@@ -75,7 +75,6 @@ func ImportBarcodeJob(job *work.Job) error {
 
 	fmt.Println("Importing data...")
 	importJob.ImportData()
-	fmt.Println("Importing done")
 
 	importRepo := repositories.NewImportRepository(db)
 
@@ -106,8 +105,9 @@ func ImportBarcodeJob(job *work.Job) error {
 			}
 
 			barcodeRepo := repositories.NewBarcodeRepository(db)
-			_, err := barcodeRepo.AssignBarcodesWithEvent(importId, eventId, ticketTypeId, sessionSlice, gateSlice)
+			_, _, _, err := barcodeRepo.AssignBarcodesWithEvent(importId, eventId, ticketTypeId, sessionSlice, gateSlice)
 			if err != nil {
+				fmt.Println("Error assigning barcodes:", err)
 				return err
 			}
 		}
@@ -116,6 +116,8 @@ func ImportBarcodeJob(job *work.Job) error {
 		dbInstance, _ := db.DB()
 		_ = dbInstance.Close()
 	}()
+
+	fmt.Println("Importing done")
 
 	return nil
 }

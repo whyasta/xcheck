@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"bigmind/xcheck-be/internal/constant"
+	"bigmind/xcheck-be/internal/dto"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/utils"
 
@@ -17,6 +18,7 @@ type ImportRepository interface {
 	FindByID(uid int64) (models.Import, error)
 	CheckValidImport(uid int64) (bool, error)
 	CheckValidAssign(uid int64) (bool, error)
+	GetUploadResult(uid int64) (dto.UploadResponse, error)
 }
 
 type importRepository struct {
@@ -78,4 +80,16 @@ func (repo *importRepository) CheckValidAssign(id int64) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func (repo *importRepository) GetUploadResult(id int64) (dto.UploadResponse, error) {
+	var uploadResponse dto.UploadResponse
+	err := repo.base.GetDB().
+		Debug().
+		Table("imports").
+		Select("success_count", "failed_count", "duplicate_count").
+		Where("id = ?", id).
+		Scan(&uploadResponse).Error
+
+	return uploadResponse, err
 }

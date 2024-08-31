@@ -31,6 +31,7 @@ type Barcode struct {
 	Gates         []Gate                 `gorm:"many2many:barcode_gates;" json:"gates,omitempty"`
 	Sessions      []Session              `gorm:"many2many:barcode_sessions;" json:"sessions,omitempty"`
 	LatestScan    *LatestScan            `gorm:"foreignKey:barcode;references:barcode" json:"latest_scan"`
+	CreatedAt     time.Time              `gorm:"column:created_at;column:created_at" json:"created_at"`
 	// Sessions      []int64                `gorm:"serializer:json" mapstructure:"sessions" json:"sessions,omitempty"`
 	// Gates         []int64                `gorm:"serializer:json" mapstructure:"gates" json:"gates,omitempty"`
 

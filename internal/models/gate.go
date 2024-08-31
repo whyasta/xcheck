@@ -8,6 +8,16 @@ type Gate struct {
 	CommonModel
 }
 
+type Gates []Gate
+
+func (g Gates) IdList() []int64 {
+	var list []int64
+	for _, gate := range g {
+		list = append(list, gate.ID)
+	}
+	return list
+}
+
 type GateUser struct {
 	GateID int64 `gorm:"column:gate_id;" json:"gate_id" mapstructure:"gate_id"`
 	UserID int64 `gorm:"column:user_id;" json:"user_id" mapstructure:"user_id"`
