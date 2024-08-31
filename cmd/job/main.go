@@ -30,7 +30,7 @@ type Context struct {
 func main() {
 	log.Println("Running job queue")
 	config.Init("production")
-	config.InitLogger("production")
+	// config.InitLogger("production")
 
 	pool := work.NewWorkerPool(Context{}, 10, "xcheck", config.NewRedis())
 	pool.Middleware((*Context).Log)
