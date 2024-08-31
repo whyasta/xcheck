@@ -34,7 +34,7 @@ func NewSyncService(
 
 func (s *SyncService) SyncEvents() (utils.APIResponse[map[string]interface{}], int64, error) {
 	client := &http.Client{}
-	req, err := HttpRequest("GET", config.GetAppConfig().CLOUD_BASE_URL+"/events?page=1&limit=999999&filter=[{\"prop\":\"status\",\"opr\":\"=\",\"val\":\"1\"}]", nil)
+	req, err := HTTPRequest("GET", config.GetAppConfig().CloudBaseURL+"/events?page=1&limit=999999&filter=[{\"prop\":\"status\",\"opr\":\"=\",\"val\":\"1\"}]", nil)
 	if err != nil {
 		return utils.APIResponse[map[string]interface{}]{}, 0, err
 	}
@@ -64,7 +64,7 @@ func (s *SyncService) SyncEvents() (utils.APIResponse[map[string]interface{}], i
 
 func (s *SyncService) SyncDownloadEventByID(uid int64) error {
 	client := &http.Client{}
-	req, err := HttpRequest("GET", config.GetAppConfig().CLOUD_BASE_URL+"/events/"+strconv.Itoa(int(uid)), nil)
+	req, err := HTTPRequest("GET", config.GetAppConfig().CloudBaseURL+"/events/"+strconv.Itoa(int(uid)), nil)
 	if err != nil {
 		return err
 	}
@@ -140,7 +140,7 @@ func (s *SyncService) SyncDownloadEventByID(uid int64) error {
 
 	// Barcodes
 	client = &http.Client{}
-	req, err = HttpRequest("GET", config.GetAppConfig().CLOUD_BASE_URL+"/events/"+strconv.Itoa(int(uid))+"/barcodes?page=1&limit=200", nil)
+	req, err = HTTPRequest("GET", config.GetAppConfig().CloudBaseURL+"/events/"+strconv.Itoa(int(uid))+"/barcodes?page=1&limit=200", nil)
 	if err != nil {
 		return err
 	}
@@ -150,7 +150,7 @@ func (s *SyncService) SyncDownloadEventByID(uid int64) error {
 	}
 	defer res.Body.Close()
 
-	//fmt.Println(config.GetAppConfig().CLOUD_BASE_URL + "/events/" + strconv.Itoa(int(uid)) + "/barcodes?page=1&limit=200")
+	//fmt.Println(config.GetAppConfig().CloudBaseURL + "/events/" + strconv.Itoa(int(uid)) + "/barcodes?page=1&limit=200")
 	response = &utils.APIResponse[map[string]interface{}]{
 		Data: models.Event{},
 	}
@@ -203,7 +203,7 @@ func (s *SyncService) SyncUploadEventByID(uid int64) error {
 
 	fmt.Println(string(body))
 	client := &http.Client{}
-	req, err := HttpRequest("POST", config.GetAppConfig().CLOUD_BASE_URL+"/barcodes/sync/upload", body)
+	req, err := HTTPRequest("POST", config.GetAppConfig().CloudBaseURL+"/barcodes/sync/upload", body)
 	if err != nil {
 		return err
 	}
@@ -231,7 +231,7 @@ func (s *SyncService) SyncUploadEventByID(uid int64) error {
 
 func (s *SyncService) SyncUsers() error {
 	client := &http.Client{}
-	req, err := HttpRequest("GET", config.GetAppConfig().CLOUD_BASE_URL+"/users/sync?page=1&limit=999999", nil)
+	req, err := HTTPRequest("GET", config.GetAppConfig().CloudBaseURL+"/users/sync?page=1&limit=999999", nil)
 	if err != nil {
 		return err
 	}
@@ -271,13 +271,13 @@ func (s *SyncService) SyncUsers() error {
 	return nil
 }
 
-func HttpRequest(method string, url string, payload []byte) (*http.Request, error) {
+func HTTPRequest(method string, url string, payload []byte) (*http.Request, error) {
 	body := []byte(`{
         "username": "admin",
         "password": "admin"
     }`)
 
-	req, err := http.NewRequest("POST", config.GetAppConfig().CLOUD_BASE_URL+"/auth/signin", bytes.NewBuffer(body))
+	req, err := http.NewRequest("POST", config.GetAppConfig().CloudBaseURL+"/auth/signin", bytes.NewBuffer(body))
 	if err != nil {
 		fmt.Println("Error creating request:", err)
 		return nil, err

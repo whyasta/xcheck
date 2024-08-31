@@ -7,11 +7,11 @@ import (
 )
 
 type ReportRepository interface {
-	TrafficBySession(eventId int64) ([]dto.TrafficVisitorSession, error)
-	TrafficByGate(eventId int64) ([]dto.TrafficVisitorGate, error)
-	TrafficByTicketType(eventId int64) ([]dto.TrafficVisitorTicketType, error)
-	UniqueByTicketType(eventId int64, ticketTypeIds []int64, gateIds []int64, sessionIds []int64) ([]dto.UniqueVisitorTicketType, error)
-	GateIn(eventId int64) ([]dto.GateInChart, error)
+	TrafficBySession(eventID int64) ([]dto.TrafficVisitorSession, error)
+	TrafficByGate(eventID int64) ([]dto.TrafficVisitorGate, error)
+	TrafficByTicketType(eventID int64) ([]dto.TrafficVisitorTicketType, error)
+	UniqueByTicketType(eventID int64, ticketTypeIds []int64, gateIds []int64, sessionIds []int64) ([]dto.UniqueVisitorTicketType, error)
+	GateIn(eventID int64) ([]dto.GateInChart, error)
 }
 
 type reportRepository struct {
@@ -24,7 +24,7 @@ func NewReportRepository(db *gorm.DB) *reportRepository {
 	}
 }
 
-func (repo *reportRepository) TrafficBySession(eventId int64) ([]dto.TrafficVisitorSession, error) {
+func (repo *reportRepository) TrafficBySession(eventID int64) ([]dto.TrafficVisitorSession, error) {
 	var data []dto.TrafficVisitorSession
 
 	err := repo.db.Table("sessions").
@@ -32,7 +32,7 @@ func (repo *reportRepository) TrafficBySession(eventId int64) ([]dto.TrafficVisi
 			"SUM(CASE WHEN barcode_logs.action = 'IN' THEN 1 ELSE 0 END) as check_in_count",
 			"SUM(CASE WHEN barcode_logs.action = 'OUT' THEN 1 ELSE 0 END) as check_out_count").
 		Joins("left join barcode_logs on barcode_logs.session_id = sessions.id").
-		Where("sessions.event_id = ?", eventId).
+		Where("sessions.event_id = ?", eventID).
 		Group("sessions.id").
 		Group("sessions.session_name").
 		Scan(&data).Error
@@ -44,7 +44,7 @@ func (repo *reportRepository) TrafficBySession(eventId int64) ([]dto.TrafficVisi
 	return data, err
 }
 
-func (repo *reportRepository) TrafficByGate(eventId int64) ([]dto.TrafficVisitorGate, error) {
+func (repo *reportRepository) TrafficByGate(eventID int64) ([]dto.TrafficVisitorGate, error) {
 	var data []dto.TrafficVisitorGate
 
 	err := repo.db.Table("gates").
@@ -52,7 +52,7 @@ func (repo *reportRepository) TrafficByGate(eventId int64) ([]dto.TrafficVisitor
 			"SUM(CASE WHEN barcode_logs.action = 'IN' THEN 1 ELSE 0 END) as check_in_count",
 			"SUM(CASE WHEN barcode_logs.action = 'OUT' THEN 1 ELSE 0 END) as check_out_count").
 		Joins("left join barcode_logs on barcode_logs.gate_id = gates.id").
-		Where("gates.event_id = ?", eventId).
+		Where("gates.event_id = ?", eventID).
 		Group("gates.id").
 		Group("gates.gate_name").
 		Scan(&data).Error
@@ -64,14 +64,14 @@ func (repo *reportRepository) TrafficByGate(eventId int64) ([]dto.TrafficVisitor
 	return data, err
 }
 
-func (repo *reportRepository) TrafficByTicketType(eventId int64) ([]dto.TrafficVisitorTicketType, error) {
+func (repo *reportRepository) TrafficByTicketType(eventID int64) ([]dto.TrafficVisitorTicketType, error) {
 	var data []dto.TrafficVisitorTicketType
 	// err := repo.db.Table("barcode_logs").
 	// 	Select("barcode_logs.ticket_type_id", "ticket_types.ticket_type_name",
 	// 		"SUM(CASE WHEN action = 'IN' THEN 1 ELSE 0 END) as check_in_count",
 	// 		"SUM(CASE WHEN action = 'OUT' THEN 1 ELSE 0 END) as check_out_count").
 	// 	Joins("join ticket_types on ticket_types.id = barcode_logs.ticket_type_id").
-	// 	Where("barcode_logs.event_id = ?", eventId).
+	// 	Where("barcode_logs.event_id = ?", eventID).
 	// 	Group("barcode_logs.ticket_type_id").
 	// 	Scan(&data).Error
 
@@ -80,7 +80,7 @@ func (repo *reportRepository) TrafficByTicketType(eventId int64) ([]dto.TrafficV
 			"SUM(CASE WHEN barcode_logs.action = 'IN' THEN 1 ELSE 0 END) as check_in_count",
 			"SUM(CASE WHEN barcode_logs.action = 'OUT' THEN 1 ELSE 0 END) as check_out_count").
 		Joins("left join barcode_logs on barcode_logs.ticket_type_id = ticket_types.id").
-		Where("ticket_types.event_id = ?", eventId).
+		Where("ticket_types.event_id = ?", eventID).
 		Group("ticket_types.id").
 		Group("ticket_types.ticket_type_name").
 		Scan(&data).Error
@@ -92,13 +92,13 @@ func (repo *reportRepository) TrafficByTicketType(eventId int64) ([]dto.TrafficV
 	return data, err
 }
 
-func (repo *reportRepository) UniqueByTicketType(eventId int64, ticketTypeIds []int64, gateIds []int64, sessionIds []int64) ([]dto.UniqueVisitorTicketType, error) {
+func (repo *reportRepository) UniqueByTicketType(eventID int64, ticketTypeIds []int64, gateIds []int64, sessionIds []int64) ([]dto.UniqueVisitorTicketType, error) {
 	var data []dto.UniqueVisitorTicketType
 
 	// subQuery := repo.db.Table("barcode_logs").
 	// 	Debug().Select("barcode, action, barcode_logs.ticket_type_id, ticket_types.ticket_type_name").
 	// 	Joins("join ticket_types on ticket_types.id = barcode_logs.ticket_type_id").
-	// 	Where("barcode_logs.event_id = ?", eventId).
+	// 	Where("barcode_logs.event_id = ?", eventID).
 	// 	Group("barcode_logs.ticket_type_id").
 	// 	Group("barcode_logs.barcode").
 	// 	Group("barcode_logs.action").
@@ -125,7 +125,7 @@ func (repo *reportRepository) UniqueByTicketType(eventId int64, ticketTypeIds []
 		Joins("join ticket_types on ticket_types.id = barcodes.ticket_type_id").
 		Joins("join barcode_logs on barcode_logs.event_id = barcodes.event_id AND barcode_logs.barcode = barcodes.barcode").
 		Group("barcodes.ticket_type_id").
-		Where("barcodes.event_id = ?", eventId)
+		Where("barcodes.event_id = ?", eventID)
 
 	if len(ticketTypeIds) > 0 {
 		query = query.Where("barcodes.ticket_type_id in (?)", ticketTypeIds)
@@ -147,7 +147,7 @@ func (repo *reportRepository) UniqueByTicketType(eventId int64, ticketTypeIds []
 	return data, err
 }
 
-func (repo *reportRepository) GateIn(eventId int64) ([]dto.GateInChart, error) {
+func (repo *reportRepository) GateIn(eventID int64) ([]dto.GateInChart, error) {
 	var data []dto.GateInChart
 
 	err := repo.db.Table("barcode_logs").
@@ -155,7 +155,7 @@ func (repo *reportRepository) GateIn(eventId int64) ([]dto.GateInChart, error) {
 		Select("DATE_FORMAT(scanned_at, '%Y-%m-%d %H.%i') AS date_time", "COUNT(DISTINCT barcode) as total",
 			"DATE_FORMAT(scanned_at, '%Y-%m-%d %H.%i') AS date_time", "COUNT(DISTINCT barcode) as unique_in_count",
 			"SUM(CASE WHEN barcode_logs.action = 'IN' THEN 1 ELSE 0 END) as traffic_in_count").
-		Where("barcode_logs.event_id = ?", eventId).
+		Where("barcode_logs.event_id = ?", eventID).
 		Where("barcode_logs.action = ?", "IN").
 		Group("DATE_FORMAT(scanned_at, '%Y-%m-%d %H.%i')").Scan(&data).Error
 	if err != nil {

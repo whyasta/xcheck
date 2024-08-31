@@ -41,7 +41,7 @@ type Barcode struct {
 
 type BarcodeAssignment struct {
 	GateAllocationID int64 `json:"gateAllocation_id" validate:"required"`
-	ImportId         int64 `json:"import_id" validate:"required"`
+	ImportID         int64 `json:"import_id" validate:"required"`
 	TicketTypeID     int64 `json:"ticket_type_id" validate:"required"`
 }
 

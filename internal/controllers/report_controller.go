@@ -24,13 +24,13 @@ func NewReportController(service *services.ReportService) *ReportController {
 func (r ReportController) ReportTrafficVisitor(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	eventId, err := strconv.Atoi(c.Param("id"))
+	eventID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
-	data, err := r.service.ReportTrafficVisitor(int64(eventId))
+	data, err := r.service.ReportTrafficVisitor(int64(eventID))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -42,7 +42,7 @@ func (r ReportController) ReportTrafficVisitor(c *gin.Context) {
 func (r ReportController) ReportUniqueVisitor(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	eventId, err := strconv.Atoi(c.Param("id"))
+	eventID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -96,7 +96,7 @@ func (r ReportController) ReportUniqueVisitor(c *gin.Context) {
 		}
 	}
 
-	data, err := r.service.ReportUniqueVisitor(int64(eventId), ticketTypeIds, gateIds, sessionIds)
+	data, err := r.service.ReportUniqueVisitor(int64(eventID), ticketTypeIds, gateIds, sessionIds)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -108,13 +108,13 @@ func (r ReportController) ReportUniqueVisitor(c *gin.Context) {
 func (r ReportController) ReportGateIn(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	eventId, err := strconv.Atoi(c.Param("id"))
+	eventID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
-	data, err := r.service.ReportGateIn(int64(eventId))
+	data, err := r.service.ReportGateIn(int64(eventID))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return

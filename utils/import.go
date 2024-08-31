@@ -25,17 +25,17 @@ type Import struct {
 
 func NewImport(
 	db *gorm.DB,
-	importId int64,
+	importID int64,
 	table string,
 	csvFile string,
 	headers []string,
 ) *Import {
-	log.Println("new import", []interface{}{csvFile, table, importId, headers})
+	log.Println("new import", []interface{}{csvFile, table, importID, headers})
 	return &Import{
 		CsvFile:  csvFile,
 		Table:    table,
 		DB:       db,
-		ImportID: importId,
+		ImportID: importID,
 		Headers:  headers,
 	}
 }
@@ -59,7 +59,7 @@ func (i Import) ImportData() error {
 	}
 	defer csvFile.Close()
 
-	jobs := make(chan []interface{}, 0)
+	jobs := make(chan []interface{})
 	wg := new(sync.WaitGroup)
 
 	go i.dispatchWorkers(jobs, wg)
@@ -140,8 +140,8 @@ func (i Import) doInsertJob(workerIndex, counter int, db *gorm.DB, values []inte
 				strings.Join(generateQuestionsMark(len(i.Headers)), ",")+",?",
 			)
 
-			importId := []interface{}{i.ImportID}
-			values = append(values, importId...)
+			importID := []interface{}{i.ImportID}
+			values = append(values, importID...)
 
 			err := db.WithContext(context.Background()).Exec(query, values...).Error
 			if err != nil {

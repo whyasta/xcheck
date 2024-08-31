@@ -24,12 +24,12 @@ func (s *SessionService) CreateBulkSession(sessions *[]models.Session) ([]models
 	return s.r.BulkSave(sessions)
 }
 
-func (s *SessionService) UpdateSession(eventId int64, id int64, data *map[string]interface{}) (models.Session, error) {
+func (s *SessionService) UpdateSession(eventID int64, id int64, data *map[string]interface{}) (models.Session, error) {
 	var filters = []utils.Filter{
 		{
 			Property:  "event_id",
 			Operation: "=",
-			Value:     strconv.Itoa(int(eventId)),
+			Value:     strconv.Itoa(int(eventID)),
 		},
 		{
 			Property:  "id",

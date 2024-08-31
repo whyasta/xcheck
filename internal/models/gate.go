@@ -10,7 +10,7 @@ type Gate struct {
 
 type Gates []Gate
 
-func (g Gates) IdList() []int64 {
+func (g Gates) IDList() []int64 {
 	var list []int64
 	for _, gate := range g {
 		list = append(list, gate.ID)

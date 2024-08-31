@@ -13,7 +13,7 @@ import (
 func BaseRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
 	// mysql check
 	db, _ := sql.Open("mysql", config.GetDsn())
-	mysqlCheck := checks.SqlCheck{Sql: db}
+	mysqlCheck := checks.SQLCheck{SQL: db}
 
 	// redis check
 	redisCheck := checks.RedisCheck{Pool: config.NewRedis()}
@@ -30,9 +30,9 @@ func BaseRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
 	group.Use(middlewares.AuthMiddleware(), middlewares.DeviceMiddleware())
 	{
 		// single get
-		group.GET("/ticket-types/:ticketTypeId", controllers.TicketTypeController.GetTicketTypeByID)
-		group.GET("/gates/:gateId", controllers.GateController.GetGateByID)
-		group.GET("/sessions/:sessionId", controllers.SessionController.GetSessionByID)
+		group.GET("/ticket-types/:ticketTypeID", controllers.TicketTypeController.GetTicketTypeByID)
+		group.GET("/gates/:gateID", controllers.GateController.GetGateByID)
+		group.GET("/sessions/:sessionID", controllers.SessionController.GetSessionByID)
 		// group.GET("/gate-allocations/:gateAllocationId", controllers.GateAllocationController.GetGateAllocationByID)
 	}
 }

@@ -14,22 +14,22 @@ import (
 )
 
 type AppConfig struct {
-	DATABASE_HOST        string
-	DATABASE_PORT        string
-	DATABASE_USER        string
-	DATABASE_PASSWORD    string
-	DATABASE_NAME        string
-	DATABASE_QUERY_DEBUG bool
-	AUTH_JWT_SECRET      string
-	AUTH_JWT_EXPIRE      int
-	AUTH_JWT_ISSUER      string
-	SERVER_ADDRESS       string
-	SERVER_PORT          string
-	APP_ENV              string
-	REDIS_HOST           string
-	REDIS_PORT           string
-	REDIS_QUEUE          string
-	CLOUD_BASE_URL       string
+	DatabaseHost       string
+	DatabasePort       string
+	DatabaseUser       string
+	DatabasePassword   string
+	DatabaseName       string
+	DatabaseQueryDebug bool
+	AuthJwtSecret      string
+	AuthJwtExpire      int
+	AuthJwtIssuer      string
+	ServerAddress      string
+	ServerPort         string
+	AppEnv             string
+	RedisHost          string
+	RedisPort          string
+	RedisQueue         string
+	CloudBaseURL       string
 }
 
 var config *viper.Viper
@@ -106,21 +106,21 @@ func GetConfig() *viper.Viper {
 
 func GetAppConfig() *AppConfig {
 	return &AppConfig{
-		DATABASE_HOST:        GetConfig().GetString("DATABASE_HOST"),
-		DATABASE_PORT:        GetConfig().GetString("DATABASE_PORT"),
-		DATABASE_USER:        GetConfig().GetString("DATABASE_USER"),
-		DATABASE_PASSWORD:    GetConfig().GetString("DATABASE_PASSWORD"),
-		DATABASE_NAME:        GetConfig().GetString("DATABASE_NAME"),
-		DATABASE_QUERY_DEBUG: GetConfig().GetBool("DATABASE_QUERY_DEBUG"),
-		AUTH_JWT_SECRET:      GetConfig().GetString("AUTH_JWT_SECRET"),
-		AUTH_JWT_EXPIRE:      GetConfig().GetInt("AUTH_JWT_EXPIRE"),
-		AUTH_JWT_ISSUER:      GetConfig().GetString("AUTH_JWT_ISSUER"),
-		SERVER_ADDRESS:       GetConfig().GetString("SERVER_ADDRESS"),
-		SERVER_PORT:          GetConfig().GetString("SERVER_PORT"),
-		APP_ENV:              GetConfig().GetString("APP_ENV"),
-		REDIS_HOST:           GetConfig().GetString("REDIS_HOST"),
-		REDIS_PORT:           GetConfig().GetString("REDIS_PORT"),
-		REDIS_QUEUE:          GetConfig().GetString("REDIS_QUEUE"),
-		CLOUD_BASE_URL:       GetConfig().GetString("CLOUD_BASE_URL"),
+		DatabaseHost:       GetConfig().GetString("DATABASE_HOST"),
+		DatabasePort:       GetConfig().GetString("DATABASE_PORT"),
+		DatabaseUser:       GetConfig().GetString("DATABASE_USER"),
+		DatabasePassword:   GetConfig().GetString("DATABASE_PASSWORD"),
+		DatabaseName:       GetConfig().GetString("DATABASE_NAME"),
+		DatabaseQueryDebug: GetConfig().GetBool("DATABASE_QUERY_DEBUG"),
+		AuthJwtSecret:      GetConfig().GetString("AUTH_JWT_SECRET"),
+		AuthJwtExpire:      GetConfig().GetInt("AUTH_JWT_EXPIRE"),
+		AuthJwtIssuer:      GetConfig().GetString("AUTH_JWT_ISSUER"),
+		ServerAddress:      GetConfig().GetString("SERVER_ADDRESS"),
+		ServerPort:         GetConfig().GetString("SERVER_PORT"),
+		AppEnv:             GetConfig().GetString("APP_ENV"),
+		RedisHost:          GetConfig().GetString("REDIS_HOST"),
+		RedisPort:          GetConfig().GetString("REDIS_PORT"),
+		RedisQueue:         GetConfig().GetString("REDIS_QUEUE"),
+		CloudBaseURL:       GetConfig().GetString("CLOUD_BASE_URL"),
 	}
 }

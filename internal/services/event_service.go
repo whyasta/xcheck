@@ -95,7 +95,7 @@ func (s *EventService) GetEventByID(uid int64) (dto.EventResponse, error) {
 		Sessions:        res.Sessions,
 		EventSummary:    s.r.Summary(res.ID),
 		LastSyncedAt:    res.LastSyncedAt,
-		GateTicketTypes: s.r.GateTicketTypes(res.ID, gates.IdList()),
+		GateTicketTypes: s.r.GateTicketTypes(res.ID, gates.IDList()),
 		// EventSummary: dto.EventSummary{
 		// 	TotalBarcode:  0,
 		// 	TotalCheckIn:  0,

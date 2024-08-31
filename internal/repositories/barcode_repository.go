@@ -20,9 +20,9 @@ type BarcodeRepository interface {
 	FindAll(joins []string, paginate *utils.Paginate, filter []utils.Filter, sorts []utils.Sort) ([]models.Barcode, int64, error)
 	FindAllWithRelations(paginate *utils.Paginate, filter []utils.Filter, sorts []utils.Sort) ([]models.Barcode, int64, error)
 	FindByID(uid int64) (models.Barcode, error)
-	AssignBarcodes(importId int64, assignId int64, ticketTypeId int64) (int64, error)
-	Scan(eventId int64, barcode string) (models.Barcode, response.ResponseStatus, error)
-	CreateLog(eventId int64, userId int64, gateId int64, ticketTypeId int64, sessionId int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus, device string) (models.BarcodeLog, bool, error)
+	AssignBarcodes(importID int64, assignID int64, ticketTypeID int64) (int64, error)
+	Scan(eventID int64, barcode string) (models.Barcode, response.ResponseStatus, error)
+	CreateLog(eventID int64, userID int64, gateID int64, ticketTypeID int64, sessionID int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus, device string) (models.BarcodeLog, bool, error)
 	CreateBulkLog(barcodes *[]models.BarcodeLog) error
 }
 
@@ -103,7 +103,7 @@ func (repo *barcodeRepository) Update(id int64, data *map[string]interface{}) (m
 	return BaseUpdate[models.Barcode](*repo.base.GetDB(), id, data)
 }
 
-func (repo *barcodeRepository) AssignBarcodes(importId int64, assignId int64, ticketTypeId int64) (int64, error) {
+func (repo *barcodeRepository) AssignBarcodes(importID int64, assignID int64, ticketTypeID int64) (int64, error) {
 	var importBarcodes []models.ImportBarcode
 
 	var err error
@@ -113,7 +113,7 @@ func (repo *barcodeRepository) AssignBarcodes(importId int64, assignId int64, ti
 	repo.base.GetDB().Transaction(func(tx *gorm.DB) error {
 		result := repo.base.GetDB().
 			Table("raw_barcodes").
-			Where("import_id = ?", importId).
+			Where("import_id = ?", importID).
 			Updates(map[string]interface{}{"assign_status": 1})
 
 		err = result.Error
@@ -121,7 +121,7 @@ func (repo *barcodeRepository) AssignBarcodes(importId int64, assignId int64, ti
 
 		repo.base.GetDB().
 			Table("raw_barcodes").
-			Where("import_id = ?", importId).
+			Where("import_id = ?", importID).
 			Find(&importBarcodes)
 
 		fmt.Println(importBarcodes)
@@ -131,8 +131,8 @@ func (repo *barcodeRepository) AssignBarcodes(importId int64, assignId int64, ti
 		for _, item := range importBarcodes {
 			barcodes = append(barcodes, models.Barcode{
 				Barcode: item.Barcode,
-				// GateAllocationID: assignId,
-				TicketTypeID:  ticketTypeId,
+				// GateAllocationID: assignID,
+				TicketTypeID:  ticketTypeID,
 				Flag:          constant.BarcodeFlagValid,
 				CurrentStatus: constant.BarcodeStatusNull,
 			})
@@ -147,7 +147,7 @@ func (repo *barcodeRepository) AssignBarcodes(importId int64, assignId int64, ti
 
 		result = repo.base.GetDB().
 			Table("imports").
-			Where("id = ?", importId).
+			Where("id = ?", importID).
 			Updates(map[string]interface{}{"status": constant.ImportStatusAssigned})
 
 		err = result.Error
@@ -157,7 +157,7 @@ func (repo *barcodeRepository) AssignBarcodes(importId int64, assignId int64, ti
 	return count, err
 }
 
-func (repo *barcodeRepository) AssignBarcodesWithEvent(importId int64, eventId int64, ticketTypeId int64, sessions []int64, gates []int64) (int64, int64, int64, error) {
+func (repo *barcodeRepository) AssignBarcodesWithEvent(importID int64, eventID int64, ticketTypeID int64, sessions []int64, gates []int64) (int64, int64, int64, error) {
 	var importBarcodes []models.ImportBarcode
 
 	var err error
@@ -169,14 +169,14 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importId int64, eventId i
 	repo.base.GetDB().Transaction(func(tx *gorm.DB) error {
 		result := repo.base.GetDB().
 			Table("raw_barcodes").
-			Where("import_id = ?", importId).
+			Where("import_id = ?", importID).
 			Updates(map[string]interface{}{"assign_status": 1})
 
 		err = result.Error
 
 		repo.base.GetDB().
 			Table("raw_barcodes").
-			Where("import_id = ?", importId).
+			Where("import_id = ?", importID).
 			Find(&importBarcodes)
 
 		// fmt.Println(importBarcodes)
@@ -185,7 +185,7 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importId int64, eventId i
 		barcodes := []models.Barcode{}
 		for _, item := range importBarcodes {
 			var exists bool
-			err = repo.base.GetDB().Table("barcodes").Select("count(*) > 0").Where("event_id = ? AND barcode = ?", eventId, item.Barcode).
+			err = repo.base.GetDB().Table("barcodes").Select("count(*) > 0").Where("event_id = ? AND barcode = ?", eventID, item.Barcode).
 				Find(&exists).
 				Error
 			if err != nil {
@@ -199,8 +199,8 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importId int64, eventId i
 
 			barcodes = append(barcodes, models.Barcode{
 				Barcode:       item.Barcode,
-				EventID:       eventId,
-				TicketTypeID:  ticketTypeId,
+				EventID:       eventID,
+				TicketTypeID:  ticketTypeID,
 				Flag:          constant.BarcodeFlagValid,
 				CurrentStatus: constant.BarcodeStatusNull,
 			})
@@ -277,7 +277,7 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importId int64, eventId i
 
 		result = repo.base.GetDB().
 			Table("imports").
-			Where("id = ?", importId).
+			Where("id = ?", importID).
 			Updates(map[string]interface{}{
 				"status":          constant.ImportStatusAssigned,
 				"success_count":   count,
@@ -294,7 +294,7 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importId int64, eventId i
 	return count, failedCount, duplicateCount, err
 }
 
-func (repo *barcodeRepository) Scan(eventId int64, barcode string) (models.Barcode, response.ResponseStatus, error) {
+func (repo *barcodeRepository) Scan(eventID int64, barcode string) (models.Barcode, response.ResponseStatus, error) {
 	var result models.Barcode
 
 	tx := repo.base.GetDB().
@@ -309,7 +309,7 @@ func (repo *barcodeRepository) Scan(eventId int64, barcode string) (models.Barco
 	})
 
 	err := tx.Where("barcode = ?", barcode).
-		Where("event_id = ?", eventId).
+		Where("event_id = ?", eventID).
 		First(&result).Error
 	if err != nil {
 		return result, response.EC01, errors.New("Barcode " + barcode + " not found")
@@ -318,8 +318,8 @@ func (repo *barcodeRepository) Scan(eventId int64, barcode string) (models.Barco
 	return result, response.Checkin, err
 }
 
-func (repo *barcodeRepository) CreateLog(eventId int64, userId int64, gateId int64, ticketTypeId int64,
-	sessionId int64, barcode string, currentStatus constant.BarcodeStatus,
+func (repo *barcodeRepository) CreateLog(eventID int64, userID int64, gateID int64, ticketTypeID int64,
+	sessionID int64, barcode string, currentStatus constant.BarcodeStatus,
 	action constant.BarcodeStatus, device string) (models.BarcodeLog, bool, error) {
 	// action := constant.BarcodeStatusIn
 	firstCheckin := false
@@ -331,12 +331,12 @@ func (repo *barcodeRepository) CreateLog(eventId int64, userId int64, gateId int
 		Barcode:      barcode,
 		Action:       action,
 		ScannedAt:    time.Now(),
-		ScannedBy:    userId,
-		EventID:      eventId,
-		GateID:       gateId,
+		ScannedBy:    userID,
+		EventID:      eventID,
+		GateID:       gateID,
 		Device:       device,
-		TicketTypeID: ticketTypeId,
-		SessionID:    sessionId,
+		TicketTypeID: ticketTypeID,
+		SessionID:    sessionID,
 	}
 
 	var err = repo.base.GetDB().Table("barcode_logs").Create(&log).Error

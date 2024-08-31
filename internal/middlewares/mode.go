@@ -12,8 +12,8 @@ import (
 func LocalModeMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer utils.ResponseHandler(c)
-		if config.GetAppConfig().APP_ENV != "local" {
-			utils.PanicException(response.InvalidRequest, errors.New("Service Unavailable - only local mode").Error())
+		if config.GetAppConfig().AppEnv != "local" {
+			utils.PanicException(response.InvalidRequest, errors.New("service unavailable - only local mode").Error())
 			c.Abort()
 			return
 		}

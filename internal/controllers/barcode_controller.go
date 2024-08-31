@@ -205,14 +205,14 @@ func (r BarcodeController) AssignBarcodes(c *gin.Context) {
 		return
 	}
 
-	valid, err := r.importService.CheckValid(int64(ba.ImportId), int64(ba.GateAllocationID))
+	valid, err := r.importService.CheckValid(int64(ba.ImportID), int64(ba.GateAllocationID))
 	if !valid {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
 	// process assign barcode to event
-	_, err = r.barcodeService.AssignBarcodes(int64(ba.ImportId), int64(ba.GateAllocationID), int64(ba.TicketTypeID))
+	_, err = r.barcodeService.AssignBarcodes(int64(ba.ImportID), int64(ba.GateAllocationID), int64(ba.TicketTypeID))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -238,7 +238,7 @@ func (r BarcodeController) ScanBarcode(c *gin.Context) {
 		action = constant.BarcodeStatusOut
 	}
 
-	userId, _, _ := utils.ExtractTokenID(c)
+	userID, _, _ := utils.ExtractTokenID(c)
 
 	var scan *dto.ScanBarcode
 
@@ -261,7 +261,7 @@ func (r BarcodeController) ScanBarcode(c *gin.Context) {
 	b, _ := json.Marshal(scan)
 	fmt.Println(string(b))
 
-	firstCheckin, result, rc, err := r.barcodeService.ScanBarcode(userId, scan.EventID, scan.GateID, scan.Barcode, action, scan.Device)
+	firstCheckin, result, rc, err := r.barcodeService.ScanBarcode(userID, scan.EventID, scan.GateID, scan.Barcode, action, scan.Device)
 	if err != nil {
 		//newError = errors.New(rc.GetResponseStatus() + " " + err.Error())
 		utils.PanicException(rc, err.Error())
@@ -311,7 +311,7 @@ func (r BarcodeController) ScanBarcode(c *gin.Context) {
 func (r BarcodeController) GetEventBarcodes(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	eventId, err := strconv.Atoi(c.Param("id"))
+	eventID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -322,7 +322,7 @@ func (r BarcodeController) GetEventBarcodes(c *gin.Context) {
 	filter = append(filter, utils.Filter{
 		Property:  "event_id",
 		Operation: "=",
-		Value:     strconv.Itoa(eventId),
+		Value:     strconv.Itoa(eventID),
 	})
 
 	rows, count, err := r.barcodeService.GetAllBarcodes(pageParams, filter, sort)
@@ -345,7 +345,7 @@ func (r BarcodeController) GetEventBarcodes(c *gin.Context) {
 func (r BarcodeController) ImportEventBarcodes(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	eventId, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	eventID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -358,7 +358,7 @@ func (r BarcodeController) ImportEventBarcodes(c *gin.Context) {
 		return
 	}
 	files := form.File["files"]
-	ticketTypeId, _ := strconv.ParseInt(c.PostForm("ticket_type_id"), 10, 64)
+	ticketTypeID, _ := strconv.ParseInt(c.PostForm("ticket_type_id"), 10, 64)
 	sessions := c.PostForm("sessions")
 	gates := c.PostForm("gates")
 
@@ -390,7 +390,7 @@ func (r BarcodeController) ImportEventBarcodes(c *gin.Context) {
 	}
 
 	message = fmt.Sprintf("Uploaded successfully %d files", len(files))
-	job, _, err := r.importService.DoImportJobWithAssign(importFile.ID, eventId, ticketTypeId, sessions, gates)
+	job, _, err := r.importService.DoImportJobWithAssign(importFile.ID, eventID, ticketTypeID, sessions, gates)
 
 	type RedisImportJob struct {
 		ID string `json:"id"`

@@ -22,12 +22,6 @@ func NewAuthController(service *services.AuthService) *AuthController {
 	}
 }
 
-// swagger:route POST /auth/signin Auth authSignin
-// Signin
-//
-// responses:
-//
-// 200:
 func (u AuthController) Signin(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
@@ -53,14 +47,6 @@ func (u AuthController) Signin(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseWithToken(http.StatusOK, response.Success, tokenPair["token"], tokenPair["refresh_token"], "", utils.Null()))
 }
 
-// swagger:route POST /auth/token Auth authRefreshToken
-// Refresh token
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (u AuthController) Refresh(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	type tokenReqBody struct {
@@ -78,14 +64,6 @@ func (u AuthController) Refresh(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseWithToken(http.StatusOK, response.Success, tokenPair["token"], tokenPair["refresh_token"], "", utils.Null()))
 }
 
-// swagger:route POST /auth/signout Auth signout
-// Signout
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (u AuthController) Signout(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
@@ -97,17 +75,9 @@ func (u AuthController) Signout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "ok", "status": "SUCCESS"})
 }
 
-// swagger:route GET /auth/me Auth authMe
-// Get current user
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (u AuthController) CurrentUser(c *gin.Context) {
 	defer utils.ResponseHandler(c)
-	uid, authId, err := utils.ExtractTokenID(c)
+	uid, authID, err := utils.ExtractTokenID(c)
 
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
@@ -115,7 +85,7 @@ func (u AuthController) CurrentUser(c *gin.Context) {
 	}
 
 	var user models.User
-	user, err = u.service.GetUserByAuth(uid, authId)
+	user, err = u.service.GetUserByAuth(uid, authID)
 
 	if err != nil {
 		utils.PanicException(response.Unauthorized, err.Error())
@@ -127,12 +97,12 @@ func (u AuthController) CurrentUser(c *gin.Context) {
 
 func (u AuthController) CheckAuthID(c *gin.Context) bool {
 	defer utils.ResponseHandler(c)
-	uid, authId, err := utils.ExtractTokenID(c)
+	uid, authID, err := utils.ExtractTokenID(c)
 
 	if err != nil {
 		return false
 	}
 
-	_, err = u.service.GetUserByAuth(uid, authId)
+	_, err = u.service.GetUserByAuth(uid, authID)
 	return err == nil
 }

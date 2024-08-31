@@ -26,7 +26,6 @@ type MetaResponse struct {
 	PagingInfo PagingInfo `json:"paging_info"`
 }
 
-// swagger:response APIResponse
 type APIResponse[T any] struct {
 	Code         int           `json:"code"`
 	Status       string        `json:"status"`
@@ -38,7 +37,6 @@ type APIResponse[T any] struct {
 	ResponseTime float64       `json:"time,omitempty"`
 }
 
-// swagger:parameters  IDParam
 type IDParam struct {
 	// The ID of the order
 	//
@@ -196,9 +194,9 @@ func WriterHandler(c *gin.Context) {
 		},
 	}
 
-	requestId := uuid.NewString()
+	requestID := uuid.NewString()
 	config.Logger.
-		WithOptions(zap.Fields(zap.Any("requestId", requestId), zap.Any("context", logData))).
+		WithOptions(zap.Fields(zap.Any("requestId", requestID), zap.Any("context", logData))).
 		Info(fmt)
 
 		// Logger.Info("fmt", zap.Fields(zap.String("context", string(newBody))))

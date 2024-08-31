@@ -16,23 +16,23 @@ import (
 )
 
 type AuthDetails struct {
-	AuthUuid string
-	UserId   uint64
+	AuthUUID string
+	UserID   uint64
 }
 
 type Claims struct {
-	UserId uint64 `json:"user_id"`
+	UserID uint64 `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
-func GenerateTokenUuid(authD *AuthDetails) (map[string]string, error) {
+func GenerateTokenUUID(authD *AuthDetails) (map[string]string, error) {
 	tokenLifespan := config.GetConfig().GetInt("AUTH_JWT_EXPIRE")
 
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
-	claims["auth_uuid"] = authD.AuthUuid
-	claims["user_id"] = authD.UserId
-	claims["sub"] = authD.UserId
+	claims["auth_uuid"] = authD.AuthUUID
+	claims["user_id"] = authD.UserID
+	claims["sub"] = authD.UserID
 	claims["exp"] = time.Now().Add(time.Minute * time.Duration(tokenLifespan)).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := token.SignedString([]byte(config.GetConfig().GetString("AUTH_JWT_SECRET")))
@@ -41,7 +41,7 @@ func GenerateTokenUuid(authD *AuthDetails) (map[string]string, error) {
 	}
 
 	rtClaims := jwt.MapClaims{}
-	rtClaims["sub"] = authD.UserId
+	rtClaims["sub"] = authD.UserID
 	rtClaims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
 	rt, err := refreshToken.SignedString([]byte(config.GetConfig().GetString("AUTH_JWT_SECRET")))
@@ -131,8 +131,8 @@ func TokenValid(c *gin.Context) (error, bool) {
 	// 	return errors.New("token expired")
 	// }
 
-	// uid, authId, err := ExtractTokenID(c)
-	// user, err := u.service.GetUserByAuth(uid, authId)
+	// uid, authID, err := ExtractTokenID(c)
+	// user, err := u.service.GetUserByAuth(uid, authID)
 
 	return nil, false
 }
@@ -163,9 +163,9 @@ func ExtractTokenID(c *gin.Context) (int64, string, error) {
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
 		log.Println(claims)
-		authId := claims["auth_uuid"].(string)
+		authID := claims["auth_uuid"].(string)
 		uid := claims["sub"].(float64)
-		return int64(uid), authId, nil
+		return int64(uid), authID, nil
 	}
 	return 0, "", nil
 }
@@ -191,17 +191,17 @@ func ExtractTokenAuth(c *gin.Context) (*AuthDetails, error) {
 	}
 	claims, ok := token.Claims.(jwt.MapClaims) //the token claims should conform to MapClaims
 	if ok && token.Valid {
-		authUuid, ok := claims["auth_uuid"].(string) //convert the interface to string
+		authUUID, ok := claims["auth_uuid"].(string) //convert the interface to string
 		if !ok {
 			return nil, err
 		}
-		userId, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
+		userID, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["user_id"]), 10, 64)
 		if err != nil {
 			return nil, err
 		}
 		return &AuthDetails{
-			AuthUuid: authUuid,
-			UserId:   userId,
+			AuthUUID: authUUID,
+			UserID:   userID,
 		}, nil
 	}
 	return nil, err

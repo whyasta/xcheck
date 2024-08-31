@@ -63,7 +63,7 @@ func (s *ImportService) DoImportJob(id int64) (models.Import, error) {
 	return row, err
 }
 
-func (s *ImportService) DoImportJobWithAssign(id int64, eventId int64, ticketTypeId int64, sessions string, gates string) (*work.Job, models.Import, error) {
+func (s *ImportService) DoImportJobWithAssign(id int64, eventID int64, ticketTypeID int64, sessions string, gates string) (*work.Job, models.Import, error) {
 	fmt.Println("DoImportJob")
 	row, err := s.r.Update(id, &map[string]interface{}{"status": constant.ImportStatusProcessing, "status_message": "Processing file"})
 	if err != nil {
@@ -76,8 +76,8 @@ func (s *ImportService) DoImportJobWithAssign(id int64, eventId int64, ticketTyp
 		"csv_file":       row.FileName,
 		"table":          "raw_barcodes",
 		"with_assign":    true,
-		"event_id":       eventId,
-		"ticket_type_id": ticketTypeId,
+		"event_id":       eventID,
+		"ticket_type_id": ticketTypeID,
 		"sessions":       sessions,
 		"gates":          gates,
 	})
@@ -95,13 +95,13 @@ func (s *ImportService) GetImportByID(uid int64) (models.Import, error) {
 	return s.r.FindByID(uid)
 }
 
-func (s *ImportService) CheckValid(importId int64, assignId int64) (bool, error) {
-	_, err := s.r.CheckValidImport(importId)
+func (s *ImportService) CheckValid(importID int64, assignID int64) (bool, error) {
+	_, err := s.r.CheckValidImport(importID)
 	if err != nil {
 		return false, errors.New("invalid import id")
 	}
 
-	valid, err := s.r.CheckValidAssign(assignId)
+	valid, err := s.r.CheckValidAssign(assignID)
 	if err != nil {
 		return false, errors.New("invalid event assign id")
 	}

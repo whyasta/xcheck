@@ -25,12 +25,12 @@ func (s *TicketTypeService) CreateBulkTicketType(types *[]models.TicketType) ([]
 	return s.r.BulkSave(types)
 }
 
-func (s *TicketTypeService) UpdateTicketType(eventId int64, id int64, data *map[string]interface{}) (models.TicketType, error) {
+func (s *TicketTypeService) UpdateTicketType(eventID int64, id int64, data *map[string]interface{}) (models.TicketType, error) {
 	var filters = []utils.Filter{
 		{
 			Property:  "event_id",
 			Operation: "=",
-			Value:     strconv.Itoa(int(eventId)),
+			Value:     strconv.Itoa(int(eventID)),
 		},
 		{
 			Property:  "id",

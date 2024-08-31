@@ -1,5 +1,7 @@
 package controllers
 
+//lint:file-ignore ST1016 blah blah
+
 import (
 	"errors"
 	"fmt"
@@ -26,15 +28,6 @@ func NewUserController(service *services.UserService) *UserController {
 	}
 }
 
-// swagger:route GET /users User getUserList
-// Get User list
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (u UserController) GetAllUser(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	// params := MakeQueryParams(c.Request.URL.Query(), []string{"role_id"})
@@ -64,16 +57,7 @@ func (u UserController) GetAllUser(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, response.Success, "", allUsers, &meta))
 }
 
-// swagger:route POST /users User createUser
-// Create User
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
-func (u UserController) CreateUser(c *gin.Context) {
+func (u UserController) CreateUserA(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
 	var user *models.User
@@ -98,15 +82,6 @@ func (u UserController) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
 }
 
-// swagger:route GET /users/{id} User getUser
-// Get User by id
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (u UserController) GetUserByID(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	uid, err := strconv.Atoi(c.Param("id"))

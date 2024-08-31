@@ -25,12 +25,12 @@ func (s *GateService) CreateBulkGate(gates *[]dto.GateRequestDto) ([]models.Gate
 	return s.r.BulkSave(gates)
 }
 
-func (s *GateService) UpdateGate(eventId int64, id int64, data *dto.GateRequestDto) (models.Gate, error) {
+func (s *GateService) UpdateGate(eventID int64, id int64, data *dto.GateRequestDto) (models.Gate, error) {
 	var filters = []utils.Filter{
 		{
 			Property:  "event_id",
 			Operation: "=",
-			Value:     strconv.Itoa(int(eventId)),
+			Value:     strconv.Itoa(int(eventID)),
 		},
 		{
 			Property:  "id",

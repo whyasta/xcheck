@@ -2,7 +2,6 @@ package models
 
 import "time"
 
-// swagger:model
 type Event struct {
 	ID           int64        `gorm:"column:id; primary_key; not null" json:"id"`
 	EventName    string       `gorm:"column:event_name" json:"event_name" validate:"required,min=5,max=100"`

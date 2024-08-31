@@ -4,7 +4,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// swagger:parameters getUserList getEventList
 type Paginate struct {
 	// required: true
 	Limit int `json:"limit"`

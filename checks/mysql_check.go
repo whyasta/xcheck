@@ -5,25 +5,25 @@ import (
 	"reflect"
 )
 
-type SqlCheck struct {
-	Sql *sql.DB
+type SQLCheck struct {
+	SQL *sql.DB
 }
 
-func (s SqlCheck) Pass() bool {
-	if s.Sql == nil {
+func (s SQLCheck) Pass() bool {
+	if s.SQL == nil {
 		return false
 	}
 
-	err := s.Sql.Ping()
+	err := s.SQL.Ping()
 
 	return err == nil
 }
 
-func (s SqlCheck) Name() string {
-	if s.Sql == nil {
+func (s SQLCheck) Name() string {
+	if s.SQL == nil {
 		return "no_driver"
 	}
 
-	driver := s.Sql.Driver()
+	driver := s.SQL.Driver()
 	return reflect.TypeOf(driver).String()
 }

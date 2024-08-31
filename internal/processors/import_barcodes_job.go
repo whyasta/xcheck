@@ -30,17 +30,17 @@ type Import struct {
 
 func NewImport(
 	db *gorm.DB,
-	importId int64,
+	importID int64,
 	table string,
 	csvFile string,
 	headers []string,
 ) *Import {
-	fmt.Println("new import", []interface{}{csvFile, table, importId, headers})
+	fmt.Println("new import", []interface{}{csvFile, table, importID, headers})
 	return &Import{
 		CsvFile:  csvFile,
 		Table:    table,
 		DB:       db,
-		ImportID: importId,
+		ImportID: importID,
 		Headers:  headers,
 	}
 }
@@ -48,18 +48,18 @@ func NewImport(
 func ImportBarcodeJob(job *work.Job) error {
 	csvFile := job.ArgString("csv_file")
 	table := job.ArgString("table")
-	importId := job.ArgInt64("import_id")
+	importID := job.ArgInt64("import_id")
 	headers := job.ArgString("headers")
 	withAssign := job.ArgBool("with_assign")
-	eventId := job.ArgInt64("event_id")
-	ticketTypeId := job.ArgInt64("ticket_type_id")
+	eventID := job.ArgInt64("event_id")
+	ticketTypeID := job.ArgInt64("ticket_type_id")
 	sessions := job.ArgString("sessions")
 	gates := job.ArgString("gates")
 
 	if err := job.ArgError(); err != nil {
 		db, _ := config.ConnectToDB()
 		importRepo := repositories.NewImportRepository(db)
-		_, err := importRepo.Update(importId, &map[string]interface{}{"status": constant.ImportStatusFailed, "status_message": "Failed"})
+		_, err := importRepo.Update(importID, &map[string]interface{}{"status": constant.ImportStatusFailed, "status_message": "Failed"})
 		defer func() {
 			dbInstance, _ := db.DB()
 			_ = dbInstance.Close()
@@ -69,17 +69,17 @@ func ImportBarcodeJob(job *work.Job) error {
 	}
 
 	fmt.Println("=> Import barcode job ID", job.ID)
-	fmt.Println("=> Import barcode job args", []interface{}{csvFile, table, importId, headers, withAssign, eventId, ticketTypeId, sessions, gates})
+	fmt.Println("=> Import barcode job args", []interface{}{csvFile, table, importID, headers, withAssign, eventID, ticketTypeID, sessions, gates})
 	db, _ := config.ConnectToDB()
 
-	importJob := NewImport(db, importId, table, csvFile, strings.Split(headers, ","))
+	importJob := NewImport(db, importID, table, csvFile, strings.Split(headers, ","))
 
 	fmt.Println("=> Importing data...")
 	importJob.ImportData()
 
 	importRepo := repositories.NewImportRepository(db)
 
-	row, err := importRepo.Update(importId, &map[string]interface{}{"status": constant.ImportStatusCompleted, "status_message": "Completed"})
+	row, err := importRepo.Update(importID, &map[string]interface{}{"status": constant.ImportStatusCompleted, "status_message": "Completed"})
 	if err == nil {
 		if err = os.Remove(row.FileName); err != nil {
 			return err
@@ -106,7 +106,7 @@ func ImportBarcodeJob(job *work.Job) error {
 			}
 
 			barcodeRepo := repositories.NewBarcodeRepository(db)
-			_, _, _, err := barcodeRepo.AssignBarcodesWithEvent(importId, eventId, ticketTypeId, sessionSlice, gateSlice)
+			_, _, _, err := barcodeRepo.AssignBarcodesWithEvent(importID, eventID, ticketTypeID, sessionSlice, gateSlice)
 			if err != nil {
 				fmt.Println("Error assigning barcodes:", err)
 				return err
@@ -143,7 +143,7 @@ func (i Import) ImportData() error {
 	}
 	defer csvFile.Close()
 
-	jobs := make(chan []interface{}, 0)
+	jobs := make(chan []interface{})
 	wg := new(sync.WaitGroup)
 
 	go i.dispatchWorkers(jobs, wg)
@@ -228,8 +228,8 @@ func (i Import) doInsertJob(workerIndex, counter int, db *gorm.DB, values []inte
 
 			// fmt.Println("=> do insert")
 
-			importId := []interface{}{i.ImportID}
-			values = append(values, importId...)
+			importID := []interface{}{i.ImportID}
+			values = append(values, importID...)
 
 			err := db.WithContext(context.Background()).Exec(query, values...).Error
 			if err != nil {

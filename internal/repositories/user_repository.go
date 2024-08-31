@@ -22,7 +22,7 @@ type UserRepository interface {
 
 	Signin(username string, password string) (models.User, error)
 	CreateAuth(id int64) (utils.AuthDetails, error)
-	FindByAuth(uid int64, authUuid string) (models.User, error)
+	FindByAuth(uid int64, authUUID string) (models.User, error)
 }
 
 type userRepository struct {
@@ -159,10 +159,10 @@ func (repo *userRepository) FindByID(id int64) (user models.User, err error) {
 	return
 }
 
-func (repo *userRepository) FindByAuth(id int64, authId string) (user models.User, err error) {
+func (repo *userRepository) FindByAuth(id int64, authID string) (user models.User, err error) {
 	err = repo.db.Omit("Password").
 		Omit("AuthUuids").Preload("Role").
-		First(&user, "id = ? AND auth_uuids LIKE ?", id, "%"+authId+"%").
+		First(&user, "id = ? AND auth_uuids LIKE ?", id, "%"+authID+"%").
 		Error
 	return
 }
@@ -191,7 +191,7 @@ func (repo *userRepository) CreateAuth(id int64) (utils.AuthDetails, error) {
 		return utils.AuthDetails{}, err
 	}
 
-	authUuid := uuid.New().String()
+	authUUID := uuid.New().String()
 
 	/*
 			// uuids := user.AuthUuids
@@ -203,7 +203,7 @@ func (repo *userRepository) CreateAuth(id int64) (utils.AuthDetails, error) {
 				}
 			}
 
-		    uuids = append(uuids, authUuid)
+		    uuids = append(uuids, authUUID)
 			jsonStr, _ := json.Marshal(uuids)
 			user.AuthUuids = string(jsonStr)
 
@@ -215,7 +215,7 @@ func (repo *userRepository) CreateAuth(id int64) (utils.AuthDetails, error) {
 			}*/
 
 	var authD utils.AuthDetails
-	authD.AuthUuid = authUuid
-	authD.UserId = uint64(user.ID)
+	authD.AuthUUID = authUUID
+	authD.UserID = uint64(user.ID)
 	return authD, nil
 }

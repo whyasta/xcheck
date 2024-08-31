@@ -26,19 +26,10 @@ func NewGateController(service *services.GateService) *GateController {
 	}
 }
 
-// swagger:route POST /gates Gate createGate
-// Create Gate
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (r GateController) CreateGate(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	eventId, err := strconv.Atoi(c.Param("id"))
+	eventID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -64,8 +55,8 @@ func (r GateController) CreateGate(c *gin.Context) {
 
 	if bulk != nil {
 		for i, item := range bulk {
-			bulk[i].EventID = int64(eventId)
-			item.EventID = int64(eventId)
+			bulk[i].EventID = int64(eventID)
+			item.EventID = int64(eventID)
 
 			validate := validator.New(validator.WithRequiredStructEnabled())
 			validate.RegisterValidation("date", utils.DateValidation)
@@ -92,7 +83,7 @@ func (r GateController) CreateGate(c *gin.Context) {
 		c.BindJSON(&event)
 	*/
 
-	gate.EventID = int64(eventId)
+	gate.EventID = int64(eventID)
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	err = validate.Struct(gate)
@@ -110,17 +101,8 @@ func (r GateController) CreateGate(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
 }
 
-// swagger:route GET /gates Gate getGateList
-// Get Gate list
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (r GateController) GetAllGates(c *gin.Context) {
-	eventId, err := strconv.Atoi(c.Param("id"))
+	eventID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -131,7 +113,7 @@ func (r GateController) GetAllGates(c *gin.Context) {
 	filter = append(filter, utils.Filter{
 		Property:  "event_id",
 		Operation: "=",
-		Value:     strconv.Itoa(eventId),
+		Value:     strconv.Itoa(eventID),
 	})
 
 	rows, count, err := r.service.GetAllGates(pageParams, filter, sort)
@@ -151,19 +133,10 @@ func (r GateController) GetAllGates(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, response.Success, "", rows, &meta))
 }
 
-// swagger:route GET /gates/{id} Gate getGate
-// Get Gate by id
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (r GateController) GetGateByID(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	uid, err := strconv.Atoi(c.Param("gateId"))
+	uid, err := strconv.Atoi(c.Param("gateID"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -179,15 +152,6 @@ func (r GateController) GetGateByID(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", user))
 }
 
-// DeleteGate swagger:route DELETE /gates/{id} Gate deleteGate
-// Delete Gate by id
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (r GateController) DeleteGate(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	uid, err := strconv.Atoi(c.Param("id"))
@@ -208,13 +172,13 @@ func (r GateController) DeleteGate(c *gin.Context) {
 func (r GateController) UpdateGate(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	eventId, err := strconv.Atoi(c.Param("id"))
+	eventID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
-	uid, err := strconv.Atoi(c.Param("gateId"))
+	uid, err := strconv.Atoi(c.Param("gateID"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -224,12 +188,12 @@ func (r GateController) UpdateGate(c *gin.Context) {
 	// var request = make(map[string]interface{})
 	var request dto.GateRequestDto
 
-	// event.EventID = int64(eventId)
+	// event.EventID = int64(eventID)
 
 	c.Next()
 	c.BindJSON(&request)
 
-	request.EventID = int64(eventId)
+	request.EventID = int64(eventID)
 	// mapstructure.Decode(request, &gate)
 
 	// validate := validator.New(validator.WithRequiredStructEnabled())
@@ -243,7 +207,7 @@ func (r GateController) UpdateGate(c *gin.Context) {
 
 	fmt.Println(request)
 
-	result, err := r.service.UpdateGate(int64(eventId), int64(uid), &request)
+	result, err := r.service.UpdateGate(int64(eventID), int64(uid), &request)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return

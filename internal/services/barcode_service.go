@@ -27,12 +27,12 @@ func (s *BarcodeService) CreateBarcode(data *models.Barcode) (models.Barcode, er
 	return s.r.Save(data)
 }
 
-func (s *BarcodeService) UpdateBarcode(eventId int64, id int64, data *map[string]interface{}) (models.Barcode, error) {
+func (s *BarcodeService) UpdateBarcode(eventID int64, id int64, data *map[string]interface{}) (models.Barcode, error) {
 	var filters = []utils.Filter{
 		{
 			Property:  "event_id",
 			Operation: "=",
-			Value:     strconv.Itoa(int(eventId)),
+			Value:     strconv.Itoa(int(eventID)),
 		},
 		{
 			Property:  "id",
@@ -49,24 +49,24 @@ func (s *BarcodeService) UpdateBarcode(eventId int64, id int64, data *map[string
 	return s.r.Update(id, data)
 }
 
-func (s *BarcodeService) DownloadBarcodes(pageParams *utils.Paginate, eventId int64, sessionId int64, gateId int64) ([]models.Barcode, int64, error) {
+func (s *BarcodeService) DownloadBarcodes(pageParams *utils.Paginate, eventID int64, sessionID int64, gateID int64) ([]models.Barcode, int64, error) {
 	// json_contains(sessions, '1') AND
 	// json_contains(gates, '2')
 	barcodes, count, err := s.r.FindAllWithRelations(pageParams, *utils.NewFilters([]utils.Filter{
 		{
 			Property:  "event_id",
 			Operation: "=",
-			Value:     strconv.Itoa(int(eventId)),
+			Value:     strconv.Itoa(int(eventID)),
 		},
 		{
 			Property:  "barcode_sessions.session_id",
 			Operation: "has",
-			Value:     strconv.Itoa(int(sessionId)),
+			Value:     strconv.Itoa(int(sessionID)),
 		},
 		{
 			Property:  "barcode_gates.gate_id",
 			Operation: "has",
-			Value:     strconv.Itoa(int(gateId)),
+			Value:     strconv.Itoa(int(gateID)),
 		},
 	}), []utils.Sort{})
 
@@ -93,8 +93,8 @@ func (s *BarcodeService) Delete(uid int64) (models.Barcode, error) {
 	return s.r.Delete(uid)
 }
 
-func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, barcode string, action constant.BarcodeStatus, device string) (bool, models.BarcodeLog, response.ResponseStatus, error) {
-	fmt.Printf("START SCAN => BARCODE:%s, EVENT:%d, GATE:%d", barcode, eventId, gateId)
+func (s *BarcodeService) ScanBarcode(userID int64, eventID int64, gateID int64, barcode string, action constant.BarcodeStatus, device string) (bool, models.BarcodeLog, response.ResponseStatus, error) {
+	fmt.Printf("START SCAN => BARCODE:%s, EVENT:%d, GATE:%d", barcode, eventID, gateID)
 	// _, count, _ := s.r.FindAll([]string{"GateAllocation"}, utils.NewPaginate(10, 1), *utils.NewFilters([]utils.Filter{
 	// 	{
 	// 		Property:  "barcode",
@@ -108,25 +108,25 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 	// 	return false, errors.New("invalid barcode")
 	// }
 
-	result, responseStatus, err := s.r.Scan(eventId, barcode)
+	result, responseStatus, err := s.r.Scan(eventID, barcode)
 	if err != nil {
 		return false, models.BarcodeLog{}, responseStatus, err
 	}
-	if result.EventID != eventId {
+	if result.EventID != eventID {
 		return false, models.BarcodeLog{}, response.EC01, errors.New("EC01 - Barcode " + barcode + " not found!")
 	}
 
 	// check gate
 	validGate := false
 	for _, i := range result.Gates {
-		if i.ID == gateId {
+		if i.ID == gateID {
 			validGate = true
 			break
 		}
 	}
 
 	if !validGate {
-		gate, _ := s.g.FindByID(gateId)
+		gate, _ := s.g.FindByID(gateID)
 		return false, models.BarcodeLog{}, response.EC04, fmt.Errorf("EC04 - "+response.EC05.GetResponseMessage(), gate.GateName)
 	}
 
@@ -164,7 +164,7 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 
 	// update barcode to valid
 	// s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagUsed})
-	resultLog, firstCheckin, err := s.r.CreateLog(eventId, userId, gateId, result.TicketTypeID, currentSession, barcode, result.CurrentStatus, action, device)
+	resultLog, firstCheckin, err := s.r.CreateLog(eventID, userID, gateID, result.TicketTypeID, currentSession, barcode, result.CurrentStatus, action, device)
 	if err != nil {
 		return false, models.BarcodeLog{}, response.UnknownError, err
 	}
@@ -174,8 +174,8 @@ func (s *BarcodeService) ScanBarcode(userId int64, eventId int64, gateId int64, 
 	return firstCheckin, resultLog, response.UnknownError, err
 }
 
-func (s *BarcodeService) AssignBarcodes(importId int64, assignId int64, ticketTypeId int64) (bool, error) {
-	count, err := s.r.AssignBarcodes(importId, assignId, ticketTypeId)
+func (s *BarcodeService) AssignBarcodes(importID int64, assignID int64, ticketTypeID int64) (bool, error) {
+	count, err := s.r.AssignBarcodes(importID, assignID, ticketTypeID)
 
 	if err != nil || count <= 0 {
 		return false, err

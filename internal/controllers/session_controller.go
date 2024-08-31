@@ -25,19 +25,10 @@ func NewSessionController(service *services.SessionService) *SessionController {
 	}
 }
 
-// swagger:route POST /sessions Session createSession
-// Create Session
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (r SessionController) CreateSession(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	eventId, err := strconv.Atoi(c.Param("id"))
+	eventID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -63,8 +54,8 @@ func (r SessionController) CreateSession(c *gin.Context) {
 
 	if bulk != nil {
 		for i, item := range bulk {
-			bulk[i].EventID = int64(eventId)
-			item.EventID = int64(eventId)
+			bulk[i].EventID = int64(eventID)
+			item.EventID = int64(eventID)
 
 			validate := validator.New(validator.WithRequiredStructEnabled())
 			validate.RegisterValidation("date", utils.DateValidation)
@@ -88,7 +79,7 @@ func (r SessionController) CreateSession(c *gin.Context) {
 		c.Next()
 		c.BindJSON(&session)*/
 
-	session.EventID = int64(eventId)
+	session.EventID = int64(eventID)
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	err = validate.Struct(session)
@@ -106,17 +97,8 @@ func (r SessionController) CreateSession(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
 }
 
-// swagger:route GET /sessions Session getSessionList
-// Get Session list
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (r SessionController) GetAllSessions(c *gin.Context) {
-	eventId, err := strconv.Atoi(c.Param("id"))
+	eventID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -127,7 +109,7 @@ func (r SessionController) GetAllSessions(c *gin.Context) {
 	filter = append(filter, utils.Filter{
 		Property:  "event_id",
 		Operation: "=",
-		Value:     strconv.Itoa(eventId),
+		Value:     strconv.Itoa(eventID),
 	})
 
 	rows, count, err := r.service.GetAllSessions(pageParams, filter, sort)
@@ -147,19 +129,10 @@ func (r SessionController) GetAllSessions(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, response.Success, "", rows, &meta))
 }
 
-// swagger:route GET /sessions/{id} Session getSession
-// Get Session by id
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (r SessionController) GetSessionByID(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	uid, err := strconv.Atoi(c.Param("sessionId"))
+	uid, err := strconv.Atoi(c.Param("sessionID"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -175,15 +148,6 @@ func (r SessionController) GetSessionByID(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", user))
 }
 
-// DeleteSession swagger:route DELETE /sessions/{id} Session deleteSession
-// Delete Session by id
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (r SessionController) DeleteSession(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	uid, err := strconv.Atoi(c.Param("id"))
@@ -204,13 +168,13 @@ func (r SessionController) DeleteSession(c *gin.Context) {
 func (r SessionController) UpdateSession(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	eventId, err := strconv.Atoi(c.Param("id"))
+	eventID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
-	uid, err := strconv.Atoi(c.Param("sessionId"))
+	uid, err := strconv.Atoi(c.Param("sessionID"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -222,7 +186,7 @@ func (r SessionController) UpdateSession(c *gin.Context) {
 	c.Next()
 	c.BindJSON(&request)
 
-	request["event_id"] = int64(eventId)
+	request["event_id"] = int64(eventID)
 	err = utils.Decode(request, &session)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
@@ -242,7 +206,7 @@ func (r SessionController) UpdateSession(c *gin.Context) {
 
 	fmt.Println("request", request)
 
-	result, err := r.service.UpdateSession(int64(eventId), int64(uid), &request)
+	result, err := r.service.UpdateSession(int64(eventID), int64(uid), &request)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return

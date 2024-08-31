@@ -25,12 +25,12 @@ func (s *GateAllocationService) CreateBulkGateAllocation(gates *[]models.GateAll
 	return s.r.BulkSave(gates)
 }
 
-func (s *GateAllocationService) UpdateGateAllocation(eventId int64, id int64, data *map[string]interface{}) (models.GateAllocation, error) {
+func (s *GateAllocationService) UpdateGateAllocation(eventID int64, id int64, data *map[string]interface{}) (models.GateAllocation, error) {
 	var filters = []utils.Filter{
 		{
 			Property:  "gate_allocations.event_id",
 			Operation: "=",
-			Value:     strconv.Itoa(int(eventId)),
+			Value:     strconv.Itoa(int(eventID)),
 		},
 		{
 			Property:  "gate_allocations.id",

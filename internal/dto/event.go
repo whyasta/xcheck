@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-// swagger:model
 type EventRequest struct {
 	ID        int64  `gorm:"column:id" mapstructure:"id" json:"id,omitempty"`
 	EventName string `gorm:"column:event_name" mapstructure:"event_name" json:"event_name" validate:"required,min=5,max=100"`
@@ -53,13 +52,11 @@ type EventUpdateDto struct {
 	EndDate   string `gorm:"column:end_date" mapstructure:"end_date" json:"end_date,omitempty" validate:"date"`
 }
 
-// swagger:parameters getEvent deleteEvent
 type EventID struct {
 	// In: path
 	ID int `json:"id"`
 }
 
-// swagger:parameters createEvent
 type EventCreateBodyParams struct {
 	// required: true
 	// in: body

@@ -232,13 +232,13 @@ func (repo *eventRepository) Report(id int64) (dto.EventReportResponse, error) {
 	return result, err
 }
 
-func (repo *eventRepository) GateTicketTypes(eventId int64, gateIds []int64) []dto.EventGateTicketTypeResponse {
+func (repo *eventRepository) GateTicketTypes(eventID int64, gateIds []int64) []dto.EventGateTicketTypeResponse {
 	var result = []dto.EventGateTicketTypeResponse{}
 	repo.base.GetDB().Raw("SELECT DISTINCT bg.gate_id, g.gate_name, barcodes.ticket_type_id, tt.ticket_type_name FROM barcodes "+
 		"JOIN ticket_types tt ON tt.id = barcodes.ticket_type_id "+
 		"JOIN barcode_gates bg ON bg.barcode_id = barcodes.id "+
 		"JOIN gates g ON g.id = bg.gate_id "+
-		"WHERE bg.gate_id IN (?) and barcodes.event_id = ? GROUP BY bg.gate_id, tt.id", gateIds, eventId).
+		"WHERE bg.gate_id IN (?) and barcodes.event_id = ? GROUP BY bg.gate_id, tt.id", gateIds, eventID).
 		Scan(&result)
 	return result
 	//result := repo.base.GetDB().

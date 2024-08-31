@@ -14,23 +14,23 @@ func NewReportService(b repositories.BaseRepository, r repositories.ReportReposi
 	return &ReportService{b, r}
 }
 
-func (r *ReportService) ReportTrafficVisitor(eventId int64) (dto.TrafficVisitorSummary, error) {
+func (r *ReportService) ReportTrafficVisitor(eventID int64) (dto.TrafficVisitorSummary, error) {
 	var data dto.TrafficVisitorSummary
 	var bySession []dto.TrafficVisitorSession
 	var byGate []dto.TrafficVisitorGate
 	var byTicketType []dto.TrafficVisitorTicketType
 
-	bySession, err := r.r.TrafficBySession(eventId)
+	bySession, err := r.r.TrafficBySession(eventID)
 	if err != nil {
 		return data, err
 	}
 
-	byGate, err = r.r.TrafficByGate(eventId)
+	byGate, err = r.r.TrafficByGate(eventID)
 	if err != nil {
 		return data, err
 	}
 
-	byTicketType, err = r.r.TrafficByTicketType(eventId)
+	byTicketType, err = r.r.TrafficByTicketType(eventID)
 	if err != nil {
 		return data, err
 	}
@@ -42,10 +42,10 @@ func (r *ReportService) ReportTrafficVisitor(eventId int64) (dto.TrafficVisitorS
 	return data, nil
 }
 
-func (r *ReportService) ReportUniqueVisitor(eventId int64, ticketTypeIds []int64, gateIds []int64, sessionIds []int64) ([]dto.UniqueVisitorTicketType, error) {
-	return r.r.UniqueByTicketType(eventId, ticketTypeIds, gateIds, sessionIds)
+func (r *ReportService) ReportUniqueVisitor(eventID int64, ticketTypeIds []int64, gateIds []int64, sessionIds []int64) ([]dto.UniqueVisitorTicketType, error) {
+	return r.r.UniqueByTicketType(eventID, ticketTypeIds, gateIds, sessionIds)
 }
 
-func (r *ReportService) ReportGateIn(eventId int64) ([]dto.GateInChart, error) {
-	return r.r.GateIn(eventId)
+func (r *ReportService) ReportGateIn(eventID int64) ([]dto.GateInChart, error) {
+	return r.r.GateIn(eventID)
 }

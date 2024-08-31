@@ -51,8 +51,8 @@ func (s *AuthService) GetUserByID(id int64) (models.User, error) {
 	return result, err
 }
 
-func (s *AuthService) GetUserByAuth(id int64, authId string) (models.User, error) {
-	//result, err := s.u.FindByAuth(id, authId)
+func (s *AuthService) GetUserByAuth(id int64, authID string) (models.User, error) {
+	//result, err := s.u.FindByAuth(id, authID)
 	result, err := s.u.FindByID(id)
 	if err == nil {
 		result.Password = ""
@@ -74,7 +74,7 @@ func (s *AuthService) Signin(username string, password string) (models.User, map
 	// create auth uuid
 	authD, _ := s.u.CreateAuth(user.ID)
 
-	tokenPair, err := utils.GenerateTokenUuid(&authD)
+	tokenPair, err := utils.GenerateTokenUUID(&authD)
 	if err != nil {
 		return models.User{}, nil, err
 	}

@@ -26,19 +26,10 @@ func NewTicketTypeController(service *services.TicketTypeService) *TicketTypeCon
 	}
 }
 
-// swagger:route POST /ticket-types TicketType createTicketType
-// Create TicketType
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (r TicketTypeController) CreateTicketType(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	eventId, err := strconv.Atoi(c.Param("id"))
+	eventID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -67,8 +58,8 @@ func (r TicketTypeController) CreateTicketType(c *gin.Context) {
 
 	if bulk != nil {
 		for i, item := range bulk {
-			bulk[i].EventID = int64(eventId)
-			item.EventID = int64(eventId)
+			bulk[i].EventID = int64(eventID)
+			item.EventID = int64(eventID)
 
 			validate := validator.New(validator.WithRequiredStructEnabled())
 			validate.RegisterValidation("date", utils.DateValidation)
@@ -88,7 +79,7 @@ func (r TicketTypeController) CreateTicketType(c *gin.Context) {
 		return
 	}
 
-	ticketType.EventID = int64(eventId)
+	ticketType.EventID = int64(eventID)
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	err = validate.Struct(ticketType)
@@ -106,17 +97,8 @@ func (r TicketTypeController) CreateTicketType(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
 }
 
-// swagger:route GET /ticket-types TicketType getTicketTypeList
-// Get TicketType list
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (r TicketTypeController) GetAllTicketTypes(c *gin.Context) {
-	eventId, err := strconv.Atoi(c.Param("id"))
+	eventID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -127,7 +109,7 @@ func (r TicketTypeController) GetAllTicketTypes(c *gin.Context) {
 	filter = append(filter, utils.Filter{
 		Property:  "event_id",
 		Operation: "=",
-		Value:     strconv.Itoa(eventId),
+		Value:     strconv.Itoa(eventID),
 	})
 
 	rows, count, err := r.service.GetAllTicketTypes(pageParams, filter, sort)
@@ -147,19 +129,10 @@ func (r TicketTypeController) GetAllTicketTypes(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, response.Success, "", rows, &meta))
 }
 
-// swagger:route GET /ticket-types/{id} TicketType getTicketType
-// Get TicketType by id
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (r TicketTypeController) GetTicketTypeByID(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	uid, err := strconv.Atoi(c.Param("ticketTypeId"))
+	uid, err := strconv.Atoi(c.Param("ticketTypeID"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -175,15 +148,6 @@ func (r TicketTypeController) GetTicketTypeByID(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", user))
 }
 
-// DeleteTicketType swagger:route DELETE /ticket-types/{id} TicketType deleteTicketType
-// Delete TicketType by id
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (r TicketTypeController) DeleteTicketType(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	uid, err := strconv.Atoi(c.Param("id"))
@@ -204,13 +168,13 @@ func (r TicketTypeController) DeleteTicketType(c *gin.Context) {
 func (r TicketTypeController) UpdateTicketType(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	eventId, err := strconv.Atoi(c.Param("id"))
+	eventID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
-	uid, err := strconv.Atoi(c.Param("ticketTypeId"))
+	uid, err := strconv.Atoi(c.Param("ticketTypeID"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -219,12 +183,12 @@ func (r TicketTypeController) UpdateTicketType(c *gin.Context) {
 	var event *models.TicketType
 	var request = make(map[string]interface{})
 
-	// event.EventID = int64(eventId)
+	// event.EventID = int64(eventID)
 
 	c.Next()
 	c.BindJSON(&request)
 
-	request["event_id"] = int64(eventId)
+	request["event_id"] = int64(eventID)
 	mapstructure.Decode(request, &event)
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
@@ -237,7 +201,7 @@ func (r TicketTypeController) UpdateTicketType(c *gin.Context) {
 
 	fmt.Println(request)
 
-	result, err := r.service.UpdateTicketType(int64(eventId), int64(uid), &request)
+	result, err := r.service.UpdateTicketType(int64(eventID), int64(uid), &request)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return

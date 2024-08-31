@@ -28,19 +28,10 @@ func NewGateAllocationController(service *services.GateAllocationService) *GateA
 	}
 }
 
-// swagger:route POST /gateAllocations GateAllocation createGateAllocation
-// Create GateAllocation
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (r GateAllocationController) CreateGateAllocation(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	eventId, err := strconv.Atoi(c.Param("id"))
+	eventID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -74,8 +65,8 @@ func (r GateAllocationController) CreateGateAllocation(c *gin.Context) {
 	if bulk != nil {
 		for i, item := range bulk {
 			log.Println("item", item)
-			bulk[i].EventID = int64(eventId)
-			item.EventID = int64(eventId)
+			bulk[i].EventID = int64(eventID)
+			item.EventID = int64(eventID)
 
 			validate := validator.New(validator.WithRequiredStructEnabled())
 			validate.RegisterValidation("date", utils.DateValidation)
@@ -95,7 +86,7 @@ func (r GateAllocationController) CreateGateAllocation(c *gin.Context) {
 		return
 	}
 
-	gateAllocation.EventID = int64(eventId)
+	gateAllocation.EventID = int64(eventID)
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	err = validate.Struct(gateAllocation)
@@ -117,15 +108,6 @@ func (r GateAllocationController) CreateGateAllocation(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
 }
 
-// swagger:route GET /gateAllocations GateAllocation getGateAllocationList
-// Get GateAllocation list
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (r GateAllocationController) GetAllGateAllocations(c *gin.Context) {
 	uid, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -158,15 +140,6 @@ func (r GateAllocationController) GetAllGateAllocations(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, response.Success, "", rows, &meta))
 }
 
-// swagger:route GET /gateAllocations/{id} GateAllocation getGateAllocation
-// Get GateAllocation by id
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (r GateAllocationController) GetGateAllocationByID(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
@@ -221,7 +194,7 @@ func (r GateAllocationController) UpdateGateAllocation(c *gin.Context) {
 		return
 	}
 
-	gateAllocationId, err := strconv.Atoi(c.Param("gateAllocationId"))
+	gateAllocationID, err := strconv.Atoi(c.Param("gateAllocationId"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
@@ -237,7 +210,7 @@ func (r GateAllocationController) UpdateGateAllocation(c *gin.Context) {
 
 	fmt.Println(request)
 
-	request["id"] = int64(gateAllocationId)
+	request["id"] = int64(gateAllocationID)
 	request["event_id"] = int64(uid)
 	mapstructure.Decode(request, &gateAllocation)
 
@@ -251,7 +224,7 @@ func (r GateAllocationController) UpdateGateAllocation(c *gin.Context) {
 
 	fmt.Println(request)
 
-	result, err := r.service.UpdateGateAllocation(int64(uid), int64(gateAllocationId), &request)
+	result, err := r.service.UpdateGateAllocation(int64(uid), int64(gateAllocationID), &request)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return

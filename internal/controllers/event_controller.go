@@ -27,15 +27,6 @@ func NewEventController(service *services.EventService) *EventController {
 	}
 }
 
-// swagger:route POST /events Event createEvent
-// Create Event
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (r EventController) CreateEvent(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
@@ -154,15 +145,6 @@ func (r EventController) UpdateEvent(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", row))
 }
 
-// swagger:route GET /events Event getEventList
-// Get Event list
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (r EventController) GetAllEvents(c *gin.Context) {
 	//pageParams, params := MakePaginationQueryParams(c.Request.URL.Query(), []string{"event_id"})
 	pageParams, filter, sort := MakePageFilterQueryParams(c.Request.URL.Query(), []string{"event_id"})
@@ -183,15 +165,6 @@ func (r EventController) GetAllEvents(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, response.Success, "", rows, &meta))
 }
 
-// swagger:route GET /events/{id} Event getEvent
-// Get Event by id
-//
-// security:
-//   - Bearer: []
-//
-// responses:
-//
-// 200:
 func (r EventController) GetEventByID(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 	uid, err := strconv.Atoi(c.Param("id"))
