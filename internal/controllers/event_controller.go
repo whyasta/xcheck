@@ -206,7 +206,6 @@ func (r EventController) GetEventByID(c *gin.Context) {
 		utils.PanicException(response.DataNotFound, errors.New("data not found").Error())
 		return
 	}
-
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", event))
 }
 

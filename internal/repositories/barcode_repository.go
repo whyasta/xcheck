@@ -185,7 +185,7 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importId int64, eventId i
 		barcodes := []models.Barcode{}
 		for _, item := range importBarcodes {
 			var exists bool
-			err = repo.base.GetDB().Debug().Table("barcodes").Select("count(*) > 0").Where("event_id = ? AND barcode = ?", eventId, item.Barcode).
+			err = repo.base.GetDB().Table("barcodes").Select("count(*) > 0").Where("event_id = ? AND barcode = ?", eventId, item.Barcode).
 				Find(&exists).
 				Error
 			if err != nil {
@@ -289,7 +289,7 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importId int64, eventId i
 		return err
 	})
 
-	fmt.Println(count, failedCount, duplicateCount)
+	// fmt.Println(count, failedCount, duplicateCount)
 
 	return count, failedCount, duplicateCount, err
 }

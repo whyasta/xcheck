@@ -64,16 +64,17 @@ func ImportBarcodeJob(job *work.Job) error {
 			dbInstance, _ := db.DB()
 			_ = dbInstance.Close()
 		}()
-		fmt.Println("=> import barcode job error", err.Error())
+		fmt.Println("=> Import barcode job error", err.Error())
 		return err
 	}
 
-	fmt.Println("=> import barcode job", []interface{}{csvFile, table, importId, headers, withAssign, eventId, ticketTypeId, sessions, gates})
+	fmt.Println("=> Import barcode job ID", job.ID)
+	fmt.Println("=> Import barcode job args", []interface{}{csvFile, table, importId, headers, withAssign, eventId, ticketTypeId, sessions, gates})
 	db, _ := config.ConnectToDB()
 
 	importJob := NewImport(db, importId, table, csvFile, strings.Split(headers, ","))
 
-	fmt.Println("Importing data...")
+	fmt.Println("=> Importing data...")
 	importJob.ImportData()
 
 	importRepo := repositories.NewImportRepository(db)

@@ -17,6 +17,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/gomodule/redigo/redis"
 )
 
 type BarcodeController struct {
@@ -389,26 +390,67 @@ func (r BarcodeController) ImportEventBarcodes(c *gin.Context) {
 	}
 
 	message = fmt.Sprintf("Uploaded successfully %d files", len(files))
-	_, _, err = r.importService.DoImportJobWithAssign(importFile.ID, eventId, ticketTypeId, sessions, gates)
+	job, _, err := r.importService.DoImportJobWithAssign(importFile.ID, eventId, ticketTypeId, sessions, gates)
 
+	type RedisImportJob struct {
+		ID string `json:"id"`
+	}
+
+	redisConn := config.NewRedis()
+	// redis := config.NewRedis()
 	for {
-		val, _ := config.NewRedis().Get().Do("LLEN", "xcheck:jobs:import_barcode")
+		/*val, _ := redis.Get().Do("LLEN", "xcheck:jobs:import_barcode")
 		if val.(int64) == 1 {
 			fmt.Println("Job inprogress, waiting...")
-			time.Sleep(1 * time.Second) // Wait before checking again
+			time.Sleep(500 * time.Millisecond) // Wait before checking again
 		} else {
 			// check DB
 			importRow, _ := r.importService.GetImportByID(importFile.ID)
 			if importRow.Status != string(constant.ImportStatusAssigned) {
 				fmt.Println("Job status not assigned, waiting...")
-				time.Sleep(1 * time.Second)
+				time.Sleep(500 * time.Millisecond)
 				continue
 			}
 			break
+		}*/
+		val, _ := redis.Values(redisConn.Get().Do("LRANGE", "xcheck:jobs:import_barcode", 0, -1))
+		inProgress := false
+		for _, v := range val {
+			var redisJob RedisImportJob
+			err := json.Unmarshal(v.([]byte), &redisJob)
+			if err != nil {
+				panic(err)
+			}
+
+			if redisJob.ID == job.ID {
+				fmt.Printf("Job %s inprogress, waiting...\n", job.ID)
+				inProgress = true
+				break
+			}
 		}
+		if !inProgress {
+			// importRow, _ := r.importService.GetImportByID(importFile.ID)
+			// if importRow.Status != string(constant.ImportStatusAssigned) {
+			// 	fmt.Printf("Job %s status not assigned, waiting...\n", job.ID)
+			// 	time.Sleep(500 * time.Millisecond)
+			// 	continue
+			// }
+			break
+		}
+		time.Sleep(500 * time.Millisecond) // Wait before checking again
 	}
 
-	fmt.Println("Job completed")
+	for {
+		importRow, _ := r.importService.GetImportByID(importFile.ID)
+		if importRow.Status != string(constant.ImportStatusAssigned) {
+			fmt.Printf("Job %s status not assigned, waiting...\n", job.ID)
+			time.Sleep(200 * time.Millisecond)
+			continue
+		}
+		break
+	}
+
+	fmt.Printf("Job %s completed\n", job.ID)
 
 	// err = processors.ImportBarcodeJob(job)
 	if err != nil {
