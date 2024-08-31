@@ -42,8 +42,8 @@ func (r *ReportService) ReportTrafficVisitor(eventId int64) (dto.TrafficVisitorS
 	return data, nil
 }
 
-func (r *ReportService) ReportUniqueVisitor(eventId int64, ticketTypeIds []int64) ([]dto.UniqueVisitorTicketType, error) {
-	return r.r.UniqueByTicketType(eventId, ticketTypeIds)
+func (r *ReportService) ReportUniqueVisitor(eventId int64, ticketTypeIds []int64, gateIds []int64, sessionIds []int64) ([]dto.UniqueVisitorTicketType, error) {
+	return r.r.UniqueByTicketType(eventId, ticketTypeIds, gateIds, sessionIds)
 }
 
 func (r *ReportService) ReportGateIn(eventId int64) ([]dto.GateInChart, error) {

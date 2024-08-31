@@ -64,7 +64,39 @@ func (r ReportController) ReportUniqueVisitor(c *gin.Context) {
 		}
 	}
 
-	data, err := r.service.ReportUniqueVisitor(int64(eventId), ticketTypeIds)
+	gateIds := make([]int64, 0)
+	for key, value := range c.Request.URL.Query() {
+		if key == "gate_id" {
+			var params []int64
+
+			if err := json.Unmarshal([]byte(value[0]), &params); err != nil {
+				utils.PanicException(response.InvalidRequest, err.Error())
+			}
+
+			for _, id := range params {
+				gateIds = append(gateIds, int64(id))
+			}
+			c.Set("gateIds", gateIds)
+		}
+	}
+
+	sessionIds := make([]int64, 0)
+	for key, value := range c.Request.URL.Query() {
+		if key == "session_id" {
+			var params []int64
+
+			if err := json.Unmarshal([]byte(value[0]), &params); err != nil {
+				utils.PanicException(response.InvalidRequest, err.Error())
+			}
+
+			for _, id := range params {
+				sessionIds = append(sessionIds, int64(id))
+			}
+			c.Set("sessionIds", sessionIds)
+		}
+	}
+
+	data, err := r.service.ReportUniqueVisitor(int64(eventId), ticketTypeIds, gateIds, sessionIds)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return

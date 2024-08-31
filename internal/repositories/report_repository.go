@@ -10,7 +10,7 @@ type ReportRepository interface {
 	TrafficBySession(eventId int64) ([]dto.TrafficVisitorSession, error)
 	TrafficByGate(eventId int64) ([]dto.TrafficVisitorGate, error)
 	TrafficByTicketType(eventId int64) ([]dto.TrafficVisitorTicketType, error)
-	UniqueByTicketType(eventId int64, ticketTypeIds []int64) ([]dto.UniqueVisitorTicketType, error)
+	UniqueByTicketType(eventId int64, ticketTypeIds []int64, gateIds []int64, sessionIds []int64) ([]dto.UniqueVisitorTicketType, error)
 	GateIn(eventId int64) ([]dto.GateInChart, error)
 }
 
@@ -92,7 +92,7 @@ func (repo *reportRepository) TrafficByTicketType(eventId int64) ([]dto.TrafficV
 	return data, err
 }
 
-func (repo *reportRepository) UniqueByTicketType(eventId int64, ticketTypeIds []int64) ([]dto.UniqueVisitorTicketType, error) {
+func (repo *reportRepository) UniqueByTicketType(eventId int64, ticketTypeIds []int64, gateIds []int64, sessionIds []int64) ([]dto.UniqueVisitorTicketType, error) {
 	var data []dto.UniqueVisitorTicketType
 
 	// subQuery := repo.db.Table("barcode_logs").
@@ -118,15 +118,25 @@ func (repo *reportRepository) UniqueByTicketType(eventId int64, ticketTypeIds []
 	// 	Scan(&data).Error
 
 	query := repo.db.Table("barcodes").
-		Select("ticket_type_id", "ticket_type_name",
+		Debug().
+		Select("barcodes.ticket_type_id", "ticket_type_name",
 			"SUM(CASE WHEN current_status = 'IN' THEN 1 ELSE 0 END) as check_in_count",
 			"SUM(CASE WHEN current_status = 'OUT' THEN 1 ELSE 0 END) as check_out_count").
 		Joins("join ticket_types on ticket_types.id = barcodes.ticket_type_id").
+		Joins("join barcode_logs on barcode_logs.event_id = barcodes.event_id AND barcode_logs.barcode = barcodes.barcode").
 		Group("barcodes.ticket_type_id").
 		Where("barcodes.event_id = ?", eventId)
 
 	if len(ticketTypeIds) > 0 {
-		query = query.Where("ticket_type_id in (?)", ticketTypeIds)
+		query = query.Where("barcodes.ticket_type_id in (?)", ticketTypeIds)
+	}
+
+	if len(gateIds) > 0 {
+		query = query.Where("barcode_logs.gate_id in (?)", gateIds)
+	}
+
+	if len(sessionIds) > 0 {
+		query = query.Where("barcode_logs.session_id in (?)", sessionIds)
 	}
 
 	err := query.Scan(&data).Error
