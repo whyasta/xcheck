@@ -73,6 +73,14 @@ func (s *BarcodeService) DownloadBarcodes(pageParams *utils.Paginate, eventID in
 	return barcodes, count, err
 }
 
+func (s *BarcodeService) UploadBarcode(data *[]dto.BarcodeUploadDataDto) error {
+	barcodes := make([]models.Barcode, 0)
+	for _, v := range *data {
+		barcodes = append(barcodes, *v.ToEntity())
+	}
+	return s.r.CreateBulk(&barcodes)
+}
+
 func (s *BarcodeService) UploadBarcodeLogs(logs *[]dto.BarcodeUploadLogDto) error {
 	barcodeLogs := make([]models.BarcodeLog, 0)
 	for _, v := range *logs {

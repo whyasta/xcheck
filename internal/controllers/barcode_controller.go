@@ -153,7 +153,8 @@ func (r BarcodeController) SyncDownloadBarcodes(c *gin.Context) {
 func (r BarcodeController) SyncUploadBarcodes(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	var barcodeLogs []dto.BarcodeUploadLogDto
+	var barcodeUpload dto.BarcodeUploadDto
+	// var barcodeLogs []dto.BarcodeUploadLogDto
 
 	jsons := make([]byte, c.Request.ContentLength)
 	if _, err := c.Request.Body.Read(jsons); err != nil {
@@ -162,30 +163,40 @@ func (r BarcodeController) SyncUploadBarcodes(c *gin.Context) {
 		}
 	}
 
-	if err := json.Unmarshal(jsons, &barcodeLogs); err != nil {
+	// if err := json.Unmarshal(jsons, &barcodeLogs); err != nil {
+	// 	utils.PanicException(response.InvalidRequest, err.Error())
+	// 	return
+	// }
+
+	if err := json.Unmarshal(jsons, &barcodeUpload); err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
 
-	// c.Next()
-	// c.BindJSON(&dto)
-
-	dto := dto.BarcodeUploadDto{
-		Data: barcodeLogs,
-	}
+	// dto := dto.BarcodeUploadDto{
+	// 	History: barcodeLogs,
+	// }
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
-	err := validate.Struct(dto)
+	err := validate.Struct(barcodeUpload)
 	if err != nil {
 		errors := err.(validator.ValidationErrors)
 		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
-	err = r.barcodeService.UploadBarcodeLogs(&dto.Data)
+	err = r.barcodeService.UploadBarcode(&barcodeUpload.Barcodes)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
+	}
+
+	if len(barcodeUpload.History) > 0 {
+		err = r.barcodeService.UploadBarcodeLogs(&barcodeUpload.History)
+		if err != nil {
+			utils.PanicException(response.InvalidRequest, err.Error())
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", utils.Null()))

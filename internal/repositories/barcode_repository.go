@@ -24,6 +24,7 @@ type BarcodeRepository interface {
 	Scan(eventID int64, barcode string) (models.Barcode, response.ResponseStatus, error)
 	CreateLog(eventID int64, userID int64, gateID int64, ticketTypeID int64, sessionID int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus, device string) (models.BarcodeLog, bool, error)
 	CreateBulkLog(barcodes *[]models.BarcodeLog) error
+	CreateBulk(barcodes *[]models.Barcode) error
 }
 
 type barcodeRepository struct {
@@ -380,4 +381,47 @@ func (repo *barcodeRepository) CreateBulkLog(barcodes *[]models.BarcodeLog) erro
 	}
 
 	return err
+}
+
+func (repo *barcodeRepository) CreateBulk(barcodes *[]models.Barcode) error {
+	for _, item := range *barcodes {
+		err := repo.base.GetDB().Table("barcodes").
+			Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "event_id"}, {Name: "barcode"}},
+				DoUpdates: clause.AssignmentColumns([]string{"current_status", "flag"}),
+			}, clause.Returning{}).Omit("ID", "CreatedAt", "Gates", "Sessions").Create(&item).Error
+
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+
+		fmt.Println(item.ID)
+		if item.ID == 0 {
+			var temp models.Barcode
+			repo.base.GetDB().Table("barcodes").Where("event_id = ? AND barcode = ?", item.EventID, item.Barcode).
+				Find(&temp)
+			item.ID = temp.ID
+		}
+
+		// updated / created
+		if item.ID > 0 {
+			err = repo.base.GetDB().Debug().
+				Model(&item).
+				Association("Gates").
+				Replace(item.Gates)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			err = repo.base.GetDB().Debug().
+				Model(&item).
+				Association("Sessions").
+				Replace(item.Sessions)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+	}
+	return nil
 }

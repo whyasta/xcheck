@@ -24,6 +24,18 @@ type BarcodeUploadLogDto struct {
 	Action       constant.BarcodeStatus `gorm:"column:action" mapstructure:"action" json:"action" validate:"required"`
 }
 
+type BarcodeUploadDataDto struct {
+	ID            int64                  `gorm:"column:id; primary_key; not null" json:"id"`
+	Barcode       string                 `gorm:"column:barcode" json:"barcode" validate:"required"`
+	Flag          constant.BarcodeFlag   `gorm:"column:flag;" json:"flag"`
+	CurrentStatus constant.BarcodeStatus `gorm:"column:current_status;" json:"current_status"`
+	EventID       int64                  `gorm:"column:event_id"  mapstructure:"event_id" json:"event_id" validate:"required"`
+	TicketTypeID  int64                  `gorm:"column:ticket_type_id" mapstructure:"ticket_type_id" json:"ticket_type_id" validate:"required"`
+	TicketType    *models.TicketType     `gorm:"foreignKey:id;references:ticket_type_id" json:"ticket_type"`
+	Gates         *[]models.Gate         `gorm:"serializer:json" mapstructure:"gates" json:"gates,omitempty"`
+	Sessions      *[]models.Session      `gorm:"serializer:json" mapstructure:"sessions" json:"sessions,omitempty"`
+}
+
 type BarcodeResponseDto struct {
 	ID            int64                  `gorm:"column:id; primary_key; not null" json:"id"`
 	Barcode       string                 `gorm:"column:barcode" json:"barcode" validate:"required"`
@@ -37,7 +49,8 @@ type BarcodeResponseDto struct {
 }
 
 type BarcodeUploadDto struct {
-	Data []BarcodeUploadLogDto `gorm:"column:data" json:"data" validate:"required,dive"`
+	Barcodes []BarcodeUploadDataDto `json:"barcodes" validate:"required,dive"`
+	History  []BarcodeUploadLogDto  `json:"history" validate:"required,dive"`
 }
 
 type BarcodeLogResponseDto struct {
@@ -53,6 +66,18 @@ type BarcodeLogResponseDto struct {
 	Action        constant.BarcodeStatus `json:"action"`
 	CurrentStatus constant.BarcodeStatus `json:"current_status"`
 	Flag          constant.BarcodeFlag   `json:"flag"`
+}
+
+func (s *BarcodeUploadDataDto) ToEntity() *models.Barcode {
+	return &models.Barcode{
+		Barcode:       s.Barcode,
+		Flag:          s.Flag,
+		CurrentStatus: s.CurrentStatus,
+		EventID:       s.EventID,
+		TicketTypeID:  s.TicketTypeID,
+		Gates:         *s.Gates,
+		Sessions:      *s.Sessions,
+	}
 }
 
 func (s *BarcodeUploadLogDto) ToEntity() *models.BarcodeLog {

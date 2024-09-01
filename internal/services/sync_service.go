@@ -188,20 +188,39 @@ func (s *SyncService) SyncDownloadEventByID(uid int64) error {
 }
 
 func (s *SyncService) SyncUploadEventByID(uid int64) error {
+	var barcodes []models.Barcode
 	var barcodeLogs []models.BarcodeLog
-	s.repoBase.GetDB().Table("barcode_logs").Where("event_id = ?", uid).Find(&barcodeLogs)
 
-	if len(barcodeLogs) <= 0 {
-		return nil
+	err := s.repoBase.GetDB().
+		Table("barcodes").
+		Preload("TicketType").
+		Preload("Gates").
+		Preload("Sessions").
+		Where("event_id = ?", uid).
+		Find(&barcodes).Error
+	if err != nil {
+		return err
 	}
 
-	body, err := json.Marshal(barcodeLogs)
+	s.repoBase.GetDB().Table("barcode_logs").Where("event_id = ?", uid).Find(&barcodeLogs)
+
+	type RequestSyncUpload struct {
+		Barcodes []models.Barcode    `json:"barcodes"`
+		History  []models.BarcodeLog `json:"history"`
+	}
+
+	var reqBody RequestSyncUpload
+	reqBody.Barcodes = barcodes
+	reqBody.History = barcodeLogs
+
+	body, err := json.Marshal(reqBody)
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
 
 	fmt.Println(string(body))
+
 	client := &http.Client{}
 	req, err := HTTPRequest("POST", config.GetAppConfig().CloudBaseURL+"/barcodes/sync/upload", body)
 	if err != nil {
