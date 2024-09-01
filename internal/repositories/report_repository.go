@@ -25,7 +25,7 @@ func NewReportRepository(db *gorm.DB) *reportRepository {
 }
 
 func (repo *reportRepository) TrafficBySession(eventID int64) ([]dto.TrafficVisitorSession, error) {
-	var data []dto.TrafficVisitorSession
+	var data = make([]dto.TrafficVisitorSession, 0)
 
 	err := repo.db.Table("sessions").
 		Select("sessions.id", "sessions.session_name",
@@ -45,7 +45,7 @@ func (repo *reportRepository) TrafficBySession(eventID int64) ([]dto.TrafficVisi
 }
 
 func (repo *reportRepository) TrafficByGate(eventID int64) ([]dto.TrafficVisitorGate, error) {
-	var data []dto.TrafficVisitorGate
+	var data = make([]dto.TrafficVisitorGate, 0)
 
 	err := repo.db.Table("gates").
 		Select("gates.id", "gates.gate_name",
@@ -65,7 +65,7 @@ func (repo *reportRepository) TrafficByGate(eventID int64) ([]dto.TrafficVisitor
 }
 
 func (repo *reportRepository) TrafficByTicketType(eventID int64) ([]dto.TrafficVisitorTicketType, error) {
-	var data []dto.TrafficVisitorTicketType
+	var data = make([]dto.TrafficVisitorTicketType, 0)
 	// err := repo.db.Table("barcode_logs").
 	// 	Select("barcode_logs.ticket_type_id", "ticket_types.ticket_type_name",
 	// 		"SUM(CASE WHEN action = 'IN' THEN 1 ELSE 0 END) as check_in_count",
@@ -93,7 +93,7 @@ func (repo *reportRepository) TrafficByTicketType(eventID int64) ([]dto.TrafficV
 }
 
 func (repo *reportRepository) UniqueByTicketType(eventID int64, ticketTypeIds []int64, gateIds []int64, sessionIds []int64) ([]dto.UniqueVisitorTicketType, error) {
-	var data []dto.UniqueVisitorTicketType
+	var data = make([]dto.UniqueVisitorTicketType, 0)
 
 	// subQuery := repo.db.Table("barcode_logs").
 	// 	Debug().Select("barcode, action, barcode_logs.ticket_type_id, ticket_types.ticket_type_name").
@@ -148,7 +148,7 @@ func (repo *reportRepository) UniqueByTicketType(eventID int64, ticketTypeIds []
 }
 
 func (repo *reportRepository) GateIn(eventID int64) ([]dto.GateInChart, error) {
-	var data []dto.GateInChart
+	var data = make([]dto.GateInChart, 0)
 
 	err := repo.db.Table("barcode_logs").
 		Debug().
