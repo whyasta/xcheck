@@ -47,16 +47,17 @@ func (s *EventService) GetFilteredEvents(pageParams *utils.Paginate, filters []u
 		// 		TicketTypes: s.r.GateTicketTypes(int64(item.ID), gate.ID),
 		// 	})
 		// }
-
+		gates := models.Gates(item.Gates)
 		rows = append(rows, dto.EventResponse{
-			ID:          item.ID,
-			EventName:   item.EventName,
-			Status:      item.Status,
-			StartDate:   item.StartDate.Format("2006-01-02"),
-			EndDate:     item.EndDate.Format("2006-01-02"),
-			TicketTypes: item.TicketTypes,
-			Gates:       item.Gates,
-			Sessions:    item.Sessions,
+			ID:              item.ID,
+			EventName:       item.EventName,
+			Status:          item.Status,
+			StartDate:       item.StartDate.Format("2006-01-02"),
+			EndDate:         item.EndDate.Format("2006-01-02"),
+			TicketTypes:     item.TicketTypes,
+			Gates:           item.Gates,
+			Sessions:        item.Sessions,
+			GateTicketTypes: s.r.GateTicketTypes(item.ID, gates.IDList()),
 			EventSummary: dto.EventSummary{
 				TotalBarcode:  0,
 				TotalCheckIn:  0,
