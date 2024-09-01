@@ -356,8 +356,8 @@ func (repo *barcodeRepository) CreateBulkLog(barcodes *[]models.BarcodeLog) erro
 	var err error
 	if (len(*barcodes)) > 0 {
 		err := repo.base.GetDB().Table("barcode_logs").Clauses(clause.OnConflict{
-			Columns: []clause.Column{{Name: "id"}},
-		}).Create(&barcodes).Error
+			Columns: []clause.Column{{Name: "event_id"}, {Name: "barcode"}, {Name: "scanned_at"}, {Name: "action"}},
+		}).Omit("ID").Create(&barcodes).Error
 
 		if err != nil {
 			return err
