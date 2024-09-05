@@ -123,7 +123,7 @@ func (repo *reportRepository) UniqueByTicketType(eventID int64, ticketTypeIds []
 			"SUM(CASE WHEN current_status = 'IN' THEN 1 ELSE 0 END) as check_in_count",
 			"SUM(CASE WHEN current_status = 'OUT' THEN 1 ELSE 0 END) as check_out_count").
 		Joins("join ticket_types on ticket_types.id = barcodes.ticket_type_id").
-		Joins("join barcode_logs on barcode_logs.event_id = barcodes.event_id AND barcode_logs.barcode = barcodes.barcode").
+		// Joins("join barcode_logs on barcode_logs.event_id = barcodes.event_id AND barcode_logs.barcode = barcodes.barcode").
 		Group("barcodes.ticket_type_id").
 		Where("barcodes.event_id = ?", eventID)
 
@@ -132,11 +132,17 @@ func (repo *reportRepository) UniqueByTicketType(eventID int64, ticketTypeIds []
 	}
 
 	if len(gateIds) > 0 {
-		query = query.Where("barcode_logs.gate_id in (?)", gateIds)
+		mySubquery := repo.db.Table("barcode_logs").Select("barcode").
+			Where("barcode_logs.event_id = barcodes.event_id AND barcode_logs.barcode = barcodes.barcode and  barcode_logs.gate_id in (?)", gateIds)
+		query = query.Where("EXISTS (?)", mySubquery)
+		//query = query.Where("barcode_logs.gate_id in (?)", gateIds)
 	}
 
 	if len(sessionIds) > 0 {
-		query = query.Where("barcode_logs.session_id in (?)", sessionIds)
+		mySubquery := repo.db.Table("barcode_logs").Select("barcode").
+			Where("barcode_logs.event_id = barcodes.event_id AND barcode_logs.barcode = barcodes.barcode and  barcode_logs.session_id in (?)", sessionIds)
+		query = query.Where("EXISTS (?)", mySubquery)
+		//query = query.Where("barcode_logs.session_id in (?)", sessionIds)
 	}
 
 	err := query.Scan(&data).Error
