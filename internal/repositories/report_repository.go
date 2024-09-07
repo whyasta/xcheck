@@ -117,18 +117,26 @@ func (repo *reportRepository) UniqueByTicketType(eventID int64, ticketTypeIds []
 	// 	Group("u.ticket_type_name").
 	// 	Scan(&data).Error
 
-	query := repo.db.Table("barcodes").
+	// query := repo.db.Table("barcodes").
+	// 	Debug().
+	// 	Select("barcodes.ticket_type_id", "ticket_type_name",
+	// 		"SUM(CASE WHEN current_status = 'IN' THEN 1 ELSE 0 END) as check_in_count",
+	// 		"SUM(CASE WHEN current_status = 'OUT' THEN 1 ELSE 0 END) as check_out_count").
+	// 	Joins("join ticket_types on ticket_types.id = barcodes.ticket_type_id").
+	// 	Group("barcodes.ticket_type_id").
+	// 	Where("barcodes.event_id = ?", eventID)
+
+	query := repo.db.Table("barcode_logs").
 		Debug().
-		Select("barcodes.ticket_type_id", "ticket_type_name",
-			"SUM(CASE WHEN current_status = 'IN' THEN 1 ELSE 0 END) as check_in_count",
-			"SUM(CASE WHEN current_status = 'OUT' THEN 1 ELSE 0 END) as check_out_count").
-		Joins("join ticket_types on ticket_types.id = barcodes.ticket_type_id").
-		// Joins("join barcode_logs on barcode_logs.event_id = barcodes.event_id AND barcode_logs.barcode = barcodes.barcode").
-		Group("barcodes.ticket_type_id").
-		Where("barcodes.event_id = ?", eventID)
+		Select("barcode_logs.ticket_type_id", "ticket_type_name",
+			"IFNULL((select COUNT(DISTINCT barcode) from barcode_logs bl where bl.action = 'IN' and bl.ticket_type_id = barcode_logs.ticket_type_id GROUP BY ticket_type_id), 0) as check_in_count",
+			"IFNULL((select COUNT(DISTINCT barcode) from barcode_logs bl where bl.action = 'OUT' and bl.ticket_type_id = barcode_logs.ticket_type_id GROUP BY ticket_type_id), 0) as check_out_count").
+		Joins("join ticket_types on ticket_types.id = barcode_logs.ticket_type_id").
+		Group("barcode_logs.ticket_type_id").
+		Where("barcode_logs.event_id = ?", eventID)
 
 	if len(ticketTypeIds) > 0 {
-		query = query.Where("barcodes.ticket_type_id in (?)", ticketTypeIds)
+		query = query.Where("barcode_logs.ticket_type_id in (?)", ticketTypeIds)
 	}
 
 	if len(gateIds) > 0 {
