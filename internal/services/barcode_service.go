@@ -139,6 +139,7 @@ func (s *BarcodeService) ScanBarcode(userID int64, eventID int64, gateID int64, 
 	}
 
 	// check session
+	invalidSession := false
 	currentSession := int64(0)
 	for _, i := range result.Sessions {
 		fmt.Println("check session", i.Sessioname)
@@ -148,16 +149,25 @@ func (s *BarcodeService) ScanBarcode(userID int64, eventID int64, gateID int64, 
 
 		if time.Now().After(i.SessionEnd) {
 			// update barcode to expired
-			s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagExpired})
-			return false, models.BarcodeLog{}, response.EC04, errors.New("EC04 - Barcode " + barcode + " session has ended")
+			// s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagExpired})
+			//return false, models.BarcodeLog{}, response.EC04, errors.New("EC04 - Barcode " + barcode + " session has ended")
+			invalidSession = true
 		}
 
 		if !utils.TimeIsBetween(time.Now(), i.SessionStart, i.SessionEnd) {
-			return false, models.BarcodeLog{}, response.EC04, errors.New("EC04 - Barcode " + barcode + " is not within the session time")
+			invalidSession = true
+			//return false, models.BarcodeLog{}, response.EC04, errors.New("EC04 - Barcode " + barcode + " is not within the session time")
 		} else {
+			invalidSession = false
 			currentSession = i.ID
 			break
 		}
+	}
+
+	fmt.Println("invalidSession", invalidSession)
+
+	if invalidSession {
+		return false, models.BarcodeLog{}, response.EC04, fmt.Errorf("EC04 - Barcode " + barcode + " is not within the session time")
 	}
 
 	fmt.Println("current session", currentSession)
