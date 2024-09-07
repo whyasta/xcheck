@@ -140,17 +140,17 @@ func (repo *reportRepository) UniqueByTicketType(eventID int64, ticketTypeIds []
 	}
 
 	if len(gateIds) > 0 {
-		mySubquery := repo.db.Table("barcode_logs").Select("barcode").
-			Where("barcode_logs.event_id = barcodes.event_id AND barcode_logs.barcode = barcodes.barcode and  barcode_logs.gate_id in (?)", gateIds)
-		query = query.Where("EXISTS (?)", mySubquery)
-		//query = query.Where("barcode_logs.gate_id in (?)", gateIds)
+		// mySubquery := repo.db.Table("barcode_logs").Select("barcode").
+		// 	Where("barcode_logs.event_id = barcodes.event_id AND barcode_logs.barcode = barcodes.barcode and  barcode_logs.gate_id in (?)", gateIds)
+		// query = query.Where("EXISTS (?)", mySubquery)
+		query = query.Where("barcode_logs.gate_id in (?)", gateIds)
 	}
 
 	if len(sessionIds) > 0 {
-		mySubquery := repo.db.Table("barcode_logs").Select("barcode").
-			Where("barcode_logs.event_id = barcodes.event_id AND barcode_logs.barcode = barcodes.barcode and  barcode_logs.session_id in (?)", sessionIds)
-		query = query.Where("EXISTS (?)", mySubquery)
-		//query = query.Where("barcode_logs.session_id in (?)", sessionIds)
+		// mySubquery := repo.db.Table("barcode_logs").Select("barcode").
+		// 	Where("barcode_logs.event_id = barcodes.event_id AND barcode_logs.barcode = barcodes.barcode and  barcode_logs.session_id in (?)", sessionIds)
+		// query = query.Where("EXISTS (?)", mySubquery)
+		query = query.Where("barcode_logs.session_id in (?)", sessionIds)
 	}
 
 	err := query.Scan(&data).Error
