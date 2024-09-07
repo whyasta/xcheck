@@ -23,7 +23,7 @@ build:
   script:
     - touch .env
     - echo "$ENV" >> .env
-    - /kaniko/warmer --verbosity=info --image=alpine:3.20 --image=golang:1.22.5-alpine3.20
+    - /kaniko/warmer --verbosity=info --image=alpine:3.20 --image=golang:alpine3.20
     - /kaniko/executor
       --context $CI_PROJECT_DIR
       --dockerfile $CI_PROJECT_DIR/Dockerfile
@@ -52,6 +52,7 @@ build_local:
   script:
     - touch .env
     - echo "$ENV_LOCAL" >> .env
+    - /kaniko/warmer --verbosity=info --image=alpine:3.20 --image=golang:alpine3.20
     - /kaniko/executor
       --context $CI_PROJECT_DIR
       --dockerfile $CI_PROJECT_DIR/Dockerfile
