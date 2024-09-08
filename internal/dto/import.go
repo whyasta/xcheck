@@ -19,7 +19,9 @@ type ImportBarcodeDto struct {
 }
 
 type UploadResponse struct {
-	SucccessCount  int64 `gorm:"column:success_count" json:"success_count"`
-	FailedCount    int64 `gorm:"column:failed_count" json:"failed_count"`
-	DuplicateCount int64 `gorm:"column:duplicate_count" json:"duplicate_count"`
+	SucccessCount   int64  `gorm:"column:success_count" json:"success_count"`
+	FailedCount     int64  `gorm:"column:failed_count" json:"failed_count"`
+	DuplicateCount  int64  `gorm:"column:duplicate_count" json:"duplicate_count"`
+	FailedValues    string `gorm:"column:failed_values" json:"failed_values"`
+	DuplicateValues string `gorm:"column:duplicate_values" json:"duplicate_values"`
 }

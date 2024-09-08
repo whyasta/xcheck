@@ -106,7 +106,7 @@ func ImportBarcodeJob(job *work.Job) error {
 			}
 
 			barcodeRepo := repositories.NewBarcodeRepository(db)
-			_, _, _, err := barcodeRepo.AssignBarcodesWithEvent(importID, eventID, ticketTypeID, sessionSlice, gateSlice)
+			_, _, _, _, _, err := barcodeRepo.AssignBarcodesWithEvent(importID, eventID, ticketTypeID, sessionSlice, gateSlice)
 			if err != nil {
 				fmt.Println("Error assigning barcodes:", err)
 				return err

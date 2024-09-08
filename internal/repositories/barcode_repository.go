@@ -7,6 +7,7 @@ import (
 	"bigmind/xcheck-be/utils"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -159,13 +160,16 @@ func (repo *barcodeRepository) AssignBarcodes(importID int64, assignID int64, ti
 	return count, err
 }
 
-func (repo *barcodeRepository) AssignBarcodesWithEvent(importID int64, eventID int64, ticketTypeID int64, sessions []int64, gates []int64) (int64, int64, int64, error) {
+func (repo *barcodeRepository) AssignBarcodesWithEvent(importID int64, eventID int64, ticketTypeID int64, sessions []int64, gates []int64) (int64, int64, int64, []string, []string, error) {
 	var importBarcodes []models.ImportBarcode
 
 	var err error
 	var count int64
 	var failedCount int64
 	var duplicateCount int64
+
+	var failedValues []string
+	var duplicateValues []string
 
 	// Begin transaction
 	repo.base.GetDB().Transaction(func(tx *gorm.DB) error {
@@ -196,6 +200,7 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importID int64, eventID i
 			fmt.Printf("exists: %s %v\n", item.Barcode, exists)
 			if exists {
 				duplicateCount++
+				duplicateValues = append(duplicateValues, item.Barcode)
 				continue
 			}
 
@@ -209,10 +214,11 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importID int64, eventID i
 
 			validate := validator.New(validator.WithRequiredStructEnabled())
 			validate.RegisterValidation("barcode", utils.BarcodeValidation)
-			err := validate.Struct(&item)
+			err := validate.Struct(&rowBarcode)
 			if err != nil {
 				fmt.Println(err)
 				failedCount++
+				failedValues = append(failedValues, item.Barcode)
 				continue
 			}
 
@@ -288,14 +294,19 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importID int64, eventID i
 			count = result.RowsAffected
 		}
 
+		fmt.Println("failed", strings.Join(failedValues[:], ","))
+		fmt.Println("duplicate", strings.Join(duplicateValues[:], ","))
+
 		result = repo.base.GetDB().
 			Table("imports").
 			Where("id = ?", importID).
 			Updates(map[string]interface{}{
-				"status":          constant.ImportStatusAssigned,
-				"success_count":   count,
-				"failed_count":    failedCount,
-				"duplicate_count": duplicateCount,
+				"status":           constant.ImportStatusAssigned,
+				"success_count":    count,
+				"failed_count":     failedCount,
+				"duplicate_count":  duplicateCount,
+				"failed_values":    strings.Join(failedValues[:], ","),
+				"duplicate_values": strings.Join(duplicateValues[:], ","),
 			})
 
 		err = result.Error
@@ -304,7 +315,7 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importID int64, eventID i
 
 	// fmt.Println(count, failedCount, duplicateCount)
 
-	return count, failedCount, duplicateCount, err
+	return count, failedCount, duplicateCount, failedValues, duplicateValues, err
 }
 
 func (repo *barcodeRepository) Scan(eventID int64, barcode string) (models.Barcode, response.ResponseStatus, error) {

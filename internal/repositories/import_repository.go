@@ -87,7 +87,7 @@ func (repo *importRepository) GetUploadResult(id int64) (dto.UploadResponse, err
 	err := repo.base.GetDB().
 		Debug().
 		Table("imports").
-		Select("success_count", "failed_count", "duplicate_count").
+		Select("success_count", "failed_count", "duplicate_count", "failed_values", "duplicate_values").
 		Where("id = ?", id).
 		Scan(&uploadResponse).Error
 
