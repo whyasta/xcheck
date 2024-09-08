@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -198,13 +199,24 @@ func (repo *barcodeRepository) AssignBarcodesWithEvent(importID int64, eventID i
 				continue
 			}
 
-			barcodes = append(barcodes, models.Barcode{
+			rowBarcode := models.Barcode{
 				Barcode:       item.Barcode,
 				EventID:       eventID,
 				TicketTypeID:  ticketTypeID,
 				Flag:          constant.BarcodeFlagValid,
 				CurrentStatus: constant.BarcodeStatusNull,
-			})
+			}
+
+			validate := validator.New(validator.WithRequiredStructEnabled())
+			validate.RegisterValidation("barcode", utils.BarcodeValidation)
+			err := validate.Struct(&item)
+			if err != nil {
+				fmt.Println(err)
+				failedCount++
+				continue
+			}
+
+			barcodes = append(barcodes, rowBarcode)
 		}
 
 		if len(barcodes) > 0 {

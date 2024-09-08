@@ -206,6 +206,10 @@ func (s *BarcodeService) ScanBarcode(userID int64, eventID int64, gateID int64, 
 
 	fmt.Println("current session", currentSession)
 
+	if action == constant.BarcodeStatusOut && result.CurrentStatus == constant.BarcodeStatusOut {
+		return false, models.BarcodeLog{}, response.EC11, errors.New("EC11 - Barcode " + barcode + " must be checked in first!")
+	}
+
 	if action == constant.BarcodeStatusOut && result.CurrentStatus == constant.BarcodeStatusNull {
 		return false, models.BarcodeLog{}, response.EC11, errors.New("EC11 - Barcode " + barcode + " not checked-in yet!")
 	}

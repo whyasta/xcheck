@@ -473,3 +473,23 @@ func (r BarcodeController) ImportEventBarcodes(c *gin.Context) {
 
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, message, uploadResponse))
 }
+
+func (r BarcodeController) CheckBarcode(c *gin.Context) {
+	defer utils.ResponseHandler(c)
+	var ba *models.Barcode
+
+	c.Next()
+	c.BindJSON(&ba)
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	validate.RegisterValidation("barcode", utils.BarcodeValidation)
+	err := validate.Struct(ba)
+	if err != nil {
+		fmt.Println(err)
+		errors := err.(validator.ValidationErrors)
+		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+		return
+	}
+
+	message := "success"
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, message, utils.Null()))
+}

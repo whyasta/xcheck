@@ -22,7 +22,7 @@ func (LatestScan) TableName() string {
 
 type Barcode struct {
 	ID            int64                  `gorm:"column:id; primary_key; not null" json:"id"`
-	Barcode       string                 `gorm:"column:barcode" json:"barcode" validate:"required"`
+	Barcode       string                 `gorm:"column:barcode" json:"barcode" validate:"required,barcode"`
 	Flag          constant.BarcodeFlag   `gorm:"column:flag;" json:"flag"`
 	CurrentStatus constant.BarcodeStatus `gorm:"column:current_status;" json:"current_status"`
 	EventID       int64                  `gorm:"column:event_id"  mapstructure:"event_id" json:"event_id" validate:"required"`
