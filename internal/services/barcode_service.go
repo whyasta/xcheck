@@ -135,7 +135,7 @@ func (s *BarcodeService) ScanBarcode(userID int64, eventID int64, gateID int64, 
 
 	if !validGate {
 		gate, _ := s.g.FindByID(gateID)
-		return false, models.BarcodeLog{}, response.EC04, fmt.Errorf("EC04 - "+response.EC05.GetResponseMessage(), gate.GateName)
+		return false, models.BarcodeLog{}, response.EC05, fmt.Errorf("EC05 - "+response.EC05.GetResponseMessage(), gate.GateName)
 	}
 
 	// check session
