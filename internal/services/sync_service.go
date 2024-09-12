@@ -140,7 +140,7 @@ func (s *SyncService) SyncDownloadEventByID(uid int64) error {
 
 	// Barcodes
 	client = &http.Client{}
-	req, err = HTTPRequest("GET", config.GetAppConfig().CloudBaseURL+"/events/"+strconv.Itoa(int(uid))+"/barcodes?page=1&limit=200", nil)
+	req, err = HTTPRequest("GET", config.GetAppConfig().CloudBaseURL+"/events/"+strconv.Itoa(int(uid))+"/barcodes?page=1&limit=99999999", nil)
 	if err != nil {
 		return err
 	}
@@ -150,7 +150,7 @@ func (s *SyncService) SyncDownloadEventByID(uid int64) error {
 	}
 	defer res.Body.Close()
 
-	//fmt.Println(config.GetAppConfig().CloudBaseURL + "/events/" + strconv.Itoa(int(uid)) + "/barcodes?page=1&limit=200")
+	//fmt.Println(config.GetAppConfig().CloudBaseURL + "/events/" + strconv.Itoa(int(uid)) + "/barcodes?page=1&limit=99999999")
 	response = &utils.APIResponse[map[string]interface{}]{
 		Data: models.Event{},
 	}
