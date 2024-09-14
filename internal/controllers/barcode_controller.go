@@ -192,6 +192,9 @@ func (r BarcodeController) SyncUploadBarcodes(c *gin.Context) {
 	}
 
 	if len(barcodeUpload.History) > 0 {
+		for i := range barcodeUpload.History {
+			barcodeUpload.History[i].Device = "mobile"
+		}
 		err = r.barcodeService.UploadBarcodeLogs(&barcodeUpload.History)
 		if err != nil {
 			utils.PanicException(response.InvalidRequest, err.Error())

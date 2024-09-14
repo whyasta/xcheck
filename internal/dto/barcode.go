@@ -21,6 +21,7 @@ type BarcodeUploadLogDto struct {
 	TicketTypeID int64                  `gorm:"column:ticket_type_id" mapstructure:"ticket_type_id" json:"ticket_type_id" validate:"required"`
 	SessionID    int64                  `gorm:"column:session_id" mapstructure:"session_id" json:"session_id" validate:"required"`
 	ScannedBy    int64                  `gorm:"column:scanned_by" mapstructure:"scanned_by" json:"scanned_by" validate:"required"`
+	Device       string                 `gorm:"column:device" mapstructure:"device" json:"device,omitempty"`
 	Action       constant.BarcodeStatus `gorm:"column:action" mapstructure:"action" json:"action" validate:"required"`
 }
 
@@ -90,6 +91,7 @@ func (s *BarcodeUploadLogDto) ToEntity() *models.BarcodeLog {
 		GateID:       s.GateID,
 		EventID:      s.EventID,
 		TicketTypeID: s.TicketTypeID,
+		Device:       s.Device,
 		SessionID:    s.SessionID,
 	}
 }

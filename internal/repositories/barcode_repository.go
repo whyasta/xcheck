@@ -375,26 +375,36 @@ func (repo *barcodeRepository) CreateLog(eventID int64, userID int64, gateID int
 	return log, firstCheckin, err
 }
 
-func (repo *barcodeRepository) CreateBulkLog(barcodes *[]models.BarcodeLog) error {
+func (repo *barcodeRepository) CreateBulkLog(logs *[]models.BarcodeLog) error {
+	var barcodeList []string
+	uniqueMap := make(map[string]bool)
+
 	var err error
-	if (len(*barcodes)) > 0 {
+	if (len(*logs)) > 0 {
 		err := repo.base.GetDB().Table("barcode_logs").Clauses(clause.OnConflict{
 			Columns: []clause.Column{{Name: "event_id"}, {Name: "barcode"}, {Name: "scanned_at"}, {Name: "action"}},
-		}).Omit("ID").Create(&barcodes).Error
+		}).Omit("ID").Create(&logs).Error
 
 		if err != nil {
 			return err
 		}
+
+		for _, item := range *logs {
+			if !uniqueMap[item.Barcode] {
+				uniqueMap[item.Barcode] = true
+				barcodeList = append(barcodeList, item.Barcode)
+			}
+		}
 	}
 
-	var logs []models.Barcode
-	subQuery1 := repo.base.GetDB().Model(&models.BarcodeLog{}).Select("max(scanned_at)").Group("barcode")
+	var barcodes []models.Barcode
+	subQuery1 := repo.base.GetDB().Model(&models.BarcodeLog{}).Select("max(scanned_at)").Where("barcode IN (?)", barcodeList).Group("barcode")
 	repo.base.GetDB().Table("barcode_logs").
 		Select("barcode", "action as current_status", "scanned_at").
 		Where("scanned_at IN (?)", subQuery1).
-		Find(&logs)
+		Find(&barcodes)
 
-	for _, item := range logs {
+	for _, item := range barcodes {
 		err := repo.base.GetDB().Table("barcodes").Where("barcode = ?", item.Barcode).
 			Update("current_status", item.CurrentStatus).
 			Update("flag", constant.BarcodeFlagUsed).Error
