@@ -52,7 +52,7 @@ func (s *BarcodeService) UpdateBarcode(eventID int64, id int64, data *map[string
 func (s *BarcodeService) DownloadBarcodes(pageParams *utils.Paginate, eventID int64, sessionID int64, gateID int64) ([]models.Barcode, int64, error) {
 	// json_contains(sessions, '1') AND
 	// json_contains(gates, '2')
-	barcodes, count, err := s.r.FindAllWithRelations(pageParams, *utils.NewFilters([]utils.Filter{
+	barcodes, count, err := s.r.FindAllWithRelations(eventID, pageParams, *utils.NewFilters([]utils.Filter{
 		{
 			Property:  "event_id",
 			Operation: "=",
@@ -89,8 +89,8 @@ func (s *BarcodeService) UploadBarcodeLogs(logs *[]dto.BarcodeUploadLogDto) erro
 	return s.r.CreateBulkLog(&barcodeLogs)
 }
 
-func (s *BarcodeService) GetAllBarcodes(pageParams *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Barcode, int64, error) {
-	return s.r.FindAllWithRelations(pageParams, filters, sorts)
+func (s *BarcodeService) GetAllBarcodes(eventID int64, pageParams *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Barcode, int64, error) {
+	return s.r.FindAllWithRelations(eventID, pageParams, filters, sorts)
 }
 
 func (s *BarcodeService) GetBarcodeByID(uid int64) (models.Barcode, error) {

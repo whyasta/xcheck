@@ -339,7 +339,7 @@ func (r BarcodeController) GetEventBarcodes(c *gin.Context) {
 		Value:     strconv.Itoa(eventID),
 	})
 
-	rows, count, err := r.barcodeService.GetAllBarcodes(pageParams, filter, sort)
+	rows, count, err := r.barcodeService.GetAllBarcodes(int64(eventID), pageParams, filter, sort)
 
 	if err != nil {
 		fmt.Println("Error:", err)

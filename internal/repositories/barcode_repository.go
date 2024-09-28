@@ -20,7 +20,7 @@ type BarcodeRepository interface {
 	Update(id int64, data *map[string]interface{}) (models.Barcode, error)
 	Delete(uid int64) (models.Barcode, error)
 	FindAll(joins []string, paginate *utils.Paginate, filter []utils.Filter, sorts []utils.Sort) ([]models.Barcode, int64, error)
-	FindAllWithRelations(paginate *utils.Paginate, filter []utils.Filter, sorts []utils.Sort) ([]models.Barcode, int64, error)
+	FindAllWithRelations(eventID int64, paginate *utils.Paginate, filter []utils.Filter, sorts []utils.Sort) ([]models.Barcode, int64, error)
 	FindByID(uid int64) (models.Barcode, error)
 	AssignBarcodes(importID int64, assignID int64, ticketTypeID int64) (int64, error)
 	Scan(eventID int64, barcode string) (models.Barcode, response.ResponseStatus, error)
@@ -51,13 +51,20 @@ func (repo *barcodeRepository) FindAll(joins []string, paginate *utils.Paginate,
 	return BasePaginateWithFilter[[]models.Barcode](*repo.base.GetDB(), joins, paginate, filters, sorts)
 }
 
-func (repo *barcodeRepository) FindAllWithRelations(paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Barcode, int64, error) {
+func (repo *barcodeRepository) FindAllWithRelations(eventID int64, paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Barcode, int64, error) {
 	var records []models.Barcode
 	var count int64
 
-	tx := repo.base.GetDB().
+	tx := repo.base.GetDB().Debug().
 		Table("barcodes").
 		Scopes(paginate.PaginatedResult)
+
+	if len(filters) > 0 {
+		for _, filter := range filters {
+			newFilter := utils.NewFilter(filter.Property, filter.Operation, filter.Collation, filter.Value, filter.Items)
+			tx = newFilter.FilterResult("", tx)
+		}
+	}
 
 	tx = tx.Preload("TicketType", func(tx2 *gorm.DB) *gorm.DB {
 		return tx2.Omit("EventID")
@@ -66,17 +73,11 @@ func (repo *barcodeRepository) FindAllWithRelations(paginate *utils.Paginate, fi
 	}).Preload("Sessions", func(tx2 *gorm.DB) *gorm.DB {
 		return tx2.Omit("EventID")
 	}).Preload("LatestScan", func(tx2 *gorm.DB) *gorm.DB {
-		return tx2.Joins("JOIN users ON users.id = barcode_logs.scanned_by").
+		return tx2.Where("barcode_logs.event_id = ?", eventID).
+			Joins("JOIN users ON users.id = barcode_logs.scanned_by").
 			Joins("JOIN gates ON gates.id = barcode_logs.gate_id").
 			Select("users.username as scanned_by_name", "barcode_logs.*", "gates.gate_name")
 	})
-
-	if len(filters) > 0 {
-		for _, filter := range filters {
-			newFilter := utils.NewFilter(filter.Property, filter.Operation, filter.Collation, filter.Value, filter.Items)
-			tx = newFilter.FilterResult("", tx)
-		}
-	}
 
 	if len(sorts) > 0 {
 		for _, sort := range sorts {
