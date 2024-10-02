@@ -128,8 +128,14 @@ func (repo *reportRepository) UniqueByTicketType(eventID int64, ticketTypeIds []
 	// 	Where("barcodes.event_id = ?", eventID)
 
 	sessionQuery := ""
+	if len(ticketTypeIds) > 0 {
+		sessionQuery = sessionQuery + fmt.Sprintf(" and bl.ticket_type_id in (?)", ticketTypeIds)
+	}
+	if len(gateIds) > 0 {
+		sessionQuery = sessionQuery + fmt.Sprintf(" and bl.gate_id in (?)", gateIds)
+	}
 	if len(sessionIds) > 0 {
-		sessionQuery = fmt.Sprintf("and bl.session_id in (?)", sessionIds)
+		sessionQuery = sessionQuery + fmt.Sprintf(" and bl.session_id in (?)", sessionIds)
 	}
 
 	checkInSelect := fmt.Sprintf("IFNULL((select COUNT(DISTINCT barcode) from barcode_logs bl where bl.action = 'IN' and bl.ticket_type_id = barcode_logs.ticket_type_id %s GROUP BY ticket_type_id), 0) as check_in_count", sessionQuery)
@@ -147,16 +153,10 @@ func (repo *reportRepository) UniqueByTicketType(eventID int64, ticketTypeIds []
 	}
 
 	if len(gateIds) > 0 {
-		// mySubquery := repo.db.Table("barcode_logs").Select("barcode").
-		// 	Where("barcode_logs.event_id = barcodes.event_id AND barcode_logs.barcode = barcodes.barcode and  barcode_logs.gate_id in (?)", gateIds)
-		// query = query.Where("EXISTS (?)", mySubquery)
 		query = query.Where("barcode_logs.gate_id in (?)", gateIds)
 	}
 
 	if len(sessionIds) > 0 {
-		// mySubquery := repo.db.Table("barcode_logs").Select("barcode").
-		// 	Where("barcode_logs.event_id = barcodes.event_id AND barcode_logs.barcode = barcodes.barcode and  barcode_logs.session_id in (?)", sessionIds)
-		// query = query.Where("EXISTS (?)", mySubquery)
 		query = query.Where("barcode_logs.session_id in (?)", sessionIds)
 	}
 
