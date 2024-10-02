@@ -3,6 +3,8 @@ package repositories
 import (
 	"bigmind/xcheck-be/internal/dto"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -129,13 +131,25 @@ func (repo *reportRepository) UniqueByTicketType(eventID int64, ticketTypeIds []
 
 	sessionQuery := ""
 	if len(ticketTypeIds) > 0 {
-		sessionQuery = sessionQuery + fmt.Sprintf(" and bl.ticket_type_id in (?)", ticketTypeIds)
+		var strNumbers []string
+		for _, num := range ticketTypeIds {
+			strNumbers = append(strNumbers, strconv.FormatInt(num, 10))
+		}
+		sessionQuery = sessionQuery + fmt.Sprintf(" and bl.ticket_type_id in (%s)", strings.Join(strNumbers, ","))
 	}
 	if len(gateIds) > 0 {
-		sessionQuery = sessionQuery + fmt.Sprintf(" and bl.gate_id in (?)", gateIds)
+		var strNumbers []string
+		for _, num := range gateIds {
+			strNumbers = append(strNumbers, strconv.FormatInt(num, 10))
+		}
+		sessionQuery = sessionQuery + fmt.Sprintf(" and bl.gate_id in (%s)", strings.Join(strNumbers, ","))
 	}
 	if len(sessionIds) > 0 {
-		sessionQuery = sessionQuery + fmt.Sprintf(" and bl.session_id in (?)", sessionIds)
+		var strNumbers []string
+		for _, num := range sessionIds {
+			strNumbers = append(strNumbers, strconv.FormatInt(num, 10))
+		}
+		sessionQuery = sessionQuery + fmt.Sprintf(" and bl.session_id in (%s)", strings.Join(strNumbers, ","))
 	}
 
 	checkInSelect := fmt.Sprintf("IFNULL((select COUNT(DISTINCT barcode) from barcode_logs bl where bl.action = 'IN' and bl.ticket_type_id = barcode_logs.ticket_type_id %s GROUP BY ticket_type_id), 0) as check_in_count", sessionQuery)
