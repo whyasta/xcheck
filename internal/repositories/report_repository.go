@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"bigmind/xcheck-be/internal/dto"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -126,11 +127,17 @@ func (repo *reportRepository) UniqueByTicketType(eventID int64, ticketTypeIds []
 	// 	Group("barcodes.ticket_type_id").
 	// 	Where("barcodes.event_id = ?", eventID)
 
+	sessionQuery := ""
+	if len(sessionIds) > 0 {
+		sessionQuery = fmt.Sprintf("and bl.session_id in (?)", sessionIds)
+	}
+
+	checkInSelect := fmt.Sprintf("IFNULL((select COUNT(DISTINCT barcode) from barcode_logs bl where bl.action = 'IN' and bl.ticket_type_id = barcode_logs.ticket_type_id %s GROUP BY ticket_type_id), 0) as check_in_count", sessionQuery)
+	checkOutSelect := fmt.Sprintf("IFNULL((select COUNT(DISTINCT barcode) from barcode_logs bl where bl.action = 'OUT' and bl.ticket_type_id = barcode_logs.ticket_type_id %s GROUP BY ticket_type_id), 0) as check_out_count", sessionQuery)
+
 	query := repo.db.Table("barcode_logs").
 		Debug().
-		Select("barcode_logs.ticket_type_id", "ticket_type_name",
-			"IFNULL((select COUNT(DISTINCT barcode) from barcode_logs bl where bl.action = 'IN' and bl.ticket_type_id = barcode_logs.ticket_type_id GROUP BY ticket_type_id), 0) as check_in_count",
-			"IFNULL((select COUNT(DISTINCT barcode) from barcode_logs bl where bl.action = 'OUT' and bl.ticket_type_id = barcode_logs.ticket_type_id GROUP BY ticket_type_id), 0) as check_out_count").
+		Select("barcode_logs.ticket_type_id", "ticket_type_name", checkInSelect, checkOutSelect).
 		Joins("join ticket_types on ticket_types.id = barcode_logs.ticket_type_id").
 		Group("barcode_logs.ticket_type_id").
 		Where("barcode_logs.event_id = ?", eventID)
