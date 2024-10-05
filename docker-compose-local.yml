@@ -6,6 +6,7 @@ services:
         container_name: xcheck-backend-local
         restart: unless-stopped
         tty: true
+        env_file: ".env.local"
         ports:
             - '9100:9052'
         working_dir: /app

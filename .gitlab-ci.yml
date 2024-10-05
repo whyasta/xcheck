@@ -76,14 +76,14 @@ deploy_dev:
       - main
   before_script:
     - if [ "$CI_COMMIT_BRANCH" ==  "main" ]; then VERSION=$CI_COMMIT_BRANCH; else VERSION=$CI_COMMIT_TAG; fi;
+    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
   script:
     - touch .env
     - touch .env.local
     - echo "$ENV" >> .env
     - echo "$ENV_LOCAL" >> .env.local
-    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
-    - docker compose --env-file .env -f docker-compose.yml up -d
-    - docker compose --env-file .env.local -f docker-compose-local.yml up -d
+    - docker compose -f docker-compose.yml up -d
+    - docker compose -f docker-compose-local.yml up -d
   #when: manual
   needs:
     - build
@@ -102,11 +102,11 @@ deploy_prod:
       - tags
   before_script:
     - if [ "$CI_COMMIT_BRANCH" ==  "main" ]; then VERSION=$CI_COMMIT_BRANCH; else VERSION=$CI_COMMIT_TAG; fi;
+    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
   script:
     - touch .env
     - echo "$ENV" >> .env
-    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
-    - docker compose --env-file .env -f docker-compose.yml up -d
+    - docker compose -f docker-compose.yml up -d
   when: manual
   needs:
     - build
