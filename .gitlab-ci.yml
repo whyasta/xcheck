@@ -27,6 +27,7 @@ build:
       --dockerfile $CI_PROJECT_DIR/Dockerfile
       --destination ${CI_REGISTRY_IMAGE}:$VERSION
       --destination ${CI_REGISTRY_IMAGE}:$VERSION-local
+      --destination ${CI_REGISTRY_IMAGE}:latest
       --cache=true
       --cache-dir=/cache
       --cache-ttl=720h
