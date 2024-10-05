@@ -4,6 +4,8 @@ import (
 	"bigmind/xcheck-be/config/dblogger"
 	"fmt"
 	"log"
+	"os"
+	"reflect"
 	"time"
 
 	"github.com/spf13/viper"
@@ -14,22 +16,22 @@ import (
 )
 
 type AppConfig struct {
-	DatabaseHost       string
-	DatabasePort       string
-	DatabaseUser       string
-	DatabasePassword   string
-	DatabaseName       string
-	DatabaseQueryDebug bool
-	AuthJwtSecret      string
-	AuthJwtExpire      int
-	AuthJwtIssuer      string
-	ServerAddress      string
-	ServerPort         string
-	AppEnv             string
-	RedisHost          string
-	RedisPort          string
-	RedisQueue         string
-	CloudBaseURL       string
+	DatabaseHost       string `mapstructure:"DATABASE_HOST"`
+	DatabasePort       string `mapstructure:"DATABASE_PORT"`
+	DatabaseUser       string `mapstructure:"DATABASE_USER"`
+	DatabasePassword   string `mapstructure:"DATABASE_PASSWORD"`
+	DatabaseName       string `mapstructure:"DATABASE_NAME"`
+	DatabaseQueryDebug bool   `mapstructure:"DATABASE_QUERY_DEBUG"`
+	AuthJwtSecret      string `mapstructure:"AUTH_JWT_SECRET"`
+	AuthJwtExpire      int    `mapstructure:"AUTH_JWT_EXPIRE"`
+	AuthJwtIssuer      string `mapstructure:"AUTH_JWT_ISSUER"`
+	ServerAddress      string `mapstructure:"SERVER_ADDRESS"`
+	ServerPort         string `mapstructure:"SERVER_PORT"`
+	AppEnv             string `mapstructure:"APP_ENV"`
+	RedisHost          string `mapstructure:"REDIS_HOST"`
+	RedisPort          string `mapstructure:"REDIS_PORT"`
+	RedisQueue         string `mapstructure:"REDIS_QUEUE"`
+	CloudBaseURL       string `mapstructure:"CLOUD_BASE_URL"`
 }
 
 var config *viper.Viper
@@ -37,14 +39,61 @@ var config *viper.Viper
 func Init(env string) {
 	var err error
 	config = viper.New()
-	config.SetConfigType("env")
-	config.SetConfigName(".env")
-	config.AddConfigPath(".")
+	log.Println("Init Config", env)
 
+	if env != "local" {
+		config.SetConfigType("env")
+		config.SetConfigName(".env")
+	} else {
+		config.SetConfigType("env")
+		config.SetConfigName(".env.local")
+	}
+	config.AddConfigPath(".")
+	config.AutomaticEnv()
 	err = config.ReadInConfig()
 	if err != nil {
-		log.Fatal("error on parsing configuration file")
+		log.Println("error on parsing configuration file")
+		log.Println("Trying to load from env variable")
+		// scaffoldLocal()
+		var c AppConfig
+		if e := parseEnv(&c); e != nil {
+			log.Fatal("error on parsing configuration file or env variable", e)
+			panic(e)
+		}
 	}
+}
+
+func scaffoldLocal() {
+	os.Setenv("DATABASE_HOST", "101.50.2.153")
+	os.Setenv("DATABASE_PORT", "3306")
+	os.Setenv("DATABASE_USER", "user_xcheck")
+	os.Setenv("DATABASE_PASSWORD", "xcheck@2024")
+	os.Setenv("DATABASE_NAME", "xcheck")
+	os.Setenv("DATABASE_QUERY_DEBUG", "false")
+	os.Setenv("AUTH_JWT_SECRET", "bmok2024")
+	os.Setenv("AUTH_JWT_EXPIRE", "60")
+	os.Setenv("AUTH_JWT_ISSUER", "bigmind")
+	os.Setenv("SERVER_ADDRESS", "localhost")
+	os.Setenv("SERVER_PORT", "9052")
+	os.Setenv("APP_ENV", "cloud")
+	os.Setenv("REDIS_HOST", "")
+	os.Setenv("REDIS_PORT", "6379")
+	os.Setenv("REDIS_QUEUE", "xcheck")
+	os.Setenv("CLOUD_BASE_URL", "")
+}
+
+func parseEnv(i interface{}) error {
+	r := reflect.TypeOf(i)
+	for r.Kind() == reflect.Ptr {
+		r = r.Elem()
+	}
+	for i := 0; i < r.NumField(); i++ {
+		env := r.Field(i).Tag.Get("mapstructure")
+		if err := viper.BindEnv(env); err != nil {
+			return err
+		}
+	}
+	return viper.Unmarshal(i)
 }
 
 func ConnectToDB() (*gorm.DB, error) {
