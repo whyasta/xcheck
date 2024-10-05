@@ -27,6 +27,7 @@ build:
       --context $CI_PROJECT_DIR
       --dockerfile $CI_PROJECT_DIR/Dockerfile
       --destination ${CI_REGISTRY_IMAGE}:$VERSION
+      --tar-path image.tar
       --cache=true
       --cache-dir=/cache
       --cache-ttl=720h
