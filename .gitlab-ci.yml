@@ -21,8 +21,6 @@ build:
       - tags
       - main
   script:
-    # - touch .env
-    # - echo "$ENV" >> .env
     - /kaniko/warmer --verbosity=info --image=alpine:3.20 --image=golang:alpine3.20
     - /kaniko/executor
       --context $CI_PROJECT_DIR
@@ -33,35 +31,6 @@ build:
       --cache-dir=/cache
       --cache-ttl=720h
       --cleanup
-
-# build_local:
-#   stage: build
-#   image:
-#     name: gcr.io/kaniko-project/executor:v1.23.2-debug
-#     entrypoint: [""]
-#   environment:
-#     name: dev
-#   tags:
-#     - bm-dev-kris
-#   before_script:
-#     - if [ "$CI_COMMIT_BRANCH" ==  "main" ]; then VERSION=$CI_COMMIT_BRANCH; else VERSION=$CI_COMMIT_TAG; fi;
-#     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-#   only:
-#     refs:
-#       - tags
-#       - main
-#   script:
-#     - touch .env
-#     - echo "$ENV_LOCAL" >> .env
-#     - /kaniko/warmer --verbosity=info --image=alpine:3.20 --image=golang:alpine3.20
-#     - /kaniko/executor
-#       --context $CI_PROJECT_DIR
-#       --dockerfile $CI_PROJECT_DIR/Dockerfile
-#       --destination ${CI_REGISTRY_IMAGE}:$VERSION-local
-#       --cache=true
-#       --cache-dir=/cache
-#       --cache-ttl=720h
-#       --cleanup
 
 deploy_dev:
   stage: deploy
@@ -84,10 +53,9 @@ deploy_dev:
     - echo "$ENV_LOCAL" >> .env.local
     - docker compose -f docker-compose.yml up -d
     - docker compose -f docker-compose-local.yml up -d
-  #when: manual
+  when: manual
   needs:
     - build
-    # - build_local
 
 deploy_prod:
   stage: deploy
@@ -110,12 +78,3 @@ deploy_prod:
   when: manual
   needs:
     - build
-
-# cleanup:
-#   stage: deploy
-#   environment:
-#     name: dev
-#   tags:
-#     - bm-dev-kris
-#   script:
-#     - docker rmi $(docker images -f "dangling=true" -q --no-trunc)
