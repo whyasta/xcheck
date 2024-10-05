@@ -43,6 +43,8 @@ push:
   image:
     name: gcr.io/go-containerregistry/crane:debug
     entrypoint: [""]
+  tags:
+    - scanin
   only:
     refs:
       - tags
