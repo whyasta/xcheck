@@ -31,7 +31,6 @@ build:
       --cache-dir=/cache
       --cache-ttl=720h
       --cleanup
-  when: manual
 
 deploy_dev:
   stage: deploy
@@ -79,5 +78,5 @@ deploy_prod:
   after_script:
     - less .env 
   when: manual
-  # needs:
-  #   - build
+  needs:
+    - build
