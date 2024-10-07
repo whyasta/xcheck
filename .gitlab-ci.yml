@@ -2,6 +2,7 @@ image: docker
 
 stages:
   - build
+  - push
   - deploy
 
 build:
@@ -19,18 +20,39 @@ build:
   only:
     refs:
       - tags
-      - main
+      - main    
   script:
     - /kaniko/warmer --verbosity=info --image=alpine:3.20 --image=golang:alpine3.20
     - /kaniko/executor
       --context $CI_PROJECT_DIR
       --dockerfile $CI_PROJECT_DIR/Dockerfile
       --destination ${CI_REGISTRY_IMAGE}:$VERSION
-      --destination ${CI_REGISTRY_IMAGE}:$VERSION-local
+      --tar-path image.tar
       --cache=true
       --cache-dir=/cache
       --cache-ttl=720h
       --cleanup
+  artifacts:
+    paths:
+    - image.tar
+    when: on_success
+    expire_in: 1 day
+
+push:
+  stage: push
+  image:
+    name: gcr.io/go-containerregistry/crane:debug
+    entrypoint: [""]
+  tags:
+    - scanin
+  only:
+    refs:
+      - tags
+  script:
+  - crane auth login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  - crane push image.tar ${CI_REGISTRY_IMAGE}:latest
+  needs:
+  - build
 
 deploy_dev:
   stage: deploy
