@@ -1,5 +1,5 @@
 # ================
-FROM golang:alpine3.20 AS builder
+FROM --platform=$BUILDPLATFORM golang:alpine3.20 AS builder
 
 LABEL maintainer="Bigmind"
 
@@ -8,11 +8,14 @@ RUN \
     apk update && \
     apk add make libc-dev gcc libtool musl-dev ca-certificates dumb-init
 
+ARG TARGETOS
+ARG TARGETARCH
+
 WORKDIR /app
 COPY . .
 
-RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o main ./cmd/xcheck
-RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o job ./cmd/job
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags="-s -w" -o main ./cmd/xcheck
+RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags="-s -w" -o job ./cmd/job
 # ================
 
 # ================ Start running app
