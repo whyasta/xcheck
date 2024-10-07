@@ -14,7 +14,6 @@ build:
     - bm-dev-kris
   only:
     refs:
-      - tags
       - main
   before_script:
     - if [ "$CI_COMMIT_BRANCH" ==  "main" ]; then VERSION=$CI_COMMIT_BRANCH; else VERSION=$CI_COMMIT_TAG; fi;
@@ -41,7 +40,6 @@ build_prod:
   only:
     refs:
       - tags
-      - main
   script:
     - /kaniko/warmer --verbosity=info --image=alpine:3.20 --image=golang:alpine3.20
     - /kaniko/executor
@@ -70,10 +68,10 @@ push:
     refs:
       - tags
   script:
-  - crane auth login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-  - crane push image.tar ${CI_REGISTRY_IMAGE}:latest
+    - crane auth login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - crane push image.tar ${CI_REGISTRY_IMAGE}:latest
   needs:
-  - build_prod
+    - build_prod
 
 deploy_dev:
   stage: deploy
