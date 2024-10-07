@@ -293,7 +293,7 @@ func (s *SyncService) SyncUsers() error {
 func HTTPRequest(method string, url string, payload []byte) (*http.Request, error) {
 	body := []byte(`{
         "username": "admin",
-        "password": "admin"
+        "password": "gate@BM2024"
     }`)
 
 	req, err := http.NewRequest("POST", config.GetAppConfig().CloudBaseURL+"/auth/signin", bytes.NewBuffer(body))
