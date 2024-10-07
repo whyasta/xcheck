@@ -47,15 +47,25 @@ build:
     name: dev
   tags:
     - bm-dev-kris
-  before_script:
-    - if [ "$CI_COMMIT_BRANCH" ==  "main" ]; then VERSION=$CI_COMMIT_BRANCH; else VERSION=$CI_COMMIT_TAG; fi;
-    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
   only:
     refs:
       - tags
       - main
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_DRIVER: overlay2
+    DOCKER_BUILDKIT: 1
+    DOCKER_CLI_EXPERIMENTAL: enabled
+    BUILDX_URL: https://github.com/docker/buildx/releases/download/v0.17.1/buildx-v0.17.1.linux-amd64
+  before_script:
+    before_script:
+    - mkdir -p $HOME/.docker/cli-plugins/
+    - wget -O $HOME/.docker/cli-plugins/docker-buildx $BUILDX_URL
+    - chmod a+x $HOME/.docker/cli-plugins/docker-buildx
+    - if [ "$CI_COMMIT_BRANCH" ==  "main" ]; then VERSION=$CI_COMMIT_BRANCH; else VERSION=$CI_COMMIT_TAG; fi;
+    - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
   script:
-    - docker buildx build -t $CI_REGISTRY_IMAGE:$VERSION --platform "linux/amd64,linux/arm64"  --build-arg TAG=$VERSION .
+    - docker buildx build -t $CI_REGISTRY_IMAGE:$VERSION --platform "linux/amd64,linux/arm64"  .
     - docker image ls
     - docker push $CI_REGISTRY_IMAGE:$VERSION
 
