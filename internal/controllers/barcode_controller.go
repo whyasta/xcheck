@@ -456,6 +456,12 @@ func (r BarcodeController) ImportEventBarcodes(c *gin.Context) {
 
 	for {
 		importRow, _ := r.importService.GetImportByID(importFile.ID)
+
+		if importRow.Status == string(constant.ImportStatusFailed) {
+			fmt.Printf("Job %s Failed\n", job.ID)
+			break
+		}
+
 		if importRow.Status != string(constant.ImportStatusAssigned) {
 			fmt.Printf("Job %s status not assigned, waiting...\n", job.ID)
 			time.Sleep(200 * time.Millisecond)
