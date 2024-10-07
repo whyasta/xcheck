@@ -40,7 +40,9 @@ stages:
 
 build:
   stage: build
-  image: docker:20-dind
+  services:
+    - name: docker:20-dind
+      command: ["--experimental"]
   environment:
     name: dev
   tags:
