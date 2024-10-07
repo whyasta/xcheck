@@ -23,8 +23,8 @@ build:
     - if [ "$CI_COMMIT_BRANCH" ==  "main" ]; then VERSION=$CI_COMMIT_BRANCH; else VERSION=$CI_COMMIT_TAG; fi;
     - docker login $CI_REGISTRY -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
   script:
-    - apk add curl && curl -L  --output /usr/lib/docker/cli-plugins/docker-buildx "https://github.com/docker/buildx/releases/download/v0.17.1/buildx-v0.17.1.linux-amd64"
     - chmod a+x /usr/lib/docker/cli-plugins/docker-buildx
+    - apk add curl && curl -L  --output /usr/lib/docker/cli-plugins/docker-buildx "https://github.com/docker/buildx/releases/download/v0.17.1/buildx-v0.17.1.linux-amd64"
     - docker buildx create --use
     - docker buildx build --push --platform linux/amd64,linux/arm64 -t ${CI_REGISTRY_IMAGE}:$VERSION .
   # before_script:
