@@ -3,6 +3,7 @@ package main
 import (
 	"bigmind/xcheck-be/cmd/xcheck/server"
 	"bigmind/xcheck-be/config"
+	"log"
 
 	// "bigmind/xcheck-be/utils"
 	"flag"
@@ -34,7 +35,7 @@ func main() {
 	// docs.SwaggerInfo.Schemes = []string{"http", "https"}
 
 	serverEnv := config.GetConfig().GetString("APP_ENV")
-	fmt.Printf("server environment: %s\n", serverEnv)
+	log.Printf("server environment: %s\n", serverEnv)
 
 	server.Init()
 }

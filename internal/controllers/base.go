@@ -7,8 +7,13 @@ import (
 	"reflect"
 	"strconv"
 
+	"github.com/go-playground/locales/en"
+	ut "github.com/go-playground/universal-translator"
+
 	gormUtils "gorm.io/gorm/utils"
 )
+
+var UniversalTranslator *ut.UniversalTranslator
 
 type Controller struct {
 	HealthController         *HealthController
@@ -23,11 +28,15 @@ type Controller struct {
 	BarcodeController        *BarcodeController
 	SyncController           *SyncController
 	ReportController         *ReportController
+	RedeemController         *RedeemController
 }
 
 func NewController(
 	services *services.Service,
 ) *Controller {
+	en := en.New()
+	UniversalTranslator = ut.New(en, en)
+
 	return &Controller{
 		HealthController:         new(HealthController),
 		AuthController:           NewAuthController(services.AuthService),
@@ -41,6 +50,7 @@ func NewController(
 		BarcodeController:        NewBarcodeController(services.ImportService, services.BarcodeService),
 		SyncController:           NewSyncController(services.SyncService),
 		ReportController:         NewReportController(services.ReportService),
+		RedeemController:         NewRedeemController(services.RedeemService),
 	}
 }
 

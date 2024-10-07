@@ -58,7 +58,6 @@ build:
     DOCKER_CLI_EXPERIMENTAL: enabled
     BUILDX_URL: https://github.com/docker/buildx/releases/download/v0.17.1/buildx-v0.17.1.linux-amd64
   before_script:
-    before_script:
     - mkdir -p $HOME/.docker/cli-plugins/
     - wget -O $HOME/.docker/cli-plugins/docker-buildx $BUILDX_URL
     - chmod a+x $HOME/.docker/cli-plugins/docker-buildx

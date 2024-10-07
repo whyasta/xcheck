@@ -19,6 +19,7 @@ type Service struct {
 	BarcodeService        *BarcodeService
 	SyncService           *SyncService
 	ReportService         *ReportService
+	RedeemService         *RedeemService
 }
 
 func RegisterServices(db *gorm.DB) *Service {
@@ -43,5 +44,6 @@ func NewService(
 		BarcodeService:        NewBarcodeService(repositories.Barcode, repositories.Gate, repositories.Session),
 		GateAllocationService: NewGateAllocationService(repositories.GateAllocation),
 		ReportService:         NewReportService(repositories.Base, repositories.Report),
+		RedeemService:         NewRedeemService(repositories.Redeem),
 	}
 }
