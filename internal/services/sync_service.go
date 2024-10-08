@@ -33,7 +33,9 @@ func NewSyncService(
 }
 
 func (s *SyncService) SyncEvents() (utils.APIResponse[map[string]interface{}], int64, error) {
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 5 * time.Minute,
+	}
 	req, err := HTTPRequest("GET", config.GetAppConfig().CloudBaseURL+"/events?page=1&limit=999999&filter=[{\"prop\":\"status\",\"opr\":\"=\",\"val\":\"1\"}]", nil)
 	if err != nil {
 		return utils.APIResponse[map[string]interface{}]{}, 0, err
@@ -63,7 +65,9 @@ func (s *SyncService) SyncEvents() (utils.APIResponse[map[string]interface{}], i
 }
 
 func (s *SyncService) SyncDownloadEventByID(uid int64) error {
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 5 * time.Minute,
+	}
 	req, err := HTTPRequest("GET", config.GetAppConfig().CloudBaseURL+"/events/"+strconv.Itoa(int(uid)), nil)
 	if err != nil {
 		return err
@@ -139,7 +143,9 @@ func (s *SyncService) SyncDownloadEventByID(uid int64) error {
 	}
 
 	// Barcodes
-	client = &http.Client{}
+	client = &http.Client{
+		Timeout: 5 * time.Minute,
+	}
 	req, err = HTTPRequest("GET", config.GetAppConfig().CloudBaseURL+"/events/"+strconv.Itoa(int(uid))+"/barcodes?page=1&limit=99999999", nil)
 	if err != nil {
 		return err
@@ -221,7 +227,9 @@ func (s *SyncService) SyncUploadEventByID(uid int64) error {
 
 	fmt.Println(string(body))
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 5 * time.Minute,
+	}
 	req, err := HTTPRequest("POST", config.GetAppConfig().CloudBaseURL+"/barcodes/sync/upload", body)
 	if err != nil {
 		return err
@@ -249,7 +257,9 @@ func (s *SyncService) SyncUploadEventByID(uid int64) error {
 }
 
 func (s *SyncService) SyncUsers() error {
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 5 * time.Minute,
+	}
 	req, err := HTTPRequest("GET", config.GetAppConfig().CloudBaseURL+"/users/sync?page=1&limit=999999", nil)
 	if err != nil {
 		return err
@@ -302,7 +312,9 @@ func HTTPRequest(method string, url string, payload []byte) (*http.Request, erro
 		return nil, err
 	}
 	req.Header.Add("Content-Type", "application/json")
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 5 * time.Minute,
+	}
 	res, err := client.Do(req)
 	if err != nil {
 		return nil, err
