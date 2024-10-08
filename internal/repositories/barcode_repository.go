@@ -418,17 +418,28 @@ func (repo *barcodeRepository) CreateBulkLog(logs *[]models.BarcodeLog) error {
 }
 
 func (repo *barcodeRepository) CreateBulk(barcodes *[]models.Barcode) error {
-	for _, item := range *barcodes {
-		err := repo.base.GetDB().Table("barcodes").
-			Clauses(clause.OnConflict{
-				Columns:   []clause.Column{{Name: "event_id"}, {Name: "barcode"}},
-				DoUpdates: clause.AssignmentColumns([]string{"current_status", "flag"}),
-			}, clause.Returning{}).Omit("ID", "CreatedAt", "Gates", "Sessions").Create(&item).Error
+	err := repo.base.GetDB().Table("barcodes").
+		Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "event_id"}, {Name: "barcode"}},
+			DoUpdates: clause.AssignmentColumns([]string{"current_status", "flag"}),
+		}, clause.Returning{}).Omit("ID", "CreatedAt", "Gates", "Sessions").Create(&barcodes).Error
 
-		if err != nil {
-			fmt.Println(err)
-			return err
-		}
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	for _, item := range *barcodes {
+		// err := repo.base.GetDB().Table("barcodes").
+		// 	Clauses(clause.OnConflict{
+		// 		Columns:   []clause.Column{{Name: "event_id"}, {Name: "barcode"}},
+		// 		DoUpdates: clause.AssignmentColumns([]string{"current_status", "flag"}),
+		// 	}, clause.Returning{}).Omit("ID", "CreatedAt", "Gates", "Sessions").Create(&item).Error
+
+		// if err != nil {
+		// 	fmt.Println(err)
+		// 	return err
+		// }
 
 		fmt.Println(item.ID)
 		if item.ID == 0 {
