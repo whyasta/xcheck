@@ -144,6 +144,10 @@ func WriterHandler(c *gin.Context) {
 	w.body = &bytes.Buffer{}
 	var body map[string]interface{}
 	if originalBody.Len() == 0 {
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
 		w.Write([]byte(`
         ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣠⡤⠤⠤⠶⠶⠤⠤⢤⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀
         ⠀⠀⠀⠀⠀⣠⡴⠚⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠳⠦⣄⠀⠀⠀⠀⠀⠀
