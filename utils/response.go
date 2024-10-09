@@ -145,10 +145,14 @@ func WriterHandler(c *gin.Context) {
 	var body map[string]interface{}
 	if originalBody.Len() == 0 {
 		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-		w.Write([]byte(`
+			//c.AbortWithStatus(204)
+			c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Accept, origin, Cache-Control, X-Requested-With")
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET")
+			c.Status(204)
+		} else {
+			w.Write([]byte(`
         ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣠⡤⠤⠤⠶⠶⠤⠤⢤⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀
         ⠀⠀⠀⠀⠀⣠⡴⠚⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠳⠦⣄⠀⠀⠀⠀⠀⠀
         ⠀⠀⠀⣠⡾⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠻⣦⠀⠀⠀⠀
@@ -164,7 +168,8 @@ func WriterHandler(c *gin.Context) {
         ⠀⠀⠀⠙⢦⣄⠀⠛⢿⣿⣿⠃⠀⠀⠀⠀⠀⣀⣤⠞⠁⠀⢀⣴⠟⠁⠀⠀⠀
         ⠀⠀⠀⠀⠀⠙⠲⢤⣀⡈⠙⠳⠖⠒⠒⠚⠛⠉⠀⣀⣴⠞⠋⠁⠀⠀⠀⠀⠀
         ⠀⠀⠀⠀⠀⠀⠀⠀⠉⠛⠓⠒⠲⠤⠦⠶⠒⠚⠛⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀`))
-		return
+			return
+		}
 	} else {
 		json.Unmarshal(originalBody.Bytes(), &body)
 
@@ -206,5 +211,9 @@ func WriterHandler(c *gin.Context) {
 		// Logger.Info("fmt", zap.Fields(zap.String("context", string(newBody))))
 		// Logger.Info(fmt)
 
-	w.Write(newBody)
+	if body == nil {
+		w.Write(nil)
+	} else {
+		w.Write(newBody)
+	}
 }
