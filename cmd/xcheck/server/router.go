@@ -20,7 +20,7 @@ func NewRouter(services *services.Service) *gin.Engine {
 
 	// router.Use(gin.Logger())
 	router.Use(gin.Recovery())
-	router.Use(cors.Default())
+	// router.Use(cors.Default())
 	// router.Use(middlewares.CORSMiddleware())
 	router.Use(middlewares.ErrorMiddleware())
 
@@ -41,6 +41,17 @@ func NewRouter(services *services.Service) *gin.Engine {
 	router.Use(utils.WriterHandler)
 	// router.Use(utils.ResponseLogger())
 	// router.Use(utils.ResponseHandler())
+
+	// CORS configuration
+	config := cors.Config{
+		AllowOrigins:     []string{"*"}, // Allow all origins
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}
+	// Apply the middleware
+	router.Use(cors.New(config))
 
 	controllers := controllers.NewController(services)
 	routes.InitRoutes(router, controllers)
