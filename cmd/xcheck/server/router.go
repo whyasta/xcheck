@@ -7,6 +7,7 @@ import (
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,12 +15,13 @@ func NewRouter(services *services.Service) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.New()
-	router.ForwardedByClientIP = true
-	router.SetTrustedProxies([]string{"127.0.0.1", "192.168.1.2", "10.0.0.0/8"})
+	// router.ForwardedByClientIP = true
+	// router.SetTrustedProxies([]string{"127.0.0.1", "192.168.1.2", "10.0.0.0/8"})
 
 	// router.Use(gin.Logger())
 	router.Use(gin.Recovery())
-	router.Use(middlewares.CORSMiddleware())
+	router.Use(cors.Default())
+	// router.Use(middlewares.CORSMiddleware())
 	router.Use(middlewares.ErrorMiddleware())
 
 	// router.Group("/swagger").Handler(ginSwagger.WrapHandler(
