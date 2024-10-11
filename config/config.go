@@ -32,6 +32,10 @@ type AppConfig struct {
 	RedisPort          string `mapstructure:"REDIS_PORT"`
 	RedisQueue         string `mapstructure:"REDIS_QUEUE"`
 	CloudBaseURL       string `mapstructure:"CLOUD_BASE_URL"`
+	MinioEndpoint      string `mapstructure:"MINIO_ENDPOINT"`
+	MinioBucket        string `mapstructure:"MINIO_BUCKET"`
+	MinioAccessKey     string `mapstructure:"MINIO_ACCESSKEY"`
+	MinioSecretKey     string `mapstructure:"MINIO_SECRETKEY"`
 }
 
 var config *viper.Viper
@@ -101,15 +105,17 @@ func ConnectToDB() (*gorm.DB, error) {
 	configEnv := GetConfig()
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", configEnv.GetString("DATABASE_USER"), configEnv.GetString("DATABASE_PASSWORD"), configEnv.GetString("DATABASE_HOST"), configEnv.GetString("DATABASE_PORT"), configEnv.GetString("DATABASE_NAME"))
 
+	log.Println("Debug Query: ", configEnv.GetBool("DATABASE_QUERY_DEBUG"))
+
 	gormConfig := &gorm.Config{}
 	if configEnv.GetBool("DATABASE_QUERY_DEBUG") {
 		dbLogger := dblogger.New(zap.L())
 		dbLogger.SetAsDefault()
 		dbLogger.LogMode(logger.Info)
 		gormConfig = &gorm.Config{
-			// Logger: logger.Default.LogMode(logger.Info),
+			Logger: logger.Default.LogMode(logger.Info),
 			// Logger: dbLogger,
-			Logger: dbLogger,
+			// Logger: dbLogger,
 		}
 	}
 	db, err := gorm.Open(mysql.Open(dsn), gormConfig)
@@ -171,5 +177,9 @@ func GetAppConfig() *AppConfig {
 		RedisPort:          GetConfig().GetString("REDIS_PORT"),
 		RedisQueue:         GetConfig().GetString("REDIS_QUEUE"),
 		CloudBaseURL:       GetConfig().GetString("CLOUD_BASE_URL"),
+		MinioEndpoint:      GetConfig().GetString("MINIO_ENDPOINT"),
+		MinioBucket:        GetConfig().GetString("MINIO_BUCKET"),
+		MinioAccessKey:     GetConfig().GetString("MINIO_ACCESSKEY"),
+		MinioSecretKey:     GetConfig().GetString("MINIO_SECRETKEY"),
 	}
 }

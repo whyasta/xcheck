@@ -35,5 +35,10 @@ func EventRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
 		// group.GET("/:id/gate-allocations", controllers.GateAllocationController.GetAllGateAllocations)
 		// group.POST("/:id/gate-allocations", controllers.GateAllocationController.CreateGateAllocation)
 		// group.POST("/:id/gate-allocations/:gateAllocationId", controllers.GateAllocationController.UpdateGateAllocation)
+
+		group.GET("/:id/tickets", controllers.TicketController.GetAll)
+		group.POST("/:id/tickets/import", controllers.TicketController.ImportTicket)
+		group.GET("/:id/tickets/import", controllers.TicketController.GetImport)
+		group.GET("/:id/tickets/import/:importId", controllers.TicketController.GetImportDetail)
 	}
 }

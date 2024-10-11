@@ -7,10 +7,14 @@ import (
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/repositories"
 	"bigmind/xcheck-be/utils"
+	"context"
 	"errors"
 	"fmt"
+	"log"
+	"mime/multipart"
 
 	"github.com/gocraft/work"
+	"github.com/minio/minio-go/v7"
 )
 
 type ImportService struct {
@@ -25,11 +29,43 @@ func (s *ImportService) CreateImport(data *models.Import) (models.Import, error)
 	return s.r.Save(data)
 }
 
+func (s *ImportService) UploadToMinio(ctx context.Context, bucketName string, file *multipart.FileHeader, fileName string) (string, error) {
+	// Get Buffer from file
+	buffer, err := file.Open()
+
+	if err != nil {
+		return "", err
+	}
+	defer buffer.Close()
+
+	// Create minio connection.
+	minioClient, err := config.MinioConnection()
+	if err != nil {
+		return "", err
+	}
+
+	objectName := fileName
+	fileBuffer := buffer
+	contentType := file.Header["Content-Type"][0]
+	fileSize := file.Size
+
+	// Upload the zip file with PutObject
+	log.Printf("Uploading %s of size %d to %s\n", objectName, fileSize, bucketName)
+	info, err := minioClient.PutObject(ctx, bucketName, objectName, fileBuffer, fileSize, minio.PutObjectOptions{ContentType: contentType})
+
+	if err != nil {
+		return "", err
+	}
+
+	log.Printf("Successfully uploaded %s of size %d\n", objectName, info.Size)
+	return objectName, nil
+}
+
 func (s *ImportService) UpdateStatusImport(id int64, status constant.ImportStatus, errorMessage string) (models.Import, error) {
 	return s.r.Update(id, &map[string]interface{}{"status": status, "status_message": errorMessage})
 }
 
-func (s *ImportService) DoImportJob(id int64) (models.Import, error) {
+func (s *ImportService) DoImportBarcodeJob(id int64) (models.Import, error) {
 	fmt.Println("DoImportJob")
 	row, err := s.r.Update(id, &map[string]interface{}{"status": constant.ImportStatusProcessing, "status_message": "Processing file"})
 	if err != nil {
@@ -80,6 +116,27 @@ func (s *ImportService) DoImportJobWithAssign(id int64, eventID int64, ticketTyp
 		"ticket_type_id": ticketTypeID,
 		"sessions":       sessions,
 		"gates":          gates,
+	})
+	if err != nil {
+		return &work.Job{}, models.Import{}, err
+	}
+	return job, row, err
+}
+
+func (s *ImportService) DoImportTicketJob(id int64, eventID int64, withHeader bool) (*work.Job, models.Import, error) {
+	fmt.Println("DoImportTicketJob")
+	row, err := s.r.Update(id, &map[string]interface{}{"status": constant.ImportStatusProcessing, "status_message": "Processing file"})
+	if err != nil {
+		return &work.Job{}, models.Import{}, err
+	}
+
+	job, err := config.GetEnqueuer().Enqueue("import_ticket", work.Q{
+		"csv_file":    row.FileName,
+		"table":       "tickets",
+		"import_id":   id,
+		"with_header": withHeader,
+		"headers":     "order_barcode,order_id,ticket_type_name,name,email,phone_number",
+		"event_id":    eventID,
 	})
 	if err != nil {
 		return &work.Job{}, models.Import{}, err
