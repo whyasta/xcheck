@@ -21,6 +21,7 @@ type Repository struct {
 	GateAllocation *gateAllocationRepository
 	Report         *reportRepository
 	Redeem         *redeemRepository
+	Ticket         *ticketRepository
 }
 
 func NewRepository(db *gorm.DB) *Repository {
@@ -37,6 +38,7 @@ func NewRepository(db *gorm.DB) *Repository {
 		Base:           NewBaseRepository(db, new(interface{})),
 		Report:         NewReportRepository(db),
 		Redeem:         NewRedeemRepository(db),
+		Ticket:         NewTicketRepository(db),
 	}
 }
 

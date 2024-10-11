@@ -108,7 +108,7 @@ func (r BarcodeController) UploadBarcodes(c *gin.Context) {
 		}
 
 		message = fmt.Sprintf("Uploaded successfully %d files", len(files))
-		_, err = r.importService.DoImportJob(importFile.ID)
+		_, err = r.importService.DoImportBarcodeJob(importFile.ID)
 		if err != nil {
 			utils.PanicException(response.InvalidRequest, err.Error())
 			return
@@ -384,7 +384,7 @@ func (r BarcodeController) ImportEventBarcodes(c *gin.Context) {
 	tempFile := utils.TempFileName("files", "barcode", ".csv")
 	message := "failed"
 
-	fmt.Println("start => ", len(files))
+	fmt.Println("start import barcode => ", len(files))
 
 	err = c.SaveUploadedFile(files[0], tempFile)
 	if err != nil {
@@ -397,6 +397,8 @@ func (r BarcodeController) ImportEventBarcodes(c *gin.Context) {
 		ImportedAt:     time.Now().Format("2006-01-02 15:04:05"),
 		Status:         string(constant.ImportStatusPending),
 		StatusMessage:  "",
+		EventID:        &eventID,
+		Type:           0, // import barcode
 	})
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
