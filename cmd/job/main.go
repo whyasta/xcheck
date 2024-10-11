@@ -38,6 +38,7 @@ func main() {
 
 	pool.Job("test", processors.TestJob)
 	pool.Job("import_barcode", processors.ImportBarcodeJob)
+	pool.Job("import_ticket", processors.ImportTicketJob)
 
 	// waiting exit signal：
 	signalChan := make(chan os.Signal, 1)

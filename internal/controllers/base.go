@@ -29,6 +29,7 @@ type Controller struct {
 	SyncController           *SyncController
 	ReportController         *ReportController
 	RedeemController         *RedeemController
+	TicketController         *TicketController
 }
 
 func NewController(
@@ -51,6 +52,7 @@ func NewController(
 		SyncController:           NewSyncController(services.SyncService),
 		ReportController:         NewReportController(services.ReportService),
 		RedeemController:         NewRedeemController(services.RedeemService),
+		TicketController:         NewTicketController(services.TicketService, services.ImportService),
 	}
 }
 

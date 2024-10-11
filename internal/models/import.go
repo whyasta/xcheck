@@ -8,6 +8,7 @@ type Import struct {
 	Status         string `gorm:"column:status" mapstructure:"status" json:"status" validate:"required"`
 	StatusMessage  string `gorm:"column:status_message" mapstructure:"status_message" json:"status_message" validate:"required,min=3,max=100"`
 	EventID        *int64 `gorm:"column:event_id"  mapstructure:"event_id" json:"event_id"`
+	Type           int    `gorm:"column:type" mapstructure:"type" json:"type"`
 	// TotalBarcode   int64            `gorm:"column:total_barcode"  mapstructure:"total_barcode" json:"total_barcode"`
 	BarcodeList []*ImportBarcode `gorm:"foreignKey:import_id;references:id" json:"barcode_list"`
 	CommonModel
