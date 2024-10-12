@@ -23,7 +23,7 @@ build:
     - apk add curl && curl -L  --output /usr/lib/docker/cli-plugins/docker-buildx "https://github.com/docker/buildx/releases/download/v0.17.1/buildx-v0.17.1.linux-amd64"
     - chmod a+x /usr/lib/docker/cli-plugins/docker-buildx
     - docker buildx create --use
-    - docker buildx build --push --platform linux/amd64,linux/arm64 -t ${CI_REGISTRY_IMAGE}:$VERSION .
+    - docker buildx build --push --platform linux/amd64,linux/arm64 --provenance false -t ${CI_REGISTRY_IMAGE}:$VERSION .
     - docker rm -f $(docker ps -f "name=^buildx" --format "{{.ID}}")
 
 build_prod:
