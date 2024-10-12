@@ -8,8 +8,11 @@ import (
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
+	"encoding/csv"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -63,12 +66,70 @@ func (r TicketController) ImportTicket(c *gin.Context) {
 			return
 		}
 
+		// Open the CSV file
+		csvFile, err := os.Open(tempFile)
+		if err != nil {
+			fmt.Println("Error opening file:", err)
+			return
+		}
+		defer csvFile.Close()
+
+		reader := csv.NewReader(csvFile)
+		// skip first row
+		if _, err := reader.Read(); err != nil {
+			log.Fatal("Error reading the first row:", err)
+			utils.PanicException(response.InvalidRequest, err.Error())
+			return
+		}
+
+		records, err := reader.ReadAll()
+		if err != nil {
+			fmt.Println("Error reading CSV file:", err)
+			utils.PanicException(response.InvalidRequest, err.Error())
+			return
+		}
+
+		uniqueRecords := make(map[string]bool)
+
+		for _, row := range records {
+			// Join the row data as a string (you can also customize key based on specific columns)
+			key := fmt.Sprintf("%v", row[0])
+			// log.Println(key)
+			// Check if the row already exists in the map
+			if _, exists := uniqueRecords[key]; !exists {
+				uniqueRecords[key] = true
+			} else {
+				message = fmt.Sprintf("Duplicate barcode found: %s. Please review your CSV file", key)
+				utils.PanicException(response.InvalidRequest, message)
+				return
+			}
+		}
+
+		for _, row := range records {
+			if exists, _ := r.service.Exist(eventID, row[0]); exists {
+				message = fmt.Sprintf("Duplicate barcode detected in the database: %s", row[0])
+				utils.PanicException(response.InvalidRequest, message)
+				return
+			}
+
+			_, err := r.service.ValidateRecord(eventID, row)
+			if err != nil {
+				message = fmt.Sprintf("Error validating record: %s", err.Error())
+				utils.PanicException(response.InvalidRequest, message)
+				return
+			}
+		}
+
+		// log.Println(eventID)
+
+		// upload to minio if valid
 		bucketName := config.GetAppConfig().MinioBucket
 		_, err = r.importService.UploadToMinio(c, bucketName, file, tempFile)
 		if err != nil {
 			utils.PanicException(response.InvalidRequest, fmt.Sprintf("upload file err: %s", err.Error()))
 			return
 		}
+
 		importFile, err := r.importService.CreateImport(&models.Import{
 			FileName:       tempFile,
 			UploadFileName: files[0].Filename,

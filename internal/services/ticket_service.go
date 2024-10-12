@@ -30,6 +30,16 @@ func (s *TicketService) GetFilteredTickets(pageParams *utils.Paginate, filters [
 	return result, count, err
 }
 
+func (s *TicketService) Exist(eventID int64, orderBarcode string) (bool, error) {
+	result, err := s.r.Exist(eventID, orderBarcode)
+	return result, err
+}
+
+func (s *TicketService) ValidateRecord(eventID int64, row []string) (bool, error) {
+	result, err := s.r.ValidateRecord(eventID, row)
+	return result, err
+}
+
 func (s *TicketService) Ticket(eventID int64, orderID string) (models.Ticket, error) {
 	result, err := s.r.FindByOrderID(eventID, orderID)
 	return result, err

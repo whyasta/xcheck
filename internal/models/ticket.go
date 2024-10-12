@@ -12,9 +12,9 @@ type Ticket struct {
 	TicketType     *TicketType    `gorm:"foreignKey:id;references:ticket_type_id" json:"-"`
 	TicketTypeName string         `gorm:"column:ticket_type_name" mapstructure:"ticket_type_name" json:"ticket_type_name" validate:"required,min=3,max=100"`
 	Attributes     datatypes.JSON `gorm:"column:attributes" json:"attributes"`
-	Name           string         `gorm:"column:name" json:"name"`
-	Email          string         `gorm:"column:email" json:"email"`
-	PhoneNumber    string         `gorm:"column:phone_number" json:"phone_number"`
+	Name           string         `gorm:"column:name" json:"name" validate:"required"`
+	Email          string         `gorm:"column:email" json:"email" validate:"required"`
+	PhoneNumber    string         `gorm:"column:phone_number" json:"phone_number" validate:"required"`
 	Note           string         `gorm:"column:note" json:"note"`
 	AssignStatus   int            `gorm:"column:assign_status" json:"assign_status"`
 	Quantity       int            `gorm:"column:quantity" json:"quantity"`
