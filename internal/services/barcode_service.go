@@ -244,3 +244,19 @@ func (s *BarcodeService) AssignBarcodes(importID int64, assignID int64, ticketTy
 
 	return true, nil
 }
+
+func (s *BarcodeService) UpdateSingleBarcode(eventID int64, barcodeID int64, sessions []int64, gates []int64) error {
+	err := s.r.UpdateSingleBarcode(eventID, barcodeID, sessions, gates)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *BarcodeService) UpdateBulkBarcode(eventID int64, ticketTypeID int64, sessions []int64, gates []int64) error {
+	err := s.r.UpdateBulkBarcode(eventID, ticketTypeID, sessions, gates)
+	if err != nil {
+		return err
+	}
+	return nil
+}

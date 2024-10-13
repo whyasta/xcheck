@@ -27,6 +27,9 @@ type BarcodeRepository interface {
 	CreateLog(eventID int64, userID int64, gateID int64, ticketTypeID int64, sessionID int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus, device string, reason string) (models.BarcodeLog, bool, error)
 	CreateBulkLog(barcodes *[]models.BarcodeLog) error
 	CreateBulk(barcodes *[]models.Barcode) error
+
+	UpdateSingleBarcode(eventID int64, barcodeID int64, sessions []int64, gates []int64) error
+	UpdateBulkBarcode(eventID int64, ticketTypeID int64, sessions []int64, gates []int64) error
 }
 
 type barcodeRepository struct {
@@ -474,5 +477,171 @@ func (repo *barcodeRepository) CreateBulk(barcodes *[]models.Barcode) error {
 			}
 		}
 	}
+	return nil
+}
+
+func (repo *barcodeRepository) UpdateSingleBarcode(eventID int64, barcodeID int64, sessions []int64, gates []int64) error {
+	tx := repo.base.GetDB().Begin()
+
+	var barcodeModel models.Barcode
+	err := tx.Debug().Where("event_id = ? AND id = ?", eventID, barcodeID).First(&barcodeModel).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if barcodeModel.Flag == constant.BarcodeFlagUsed {
+		tx.Rollback()
+		return errors.New("Barcode " + barcodeModel.Barcode + " already used")
+	}
+
+	gateIds := []models.Gate{}
+	err = tx.Debug().Table("gates").
+		Where("id IN (?)", gates).
+		Find(&gateIds).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	sessionIds := []models.Session{}
+	err = tx.Debug().Table("sessions").
+		Where("id IN (?)", sessions).
+		Find(&sessionIds).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	var paramGates string
+	for _, gate := range gateIds {
+		if paramGates == "" {
+			paramGates = fmt.Sprintf("('%v', '%v')", barcodeID, gate.ID)
+		} else {
+			paramGates = fmt.Sprintf("%s, ('%v', '%v')", paramGates, barcodeID, gate.ID)
+		}
+	}
+	err = tx.Debug().
+		Model(&barcodeModel).
+		Association("Gates").
+		Clear()
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	err = tx.Debug().Exec("INSERT INTO barcode_gates (barcode_id, gate_id) VALUES " + paramGates).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	var paramSessions string
+	for _, session := range sessionIds {
+		if paramSessions == "" {
+			paramSessions = fmt.Sprintf("('%v', '%v')", barcodeID, session.ID)
+		} else {
+			paramSessions = fmt.Sprintf("%s, ('%v', '%v')", paramSessions, barcodeID, session.ID)
+		}
+	}
+	err = tx.Debug().
+		Model(&barcodeModel).
+		Association("Sessions").
+		Clear()
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	err = tx.Debug().Exec("INSERT INTO barcode_sessions (barcode_id, session_id) VALUES " + paramSessions).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	tx.Commit()
+	return nil
+}
+
+func (repo *barcodeRepository) UpdateBulkBarcode(eventID int64, ticketTypeID int64, sessions []int64, gates []int64) error {
+	tx := repo.base.GetDB().Begin()
+
+	var ticketType models.TicketType
+	err := tx.Debug().Where("event_id = ? AND id = ?", eventID, ticketTypeID).First(&ticketType).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	gateIds := []models.Gate{}
+	err = tx.Debug().Table("gates").
+		Where("id IN (?)", gates).
+		Find(&gateIds).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	sessionIds := []models.Session{}
+	err = tx.Debug().Table("sessions").
+		Where("id IN (?)", sessions).
+		Find(&sessionIds).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	var barcodes []models.Barcode
+	err = tx.Debug().Table("barcodes").Where("event_id = ? AND ticket_type_id = ? AND flag = 'VALID'", eventID, ticketTypeID).Find(&barcodes).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	var paramGates string
+	for _, item := range barcodes {
+		for _, gate := range gateIds {
+			if paramGates == "" {
+				paramGates = fmt.Sprintf("('%v', '%v')", item.ID, gate.ID)
+			} else {
+				paramGates = fmt.Sprintf("%s, ('%v', '%v')", paramGates, item.ID, gate.ID)
+			}
+		}
+	}
+	err = tx.Debug().
+		Model(&barcodes).
+		Association("Gates").
+		Clear()
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	err = tx.Debug().Exec("INSERT INTO barcode_gates (barcode_id, gate_id) VALUES " + paramGates).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	var paramSessions string
+	for _, item := range barcodes {
+		for _, session := range sessionIds {
+			if paramSessions == "" {
+				paramSessions = fmt.Sprintf("('%v', '%v')", item.ID, session.ID)
+			} else {
+				paramSessions = fmt.Sprintf("%s, ('%v', '%v')", paramSessions, item.ID, session.ID)
+			}
+		}
+	}
+	err = tx.Debug().
+		Model(&barcodes).
+		Association("Sessions").
+		Clear()
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	err = tx.Debug().Exec("INSERT INTO barcode_sessions (barcode_id, session_id) VALUES " + paramSessions).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	tx.Commit()
 	return nil
 }
