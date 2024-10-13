@@ -24,7 +24,7 @@ type BarcodeRepository interface {
 	FindByID(uid int64) (models.Barcode, error)
 	AssignBarcodes(importID int64, assignID int64, ticketTypeID int64) (int64, error)
 	Scan(eventID int64, barcode string) (models.Barcode, response.ResponseStatus, error)
-	CreateLog(eventID int64, userID int64, gateID int64, ticketTypeID int64, sessionID int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus, device string) (models.BarcodeLog, bool, error)
+	CreateLog(eventID int64, userID int64, gateID int64, ticketTypeID int64, sessionID int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus, device string, reason string) (models.BarcodeLog, bool, error)
 	CreateBulkLog(barcodes *[]models.BarcodeLog) error
 	CreateBulk(barcodes *[]models.Barcode) error
 }
@@ -73,6 +73,11 @@ func (repo *barcodeRepository) FindAllWithRelations(eventID int64, paginate *uti
 	}).Preload("Sessions", func(tx2 *gorm.DB) *gorm.DB {
 		return tx2.Omit("EventID")
 	}).Preload("LatestScan", func(tx2 *gorm.DB) *gorm.DB {
+		return tx2.Where("barcode_logs.event_id = ?", eventID).
+			Joins("JOIN users ON users.id = barcode_logs.scanned_by").
+			Joins("JOIN gates ON gates.id = barcode_logs.gate_id").
+			Select("users.username as scanned_by_name", "barcode_logs.*", "gates.gate_name")
+	}).Preload("History", func(tx2 *gorm.DB) *gorm.DB {
 		return tx2.Where("barcode_logs.event_id = ?", eventID).
 			Joins("JOIN users ON users.id = barcode_logs.scanned_by").
 			Joins("JOIN gates ON gates.id = barcode_logs.gate_id").
@@ -345,7 +350,7 @@ func (repo *barcodeRepository) Scan(eventID int64, barcode string) (models.Barco
 
 func (repo *barcodeRepository) CreateLog(eventID int64, userID int64, gateID int64, ticketTypeID int64,
 	sessionID int64, barcode string, currentStatus constant.BarcodeStatus,
-	action constant.BarcodeStatus, device string) (models.BarcodeLog, bool, error) {
+	action constant.BarcodeStatus, device string, reason string) (models.BarcodeLog, bool, error) {
 	// action := constant.BarcodeStatusIn
 	firstCheckin := false
 	if currentStatus == constant.BarcodeStatusNull {
@@ -362,6 +367,7 @@ func (repo *barcodeRepository) CreateLog(eventID int64, userID int64, gateID int
 		Device:       device,
 		TicketTypeID: ticketTypeID,
 		SessionID:    sessionID,
+		Reason:       reason,
 	}
 
 	var err = repo.base.GetDB().Table("barcode_logs").Create(&log).Error

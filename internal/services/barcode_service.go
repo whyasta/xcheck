@@ -135,6 +135,7 @@ func (s *BarcodeService) ScanBarcode(userID int64, eventID int64, gateID int64, 
 
 	if !validGate {
 		gate, _ := s.g.FindByID(gateID)
+		s.r.CreateLog(eventID, userID, 0, result.TicketTypeID, 0, barcode, result.CurrentStatus, action, device, "gate not match")
 		return false, models.BarcodeLog{}, response.EC05, fmt.Errorf("EC05 - "+response.EC05.GetResponseMessage(), gate.GateName)
 	}
 
@@ -201,26 +202,30 @@ func (s *BarcodeService) ScanBarcode(userID int64, eventID int64, gateID int64, 
 	fmt.Println("validSession", validSession)
 
 	if !validSession {
+		s.r.CreateLog(eventID, userID, gateID, result.TicketTypeID, 0, barcode, result.CurrentStatus, action, device, "is not within the session time")
 		return false, models.BarcodeLog{}, response.EC04, fmt.Errorf("EC04 - Barcode " + barcode + " is not within the session time")
 	}
 
 	fmt.Println("current session", currentSession)
 
 	if action == constant.BarcodeStatusOut && result.CurrentStatus == constant.BarcodeStatusOut {
+		s.r.CreateLog(eventID, userID, gateID, result.TicketTypeID, currentSession, barcode, result.CurrentStatus, action, device, "must be checked in first!")
 		return false, models.BarcodeLog{}, response.EC11, errors.New("EC11 - Barcode " + barcode + " must be checked in first!")
 	}
 
 	if action == constant.BarcodeStatusOut && result.CurrentStatus == constant.BarcodeStatusNull {
+		s.r.CreateLog(eventID, userID, gateID, result.TicketTypeID, currentSession, barcode, result.CurrentStatus, action, device, "not checked-in yet!")
 		return false, models.BarcodeLog{}, response.EC11, errors.New("EC11 - Barcode " + barcode + " not checked-in yet!")
 	}
 
 	if action == constant.BarcodeStatusIn && result.CurrentStatus == constant.BarcodeStatusIn {
+		s.r.CreateLog(eventID, userID, gateID, result.TicketTypeID, currentSession, barcode, result.CurrentStatus, action, device, "not allowed to re-enter!")
 		return false, models.BarcodeLog{}, response.EC03, errors.New("EC03 - Barcode " + barcode + " not allowed to re-enter!")
 	}
 
 	// update barcode to valid
 	// s.r.Update(result.ID, &map[string]interface{}{"flag": constant.BarcodeFlagUsed})
-	resultLog, firstCheckin, err := s.r.CreateLog(eventID, userID, gateID, result.TicketTypeID, currentSession, barcode, result.CurrentStatus, action, device)
+	resultLog, firstCheckin, err := s.r.CreateLog(eventID, userID, gateID, result.TicketTypeID, currentSession, barcode, result.CurrentStatus, action, device, "")
 	if err != nil {
 		return false, models.BarcodeLog{}, response.UnknownError, err
 	}

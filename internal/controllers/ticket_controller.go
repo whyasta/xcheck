@@ -357,7 +357,7 @@ func (r TicketController) Redeem(c *gin.Context) {
 		return
 	}
 
-	result, err := r.service.Redeem(int64(eventID), request.Data)
+	result, err := r.service.Redeem(int64(eventID), *request)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return

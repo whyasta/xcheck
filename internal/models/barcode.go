@@ -16,7 +16,23 @@ type LatestScan struct {
 	ScannedByName string                 `json:"scanned_by_name,omitempty"`
 }
 
+type ScanHistory struct {
+	Barcode       string                 `json:"barcode"`
+	ScannedAt     time.Time              `json:"scanned_at"`
+	GateID        int64                  `json:"gate_id"`
+	GateName      string                 `json:"gate_name"`
+	ScannedBy     int64                  `json:"scanned_by"`
+	Device        string                 `json:"device"`
+	Action        constant.BarcodeStatus `json:"action"`
+	ScannedByName string                 `json:"scanned_by_name,omitempty"`
+	Reason        string                 `json:"reason"`
+}
+
 func (LatestScan) TableName() string {
+	return "barcode_logs"
+}
+
+func (ScanHistory) TableName() string {
 	return "barcode_logs"
 }
 
@@ -31,6 +47,7 @@ type Barcode struct {
 	Gates         []Gate                 `gorm:"many2many:barcode_gates;" json:"gates,omitempty"`
 	Sessions      []Session              `gorm:"many2many:barcode_sessions;" json:"sessions,omitempty"`
 	LatestScan    *LatestScan            `gorm:"foreignKey:barcode;references:barcode;" json:"latest_scan"`
+	History       []ScanHistory          `gorm:"foreignKey:barcode;references:barcode;" json:"history"`
 	CreatedAt     time.Time              `gorm:"column:created_at;column:created_at" json:"created_at"`
 	// Sessions      []int64                `gorm:"serializer:json" mapstructure:"sessions" json:"sessions,omitempty"`
 	// Gates         []int64                `gorm:"serializer:json" mapstructure:"gates" json:"gates,omitempty"`
@@ -56,4 +73,5 @@ type BarcodeLog struct {
 	ScannedAt    time.Time              `json:"scanned_at"`
 	Device       string                 `json:"device"`
 	Action       constant.BarcodeStatus `json:"action"`
+	Reason       string                 `json:"reason"`
 }

@@ -46,7 +46,7 @@ func (s *TicketService) Check(eventID int64, orderBarcode string) (models.Ticket
 	return result, err
 }
 
-func (s *TicketService) Redeem(eventID int64, data []dto.TicketRedeemDataRequest) ([]models.Ticket, error) {
-	result, err := s.r.Redeem(eventID, data)
+func (s *TicketService) Redeem(eventID int64, request dto.TicketRedeemRequest) ([]models.Ticket, error) {
+	result, err := s.r.Redeem(eventID, false, *request.Photo, *request.Note, request.Data)
 	return result, err
 }

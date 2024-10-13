@@ -24,7 +24,7 @@ type TicketRepository interface {
 	// redemption
 	FindByOrderID(eventID int64, orderID string) (models.Ticket, error)
 	FindByBarcode(eventID int64, orderBarcode string) (models.Ticket, error)
-	Redeem(eventID int64, data []dto.TicketRedeemDataRequest) ([]models.Ticket, error)
+	Redeem(eventID int64, generateBarcode bool, photo string, note string, data []dto.TicketRedeemDataRequest) ([]models.Ticket, error)
 }
 
 type ticketRepository struct {
@@ -178,7 +178,49 @@ func (repo *ticketRepository) ValidateImport(importID int64, eventID int64) erro
 	return err
 }
 
-func (repo *ticketRepository) Redeem(eventID int64, row []dto.TicketRedeemDataRequest) ([]models.Ticket, error) {
+func (repo *ticketRepository) Redeem(eventID int64, generateBarcode bool, photo string, note string, data []dto.TicketRedeemDataRequest) ([]models.Ticket, error) {
 	var result []models.Ticket
+	var errorList []string
+
+	for _, item := range data {
+		var ticket models.Ticket
+		err := repo.db.Model(&models.Ticket{}).First(&ticket, "event_id = ? AND order_barcode = ?", eventID, item.OrderBarcode).Error
+		if err != nil {
+			errorList = append(errorList, fmt.Sprintf("Ticket %v not found", item.OrderBarcode))
+			continue
+		}
+
+		// check if ticket already redeemed
+		if ticket.Status == constant.TicketStatusRedeemed {
+			errorList = append(errorList, fmt.Sprintf("Ticket %s already redeemed", ticket.OrderBarcode))
+			continue
+		} else if ticket.Status == constant.TicketStatusExpired {
+			errorList = append(errorList, fmt.Sprintf("Ticket %s already expired", ticket.OrderBarcode))
+			continue
+		} else if ticket.Status == constant.TicketStatusCanceled {
+			errorList = append(errorList, fmt.Sprintf("Ticket %s already canceled", ticket.OrderBarcode))
+			continue
+		}
+
+		// check associated barcode
+		if generateBarcode == false {
+			// var barcode models.Barcode
+			// err := repo.db.Model(&models.Barcode{}).First(&barcode, "event_id = ? AND ticket_type_id = ? AND barcode = ?", eventID, ticket.TicketTypeID, item.AssociateBarcode).Error
+			// if err != nil {
+			// 	errorList = append(errorList, fmt.Sprintf("Barcode %s not found", item.AssociateBarcode))
+			// }
+		} else {
+			// var barcode models.Barcode
+			// barcode, err = BarcodeRepo.Generate(eventID, ticket.TicketTypeID, item.AssociateBarcode)
+			// if err != nil {
+			//     errorList = append(errorList, fmt.Sprintf("Barcode %s not found", item.AssociateBarcode))
+			// }
+		}
+
+		result = append(result, ticket)
+	}
+	if len(errorList) > 0 {
+		return nil, errors.New(strings.Join(errorList, ", "))
+	}
 	return result, nil
 }

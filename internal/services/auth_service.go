@@ -114,3 +114,7 @@ func (s *AuthService) RefreshToken(refreshToken string) (map[string]string, erro
 
 	return nil, err
 }
+
+func (s *AuthService) ResetPassword(username string, password string) error {
+	return nil
+}

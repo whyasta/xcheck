@@ -106,3 +106,28 @@ func (u AuthController) CheckAuthID(c *gin.Context) bool {
 	_, err = u.service.GetUserByAuth(uid, authID)
 	return err == nil
 }
+
+func (u AuthController) ResetPassword(c *gin.Context) {
+	defer utils.ResponseHandler(c)
+
+	var userLogin *models.UserLogin
+
+	c.Next()
+	c.BindJSON(&userLogin)
+
+	validate := utils.InitValidator()
+	err := validate.Struct(userLogin)
+	if err != nil {
+		errors := err.(validator.ValidationErrors)
+		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+		return
+	}
+
+	err = u.service.ResetPassword(userLogin.Username, userLogin.Password)
+	if err != nil {
+		utils.PanicException(response.Unauthorized, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", utils.Null()))
+}
