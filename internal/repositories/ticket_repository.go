@@ -66,6 +66,11 @@ func (repo *ticketRepository) FindByBarcode(eventID int64, orderBarcode string) 
 	var result models.Ticket
 	tx := repo.db.Model(&result)
 	err := tx.First(&result, "event_id = ? AND order_barcode = ?", eventID, orderBarcode).Error
+
+	if result.Status == constant.TicketStatusRedeemed {
+		return result, errors.New("Ticket already redeemed")
+	}
+
 	return result, err
 }
 
@@ -182,11 +187,12 @@ func (repo *ticketRepository) Redeem(eventID int64, generateBarcode bool, photo 
 	var result []models.Ticket
 	var errorList []string
 
+	tx := repo.db.Begin()
 	for _, item := range data {
 		var ticket models.Ticket
-		err := repo.db.Model(&models.Ticket{}).First(&ticket, "event_id = ? AND order_barcode = ?", eventID, item.OrderBarcode).Error
+		err := tx.Model(&models.Ticket{}).First(&ticket, "event_id = ? AND id = ?", eventID, item.ID).Error
 		if err != nil {
-			errorList = append(errorList, fmt.Sprintf("Ticket %v not found", item.OrderBarcode))
+			errorList = append(errorList, fmt.Sprintf("Ticket %v not found", item.ID))
 			continue
 		}
 
@@ -217,10 +223,26 @@ func (repo *ticketRepository) Redeem(eventID int64, generateBarcode bool, photo 
 			// }
 		}
 
+		ticket.AssociateBarcode = &item.AssociateBarcode
+		ticket.Status = constant.TicketStatusRedeemed
+		ticket.PhotoUrl = &photo
+
 		result = append(result, ticket)
 	}
 	if len(errorList) > 0 {
+		tx.Rollback()
 		return nil, errors.New(strings.Join(errorList, ", "))
 	}
+
+	for _, item := range result {
+		err := tx.Model(&item).
+			Updates(map[string]interface{}{"note": note, "status": constant.TicketStatusRedeemed, "associate_barcode": item.AssociateBarcode, "photo_url": photo}).Error
+		if err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+	}
+
+	tx.Commit()
 	return result, nil
 }

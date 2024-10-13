@@ -61,6 +61,22 @@ func (s *ImportService) UploadToMinio(ctx context.Context, bucketName string, fi
 	return objectName, nil
 }
 
+func (s *ImportService) RemoveFromMinio(ctx context.Context, bucketName string, objectName string) error {
+	// Create minio connection.
+	minioClient, err := config.MinioConnection()
+	if err != nil {
+		return err
+	}
+
+	err = minioClient.RemoveObject(ctx, bucketName, objectName, minio.RemoveObjectOptions{})
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Successfully removed %s\n", objectName)
+	return nil
+}
+
 func (s *ImportService) UpdateStatusImport(id int64, status constant.ImportStatus, errorMessage string) (models.Import, error) {
 	return s.r.Update(id, &map[string]interface{}{"status": status, "status_message": errorMessage})
 }
@@ -135,7 +151,7 @@ func (s *ImportService) DoImportTicketJob(id int64, eventID int64, withHeader bo
 		"table":       "tickets",
 		"import_id":   id,
 		"with_header": withHeader,
-		"headers":     "order_barcode,order_id,ticket_type_name,name,email,phone_number",
+		"headers":     "order_barcode,order_id,ticket_type_name,name,email,phone_number,identity_id,birth_date,company_name,associate_barcode",
 		"event_id":    eventID,
 	})
 	if err != nil {

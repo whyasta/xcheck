@@ -11,8 +11,10 @@ import (
 	"encoding/csv"
 	"fmt"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -342,23 +344,91 @@ func (r TicketController) Redeem(c *gin.Context) {
 		return
 	}
 
-	var request *dto.TicketRedeemRequest
+	var request dto.TicketRedeemRequest
 
-	c.Next()
-	c.BindJSON(&request)
+	form, err := c.MultipartForm()
+	if err != nil {
+		utils.PanicException(response.InvalidRequest, err.Error())
+		return
+	}
 
+	if len(form.Value["note"]) > 0 {
+		request.Note = &form.Value["note"][0]
+	}
+
+	var photo *multipart.FileHeader
+	if len(form.File["photo"]) > 0 {
+		photo, err = c.FormFile("photo")
+		if err != nil {
+			utils.PanicException(response.InvalidRequest, err.Error())
+			return
+		}
+	}
+
+	// fmt.Println("leb", len(c.PostFormArray("data[].id")))
+	// if len(c.PostFormArray("data[].id")) == 0 {
+	// 	utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors.New("data is required")))
+	// 	return
+	// }
+
+	for i := 0; ; i++ {
+		idKey := fmt.Sprintf("data[%d].id", i)
+		barcodeKey := fmt.Sprintf("data[%d].associate_barcode", i)
+
+		idValue := c.PostForm(idKey)
+		barcodeValue := c.PostForm(barcodeKey)
+
+		if idValue == "" && barcodeValue == "" {
+			break
+		}
+
+		fmt.Printf("data[%d].id: %s\n", i, idValue)
+		fmt.Printf("data[%d].associate_barcode: %s\n", i, barcodeValue)
+
+		var data dto.TicketRedeemDataRequest
+
+		data.ID, _ = strconv.ParseInt(idValue, 10, 64)
+		data.AssociateBarcode = barcodeValue
+
+		request.Data = append(request.Data, data)
+	}
+
+	// fmt.Println(string(*request.Note))
+	// fmt.Println(len(request.Data))
 	validate := utils.InitValidator()
 	err = validate.Struct(request)
 	if err != nil {
-		fmt.Println(err)
+		// fmt.Println(err)
 		validatorErrs := err.(validator.ValidationErrors)
 		errors := utils.FormatValidationError(validatorErrs, request)
 		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
-	result, err := r.service.Redeem(int64(eventID), *request)
+	tempFile := utils.TempFileName("redeem", "photo_", filepath.Ext(photo.Filename))
+	err = c.SaveUploadedFile(photo, tempFile)
 	if err != nil {
+		utils.PanicException(response.InvalidRequest, fmt.Sprintf("upload file err: %s", err.Error()))
+		return
+	}
+
+	// upload to minio if valid
+	var photoUrl string
+	if photo != nil {
+		bucketName := config.GetAppConfig().MinioBucket
+		photoUrl, err = r.importService.UploadToMinio(c, bucketName, photo, tempFile)
+		if err != nil {
+			os.Remove(tempFile)
+			utils.PanicException(response.InvalidRequest, fmt.Sprintf("upload file err: %s", err.Error()))
+			return
+		}
+		os.Remove(tempFile)
+		photoUrl = fmt.Sprintf("https://%s/%s/%s", config.GetAppConfig().MinioEndpoint, bucketName, photoUrl)
+	}
+
+	result, err := r.service.Redeem(int64(eventID), photoUrl, request)
+	if err != nil {
+		r.importService.RemoveFromMinio(c, config.GetAppConfig().MinioBucket, tempFile)
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}

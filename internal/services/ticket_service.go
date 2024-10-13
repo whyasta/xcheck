@@ -5,6 +5,7 @@ import (
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/repositories"
 	"bigmind/xcheck-be/utils"
+	"fmt"
 )
 
 type TicketService struct {
@@ -46,7 +47,8 @@ func (s *TicketService) Check(eventID int64, orderBarcode string) (models.Ticket
 	return result, err
 }
 
-func (s *TicketService) Redeem(eventID int64, request dto.TicketRedeemRequest) ([]models.Ticket, error) {
-	result, err := s.r.Redeem(eventID, false, *request.Photo, *request.Note, request.Data)
+func (s *TicketService) Redeem(eventID int64, photoUrl string, request dto.TicketRedeemRequest) ([]models.Ticket, error) {
+	fmt.Println(photoUrl)
+	result, err := s.r.Redeem(eventID, false, photoUrl, *request.Note, request.Data)
 	return result, err
 }

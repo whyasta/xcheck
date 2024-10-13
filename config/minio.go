@@ -16,7 +16,7 @@ func MinioConnection() (*minio.Client, error) {
 	secretAccessKey := GetAppConfig().MinioSecretKey
 	useSSL := true
 
-	log.Println("endpoint", endpoint)
+	// log.Println("endpoint", endpoint)
 	// Initialize minio client object.
 	minioClient, errInit := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
@@ -35,12 +35,12 @@ func MinioConnection() (*minio.Client, error) {
 		// Check to see if we already own this bucket (which happens if you run this twice)
 		exists, errBucketExists := minioClient.BucketExists(ctx, bucketName)
 		if errBucketExists == nil && exists {
-			log.Printf("We already own %s\n", bucketName)
+			// log.Printf("We already own %s\n", bucketName)
 		} else {
 			log.Fatalln(err)
 		}
 	} else {
-		log.Printf("Successfully created %s\n", bucketName)
+		// log.Printf("Successfully created %s\n", bucketName)
 	}
 	return minioClient, errInit
 }
