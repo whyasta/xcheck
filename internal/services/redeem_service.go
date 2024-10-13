@@ -23,3 +23,8 @@ func (s *RedeemService) Redeem(eventID int64, orderID string) (models.Redeem, er
 	result, err := s.r.FindByOrderID(eventID, orderID)
 	return result, err
 }
+
+func (s *RedeemService) Check(eventID int64, orderID string) (models.Redeem, error) {
+	result, err := s.r.FindByOrderID(eventID, orderID)
+	return result, err
+}

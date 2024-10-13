@@ -504,3 +504,65 @@ func (r BarcodeController) CheckBarcode(c *gin.Context) {
 	message := "success"
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, message, utils.Null()))
 }
+
+func (r BarcodeController) UpdateBulkBarcode(c *gin.Context) {
+	defer utils.ResponseHandler(c)
+
+	var barcodeUpdate []dto.BarcodeUpdateRequest
+
+	jsons := make([]byte, c.Request.ContentLength)
+	if _, err := c.Request.Body.Read(jsons); err != nil {
+		if err.Error() != "EOF" {
+			return
+		}
+	}
+
+	if err := json.Unmarshal(jsons, &barcodeUpdate); err != nil {
+		barcodeUpdate = nil
+		utils.PanicException(response.InvalidRequest, err.Error())
+		return
+	}
+
+	for _, item := range barcodeUpdate {
+		validate := utils.InitValidator()
+		validate.RegisterValidation("barcode", utils.BarcodeValidation)
+		err := validate.Struct(item)
+		if err != nil {
+			errors := utils.FormatValidationError(err, item)
+			utils.PanicException(response.InvalidRequest, errors)
+			return
+		}
+	}
+
+	message := "success"
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, message, utils.Null()))
+}
+
+func (r BarcodeController) UpdateBarcode(c *gin.Context) {
+	defer utils.ResponseHandler(c)
+
+	var request dto.BarcodeUpdateByTicketTypeRequest
+
+	jsons := make([]byte, c.Request.ContentLength)
+	if _, err := c.Request.Body.Read(jsons); err != nil {
+		if err.Error() != "EOF" {
+			return
+		}
+	}
+
+	if err := json.Unmarshal(jsons, &request); err != nil {
+		utils.PanicException(response.InvalidRequest, err.Error())
+		return
+	}
+
+	validate := utils.InitValidator()
+	err := validate.Struct(request)
+	if err != nil {
+		errors := utils.FormatValidationError(err, request)
+		utils.PanicException(response.InvalidRequest, errors)
+		return
+	}
+
+	message := "success"
+	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, message, utils.Null()))
+}

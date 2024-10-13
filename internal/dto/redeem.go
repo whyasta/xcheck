@@ -1,5 +1,10 @@
 package dto
 
+type RedeemCheckRequest struct {
+	OrderBarcode    string `json:"order_id" validate:"required"`
+	GenerateBarcode *bool  `json:"generate_barcode" validate:"required"`
+}
+
 type RedeemRequest struct {
 	OrderID         string `json:"order_id" validate:"required"`
 	GenerateBarcode *bool  `json:"generate_barcode" validate:"required"`

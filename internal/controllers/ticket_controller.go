@@ -77,6 +77,7 @@ func (r TicketController) ImportTicket(c *gin.Context) {
 		reader := csv.NewReader(csvFile)
 		// skip first row
 		if _, err := reader.Read(); err != nil {
+			os.Remove(tempFile)
 			log.Fatal("Error reading the first row:", err)
 			utils.PanicException(response.InvalidRequest, err.Error())
 			return
@@ -84,6 +85,7 @@ func (r TicketController) ImportTicket(c *gin.Context) {
 
 		records, err := reader.ReadAll()
 		if err != nil {
+			os.Remove(tempFile)
 			fmt.Println("Error reading CSV file:", err)
 			utils.PanicException(response.InvalidRequest, err.Error())
 			return
@@ -99,6 +101,7 @@ func (r TicketController) ImportTicket(c *gin.Context) {
 			if _, exists := uniqueRecords[key]; !exists {
 				uniqueRecords[key] = true
 			} else {
+				os.Remove(tempFile)
 				message = fmt.Sprintf("Duplicate barcode found: %s. Please review your CSV file", key)
 				utils.PanicException(response.InvalidRequest, message)
 				return
@@ -107,6 +110,7 @@ func (r TicketController) ImportTicket(c *gin.Context) {
 
 		for _, row := range records {
 			if exists, _ := r.service.Exist(eventID, row[0]); exists {
+				os.Remove(tempFile)
 				message = fmt.Sprintf("Duplicate barcode detected in the database: %s", row[0])
 				utils.PanicException(response.InvalidRequest, message)
 				return
@@ -114,6 +118,7 @@ func (r TicketController) ImportTicket(c *gin.Context) {
 
 			_, err := r.service.ValidateRecord(eventID, row)
 			if err != nil {
+				os.Remove(tempFile)
 				message = fmt.Sprintf("Error validating record: %s", err.Error())
 				utils.PanicException(response.InvalidRequest, message)
 				return
@@ -126,6 +131,7 @@ func (r TicketController) ImportTicket(c *gin.Context) {
 		bucketName := config.GetAppConfig().MinioBucket
 		_, err = r.importService.UploadToMinio(c, bucketName, file, tempFile)
 		if err != nil {
+			os.Remove(tempFile)
 			utils.PanicException(response.InvalidRequest, fmt.Sprintf("upload file err: %s", err.Error()))
 			return
 		}
@@ -140,6 +146,7 @@ func (r TicketController) ImportTicket(c *gin.Context) {
 			Type:           1, // import ticket
 		})
 		if err != nil {
+			os.Remove(tempFile)
 			utils.PanicException(response.InvalidRequest, err.Error())
 			return
 		}
@@ -147,6 +154,7 @@ func (r TicketController) ImportTicket(c *gin.Context) {
 		message = fmt.Sprintf("Uploaded successfully %d files", len(files))
 		_, _, err = r.importService.DoImportTicketJob(importFile.ID, eventID, true)
 		if err != nil {
+			os.Remove(tempFile)
 			utils.PanicException(response.InvalidRequest, err.Error())
 			return
 		}
@@ -280,7 +288,7 @@ func (r TicketController) GetAll(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseWithPaginate(http.StatusOK, response.Success, "", rows, &meta))
 }
 
-func (r TicketController) Ticket(c *gin.Context) {
+func (r TicketController) Check(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
 	eventID, err := strconv.Atoi(c.Param("id"))
@@ -289,12 +297,12 @@ func (r TicketController) Ticket(c *gin.Context) {
 		return
 	}
 
-	var request *dto.TicketRequest
+	var request *dto.TicketCheckRequest
 
 	c.Next()
 	c.BindJSON(&request)
 
-	validate := validator.New(validator.WithRequiredStructEnabled())
+	validate := utils.InitValidator()
 	en := en.New()
 	UniversalTranslator = ut.New(en, en)
 	trans, _ := UniversalTranslator.GetTranslator("en")
@@ -303,21 +311,19 @@ func (r TicketController) Ticket(c *gin.Context) {
 	err = validate.Struct(request)
 	if err != nil {
 		fmt.Println(err)
-		// errors := err.(validator.ValidationErrors)
-
-		// errors := utils.TranslateError(err, trans)
 		validatorErrs := err.(validator.ValidationErrors)
-		var errors []error
-		for _, e := range validatorErrs {
-			translatedErr := fmt.Errorf(e.Translate(trans))
-			errors = append(errors, translatedErr)
-		}
+		// var errors []error
+		// for _, e := range validatorErrs {
+		// 	translatedErr := fmt.Errorf(e.Translate(trans))
+		// 	errors = append(errors, translatedErr)
+		// }
+		errors := utils.FormatValidationError(validatorErrs, request)
 		// fmt.Println(errsEn)
 		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
-	data, err := r.service.Ticket(int64(eventID), request.OrderID)
+	data, err := r.service.Check(int64(eventID), request.OrderBarcode)
 
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
@@ -327,28 +333,35 @@ func (r TicketController) Ticket(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", data))
 }
 
-/*
-func (r TicketController) Import(c *gin.Context) {
+func (r TicketController) Redeem(c *gin.Context) {
 	defer utils.ResponseHandler(c)
 
-	var role *models.UserRole
-
-	c.Next()
-	c.BindJSON(&role)
-
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	err := validate.Struct(role)
-	if err != nil {
-		errors := err.(validator.ValidationErrors)
-		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
-		return
-	}
-
-	result, err := r.service.CreateRole(role)
+	eventID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
+
+	var request *dto.TicketRedeemRequest
+
+	c.Next()
+	c.BindJSON(&request)
+
+	validate := utils.InitValidator()
+	err = validate.Struct(request)
+	if err != nil {
+		fmt.Println(err)
+		validatorErrs := err.(validator.ValidationErrors)
+		errors := utils.FormatValidationError(validatorErrs, request)
+		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+		return
+	}
+
+	result, err := r.service.Redeem(int64(eventID), request.Data)
+	if err != nil {
+		utils.PanicException(response.InvalidRequest, err.Error())
+		return
+	}
+
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", result))
 }
-*/

@@ -106,6 +106,17 @@ func (r RedeemController) Redeem(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponse(http.StatusOK, response.Success, "", data))
 }
 
+func (r RedeemController) Check(c *gin.Context) {
+	defer utils.ResponseHandler(c)
+
+	// eventID, err := strconv.Atoi(c.Param("id"))
+	// if err != nil {
+	// 	utils.PanicException(response.InvalidRequest, err.Error())
+	// 	return
+	// }
+
+}
+
 /*
 func (r RedeemController) Import(c *gin.Context) {
 	defer utils.ResponseHandler(c)

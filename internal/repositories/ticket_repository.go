@@ -3,6 +3,7 @@ package repositories
 import (
 	"bigmind/xcheck-be/config"
 	"bigmind/xcheck-be/internal/constant"
+	"bigmind/xcheck-be/internal/dto"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/utils"
 	"errors"
@@ -15,12 +16,15 @@ import (
 
 type TicketRepository interface {
 	GetFiltered(paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Ticket, int64, error)
-	FindByOrderID(eventID int64, orderID string) (models.Ticket, error)
 	Exist(eventID int64, orderBarcode string) (bool, error)
 	GetImport(paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Import, int64, error)
 	GetImportDetail(paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Ticket, int64, error)
 	ValidateImport(importID int64, eventID int64) error
 	ValidateRecord(eventID int64, row []string) (bool, error)
+	// redemption
+	FindByOrderID(eventID int64, orderID string) (models.Ticket, error)
+	FindByBarcode(eventID int64, orderBarcode string) (models.Ticket, error)
+	Redeem(eventID int64, data []dto.TicketRedeemDataRequest) ([]models.Ticket, error)
 }
 
 type ticketRepository struct {
@@ -55,6 +59,13 @@ func (repo *ticketRepository) FindByOrderID(eventID int64, orderID string) (mode
 	var result models.Ticket
 	tx := repo.db.Model(&result)
 	err := tx.First(&result, "event_id = ? AND order_id = ?", eventID, orderID).Error
+	return result, err
+}
+
+func (repo *ticketRepository) FindByBarcode(eventID int64, orderBarcode string) (models.Ticket, error) {
+	var result models.Ticket
+	tx := repo.db.Model(&result)
+	err := tx.First(&result, "event_id = ? AND order_barcode = ?", eventID, orderBarcode).Error
 	return result, err
 }
 
@@ -165,4 +176,9 @@ func (repo *ticketRepository) ValidateImport(importID int64, eventID int64) erro
 			"duplicate_values": "",
 		}).Error
 	return err
+}
+
+func (repo *ticketRepository) Redeem(eventID int64, row []dto.TicketRedeemDataRequest) ([]models.Ticket, error) {
+	var result []models.Ticket
+	return result, nil
 }

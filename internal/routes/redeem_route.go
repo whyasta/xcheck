@@ -10,8 +10,9 @@ import (
 func RedeemRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
 	group.Use(middlewares.AuthMiddleware(), middlewares.DeviceMiddleware())
 	{
-		group.GET("", controllers.RedeemController.GetAll)
+		// group.GET("", controllers.RedeemController.GetAll)
 		group.POST("/redeem", controllers.RedeemController.Redeem)
+		// group.GET("/check/:barcode", controllers.RedeemController.Check)
 		// group.POST("/import", controllers.RedeemController.Import)
 	}
 }

@@ -40,5 +40,8 @@ func EventRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
 		group.POST("/:id/tickets/import", controllers.TicketController.ImportTicket)
 		group.GET("/:id/tickets/import", controllers.TicketController.GetImport)
 		group.GET("/:id/tickets/import/:importId", controllers.TicketController.GetImportDetail)
+
+		group.POST("/:id/tickets/check", controllers.TicketController.Check)
+		group.POST("/:id/tickets/redeem", controllers.TicketController.Redeem)
 	}
 }

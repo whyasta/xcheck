@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bigmind/xcheck-be/internal/dto"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/repositories"
 	"bigmind/xcheck-be/utils"
@@ -40,7 +41,12 @@ func (s *TicketService) ValidateRecord(eventID int64, row []string) (bool, error
 	return result, err
 }
 
-func (s *TicketService) Ticket(eventID int64, orderID string) (models.Ticket, error) {
-	result, err := s.r.FindByOrderID(eventID, orderID)
+func (s *TicketService) Check(eventID int64, orderBarcode string) (models.Ticket, error) {
+	result, err := s.r.FindByBarcode(eventID, orderBarcode)
+	return result, err
+}
+
+func (s *TicketService) Redeem(eventID int64, data []dto.TicketRedeemDataRequest) ([]models.Ticket, error) {
+	result, err := s.r.Redeem(eventID, data)
 	return result, err
 }

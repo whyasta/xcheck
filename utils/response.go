@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -83,6 +84,7 @@ func BuildResponseWithToken_[T any](code int, status string, token string, refre
 }
 
 func PanicException_(key string, message string) {
+	log.Println(message)
 	err := errors.New(strings.ReplaceAll(message, ":", " -"))
 	err = fmt.Errorf("%s: %w", key, err)
 	if err != nil {

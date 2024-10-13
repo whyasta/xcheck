@@ -69,6 +69,20 @@ type BarcodeLogResponseDto struct {
 	Flag          constant.BarcodeFlag   `json:"flag"`
 }
 
+type BarcodeUpdateRequest struct {
+	EventID  int64   `gorm:"column:event_id"  mapstructure:"event_id" json:"event_id" validate:"required"`
+	Barcode  string  `gorm:"column:barcode" json:"barcode" validate:"required,barcode"`
+	Gates    []int64 `mapstructure:"gates" json:"gates,omitempty" validate:"required"`
+	Sessions []int64 `mapstructure:"sessions" json:"sessions,omitempty" validate:"required"`
+}
+
+type BarcodeUpdateByTicketTypeRequest struct {
+	EventID      int64   `gorm:"column:event_id"  mapstructure:"event_id" json:"event_id" validate:"required"`
+	TicketTypeID int64   `gorm:"column:ticket_type_id" mapstructure:"ticket_type_id" json:"ticket_type_id" validate:"required"`
+	Gates        []int64 `mapstructure:"gates" json:"gates,omitempty" validate:"required"`
+	Sessions     []int64 `mapstructure:"sessions" json:"sessions,omitempty" validate:"required"`
+}
+
 func (s *BarcodeUploadDataDto) ToEntity() *models.Barcode {
 	return &models.Barcode{
 		Barcode:       s.Barcode,

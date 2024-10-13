@@ -17,6 +17,8 @@ func BarcodeRoutes(group *gin.RouterGroup, controllers *controllers.Controller) 
 		group.POST("/check", controllers.BarcodeController.CheckBarcode)
 
 		group.POST("/assign", controllers.BarcodeController.AssignBarcodes)
+		group.POST("/update-bulk", controllers.BarcodeController.UpdateBulkBarcode)
+		group.POST("/update", controllers.BarcodeController.UpdateBarcode)
 		group.POST("/scan/:action", controllers.BarcodeController.ScanBarcode)
 		group.POST("/sync/download", controllers.BarcodeController.SyncDownloadBarcodes)
 		group.POST("/sync/upload", controllers.BarcodeController.SyncUploadBarcodes)
