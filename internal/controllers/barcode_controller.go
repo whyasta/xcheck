@@ -185,10 +185,12 @@ func (r BarcodeController) SyncUploadBarcodes(c *gin.Context) {
 		return
 	}
 
-	err = r.barcodeService.UploadBarcode(&barcodeUpload.Barcodes)
-	if err != nil {
-		utils.PanicException(response.InvalidRequest, err.Error())
-		return
+	if len(barcodeUpload.Barcodes) > 0 {
+		err = r.barcodeService.UploadBarcode(&barcodeUpload.Barcodes)
+		if err != nil {
+			utils.PanicException(response.InvalidRequest, err.Error())
+			return
+		}
 	}
 
 	if len(barcodeUpload.History) > 0 {
