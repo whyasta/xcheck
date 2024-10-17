@@ -374,13 +374,15 @@ func (repo *barcodeRepository) CreateLog(eventID int64, userID int64, gateID int
 	}
 
 	var err = repo.base.GetDB().Table("barcode_logs").Create(&log).Error
-	if err == nil {
+	if err == nil && reason == "" {
 		err = repo.base.GetDB().
 			Table("barcodes").
 			Where("barcode = ?", barcode).
-			Update("current_status", action).
-			Update("flag", constant.BarcodeFlagUsed).
+			Updates(map[string]interface{}{"current_status": action, "flag": constant.BarcodeFlagUsed}).
 			Error
+		// Update("current_status", action).
+		// Update("flag", constant.BarcodeFlagUsed).
+
 	}
 	return log, firstCheckin, err
 }
@@ -400,7 +402,7 @@ func (repo *barcodeRepository) CreateBulkLog(logs *[]models.BarcodeLog) error {
 		}
 
 		for _, item := range *logs {
-			if !uniqueMap[item.Barcode] {
+			if !uniqueMap[item.Barcode] && (item.Reason == "" || item.Reason == "null") {
 				uniqueMap[item.Barcode] = true
 				barcodeList = append(barcodeList, item.Barcode)
 			}
@@ -412,16 +414,24 @@ func (repo *barcodeRepository) CreateBulkLog(logs *[]models.BarcodeLog) error {
 	repo.base.GetDB().Table("barcode_logs").
 		Select("barcode", "action as current_status", "scanned_at").
 		Where("scanned_at IN (?)", subQuery1).
+		Where("barcode IN (?)", barcodeList).
 		Find(&barcodes)
 
 	for _, item := range barcodes {
 		err := repo.base.GetDB().Table("barcodes").Where("barcode = ?", item.Barcode).
-			Update("current_status", item.CurrentStatus).
-			Update("flag", constant.BarcodeFlagUsed).Error
+			Updates(map[string]interface{}{"current_status": item.CurrentStatus, "flag": constant.BarcodeFlagUsed}).Error
+		// Update("current_status", item.CurrentStatus).
+		// Update("flag", constant.BarcodeFlagUsed).Error
 		if err != nil {
 			return err
 		}
 	}
+
+	// err = repo.base.GetDB().Table("barcodes").Where("barcode IN (?)", barcodeList).
+	// 	Update("flag", constant.BarcodeFlagUsed).Error
+	// if err != nil {
+	// 	return err
+	// }
 
 	return err
 }
