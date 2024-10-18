@@ -2,7 +2,7 @@ image: docker
 
 stages:
   - build
-  - push
+  # - push
   - deploy
 
 build:
@@ -129,4 +129,4 @@ deploy_prod:
     - less .env
   when: manual
   needs:
-    - build_prod
+    - build
