@@ -83,7 +83,7 @@ func (repo *reportRepository) TrafficByTicketType(eventID int64) ([]dto.TrafficV
 			"SUM(CASE WHEN barcode_logs.action = 'IN' THEN 1 ELSE 0 END) as check_in_count",
 			"SUM(CASE WHEN barcode_logs.action = 'OUT' THEN 1 ELSE 0 END) as check_out_count").
 		Joins("left join barcode_logs on barcode_logs.ticket_type_id = ticket_types.id").
-		Where("ticket_types.event_id = ?", eventID).
+		Where("ticket_types.event_id = ? AND (barcode_logs.reason = '' OR barcode_logs.reason IS NULL)", eventID).
 		Group("ticket_types.id").
 		Group("ticket_types.ticket_type_name").
 		Scan(&data).Error
@@ -160,6 +160,7 @@ func (repo *reportRepository) UniqueByTicketType(eventID int64, ticketTypeIds []
 		Select("barcode_logs.ticket_type_id", "ticket_type_name", checkInSelect, checkOutSelect).
 		Joins("join ticket_types on ticket_types.id = barcode_logs.ticket_type_id").
 		Group("barcode_logs.ticket_type_id").
+		Where("(barcode_logs.reason = '' OR barcode_logs.reason IS NULL)").
 		Where("barcode_logs.event_id = ?", eventID)
 
 	if len(ticketTypeIds) > 0 {
@@ -190,8 +191,7 @@ func (repo *reportRepository) GateIn(eventID int64) ([]dto.GateInChart, error) {
 		Select("DATE_FORMAT(scanned_at, '%Y-%m-%d %H.%i') AS date_time", "COUNT(DISTINCT barcode) as total",
 			"DATE_FORMAT(scanned_at, '%Y-%m-%d %H.%i') AS date_time", "COUNT(DISTINCT barcode) as unique_in_count",
 			"SUM(CASE WHEN barcode_logs.action = 'IN' THEN 1 ELSE 0 END) as traffic_in_count").
-		Where("barcode_logs.event_id = ?", eventID).
-		Where("barcode_logs.action = ?", "IN").
+		Where("barcode_logs.event_id = ? AND barcode_logs.action = ? AND (barcode_logs.reason = '' OR barcode_logs.reason IS NULL)", eventID, "IN").
 		Group("DATE_FORMAT(scanned_at, '%Y-%m-%d %H.%i')").Scan(&data).Error
 	if err != nil {
 		return nil, err
