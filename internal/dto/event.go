@@ -4,6 +4,8 @@ import (
 	"bigmind/xcheck-be/internal/models"
 	"log"
 	"time"
+
+	"gorm.io/datatypes"
 )
 
 type EventRequest struct {
@@ -32,6 +34,7 @@ type EventResponse struct {
 	Gates           []models.Gate                 `json:"gates"`
 	Sessions        []models.Session              `json:"sessions"`
 	GateTicketTypes []EventGateTicketTypeResponse `json:"gate_ticket_types"`
+	RedeemConfig    datatypes.JSON                `json:"redeem_config"`
 	EventSummary    `json:"summary"`
 }
 
@@ -44,12 +47,18 @@ type EventSummary struct {
 	// TotalTicketType []map[string]interface{} `json:"total_ticket_type" gorm:"serializer:json"`
 }
 
+type RedeemConfig struct {
+	PhotoRequirement bool `json:"photo_requirement" mapstructure:"photo_requirement"`
+	NotesRequirement bool `json:"notes_requirement" mapstructure:"notes_requirement"`
+}
+
 type EventUpdateDto struct {
-	ID        int64  `gorm:"column:id" mapstructure:"id" json:"id,omitempty"`
-	EventName string `gorm:"column:event_name" mapstructure:"event_name" json:"event_name" validate:"required,min=5,max=100"`
-	Status    int    `gorm:"column:status;default:0" mapstructure:"status" json:"status,omitempty"`
-	StartDate string `gorm:"column:start_date" mapstructure:"start_date" json:"start_date,omitempty" validate:"date"`
-	EndDate   string `gorm:"column:end_date" mapstructure:"end_date" json:"end_date,omitempty" validate:"date"`
+	ID           int64        `gorm:"column:id" mapstructure:"id" json:"id,omitempty"`
+	EventName    *string      `gorm:"column:event_name" mapstructure:"event_name" json:"event_name,omitempty"`
+	Status       int          `gorm:"column:status;default:0" mapstructure:"status" json:"status,omitempty"`
+	StartDate    string       `gorm:"column:start_date" mapstructure:"start_date" json:"start_date,omitempty" validate:"date"`
+	EndDate      string       `gorm:"column:end_date" mapstructure:"end_date" json:"end_date,omitempty" validate:"date"`
+	RedeemConfig RedeemConfig `gorm:"serializer:json" mapstructure:"redeem_config" json:"redeem_config,omitempty"`
 }
 
 type EventID struct {

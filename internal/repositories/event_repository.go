@@ -4,14 +4,16 @@ import (
 	"bigmind/xcheck-be/internal/dto"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/utils"
+	"fmt"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type EventRepository interface {
 	Save(event *dto.EventRequest) (models.Event, error)
 	BulkSave(events *[]dto.EventRequest) ([]models.Event, error)
-	Update(id int64, event *map[string]interface{}) (models.Event, error)
+	Update(id int64, event dto.EventUpdateDto) (models.Event, error)
 	Paginate(paginate *utils.Paginate, params map[string]interface{}) ([]models.Event, int64, error)
 	GetFiltered(paginate *utils.Paginate, filters []utils.Filter, sorts []utils.Sort) ([]models.Event, int64, error)
 	Delete(uid int64) (models.Event, error)
@@ -50,19 +52,19 @@ func (repo *eventRepository) BulkSave(eventDto *[]dto.EventRequest) ([]models.Ev
 	return BaseInsert(*repo.base.GetDB(), event)
 }
 
-func (repo *eventRepository) Update(id int64, event *map[string]interface{}) (models.Event, error) {
-	// var result = models.Event{}
-	// var result models.Event
+func (repo *eventRepository) Update(id int64, event dto.EventUpdateDto) (models.Event, error) {
+	fmt.Println(event.RedeemConfig)
 
-	// var err = repo.base.GetDB().Model(&result).
-	// 	Table("events").
-	// 	Clauses(clause.Returning{}).
-	// 	Where("id = ?", id).
-	// 	Updates(event).
-	// 	First(&result).
-	// 	Error
-	// return result, err
-	return BaseUpdate[models.Event](*repo.base.GetDB(), id, event)
+	var result = models.Event{}
+	var err = repo.base.GetDB().Model(&result).
+		// Table("events").
+		Clauses(clause.Returning{}).
+		Where("id = ?", id).
+		Updates(event).
+		First(&result).
+		Error
+	return result, err
+	// return BaseUpdate[models.Event](*repo.base.GetDB(), id, event)
 }
 
 func (repo *eventRepository) FindByID(id int64) (models.Event, error) {

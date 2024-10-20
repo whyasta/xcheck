@@ -23,7 +23,7 @@ func (s *EventService) CreateBulkEvent(events *[]dto.EventRequest) ([]models.Eve
 	return s.r.BulkSave(events)
 }
 
-func (s *EventService) UpdateEvent(id int64, event *map[string]interface{}) (models.Event, error) {
+func (s *EventService) UpdateEvent(id int64, event dto.EventUpdateDto) (models.Event, error) {
 	// config.Logger.Infof("UpdateEvent: %+v", event)
 	return s.r.Update(id, event)
 }
@@ -94,6 +94,7 @@ func (s *EventService) GetEventByID(uid int64) (dto.EventResponse, error) {
 		TicketTypes:     res.TicketTypes,
 		Gates:           res.Gates,
 		Sessions:        res.Sessions,
+		RedeemConfig:    res.RedeemConfig,
 		EventSummary:    s.r.Summary(res.ID),
 		LastSyncedAt:    res.LastSyncedAt,
 		GateTicketTypes: s.r.GateTicketTypes(res.ID, gates.IDList()),
@@ -103,6 +104,7 @@ func (s *EventService) GetEventByID(uid int64) (dto.EventResponse, error) {
 		// 	TotalCheckOut: 0,
 		// },
 	}
+
 	return row, nil
 }
 

@@ -38,13 +38,13 @@ func (u AuthController) Signin(c *gin.Context) {
 		return
 	}
 
-	_, tokenPair, err := u.service.Signin(userLogin.Username, userLogin.Password)
+	data, tokenPair, err := u.service.Signin(userLogin.Username, userLogin.Password)
 	if err != nil {
 		utils.PanicException(response.Unauthorized, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.BuildResponseWithToken(http.StatusOK, response.Success, tokenPair["token"], tokenPair["refresh_token"], "", utils.Null()))
+	c.JSON(http.StatusOK, utils.BuildResponseWithToken(http.StatusOK, response.Success, tokenPair["token"], tokenPair["refresh_token"], "", data))
 }
 
 func (u AuthController) Refresh(c *gin.Context) {

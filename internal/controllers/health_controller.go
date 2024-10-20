@@ -4,8 +4,10 @@ import (
 	"bigmind/xcheck-be/checks"
 	"bigmind/xcheck-be/config"
 	"errors"
+	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/sync/errgroup"
@@ -23,6 +25,16 @@ func (h HealthController) Init(c *gin.Context) {
 	// 	"email_address": "qjDpS@example.com",
 	// })
 	c.JSON(http.StatusOK, gin.H{"message": "pong from " + config.GetConfig().GetString("APP_ENV")})
+}
+
+func (h HealthController) Timeout(c *gin.Context) {
+	timer := time.NewTimer(34 * time.Second)
+
+	fmt.Println("Timer started, waiting...")
+
+	// Wait until the timer fires
+	<-timer.C
+	c.JSON(http.StatusOK, gin.H{"message": "timeout from " + config.GetConfig().GetString("APP_ENV")})
 }
 
 func (h HealthController) Status(checks []checks.Check, failureNotification *checks.FailureNotification) gin.HandlerFunc {

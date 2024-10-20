@@ -114,18 +114,16 @@ func (r EventController) UpdateEvent(c *gin.Context) {
 	c.BindJSON(&request)
 	mapstructure.Decode(request, &event)
 
-	validate := validator.New(validator.WithRequiredStructEnabled())
+	validate := utils.InitValidator()
 	validate.RegisterValidation("date", utils.DateValidation)
-
 	err = validate.Struct(event)
 	if err != nil {
-		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", err))
-		// errors := err.(validator.ValidationErrors)
-		// utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
+		errors := err.(validator.ValidationErrors)
+		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
 	}
 
-	res, err := r.service.UpdateEvent(int64(uid), &request)
+	res, err := r.service.UpdateEvent(int64(uid), *event)
 	if err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return

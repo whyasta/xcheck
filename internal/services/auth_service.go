@@ -2,14 +2,17 @@ package services
 
 import (
 	"bigmind/xcheck-be/config"
+	"bigmind/xcheck-be/internal/dto"
 	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/repositories"
 	"bigmind/xcheck-be/utils"
+	"encoding/json"
 	"errors"
 	"fmt"
 
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/datatypes"
 )
 
 type AuthService struct {
@@ -61,26 +64,44 @@ func (s *AuthService) GetUserByAuth(id int64, authID string) (models.User, error
 	return result, err
 }
 
-func (s *AuthService) Signin(username string, password string) (models.User, map[string]string, error) {
+func (s *AuthService) Signin(username string, password string) (dto.UserLoginResponse, map[string]string, error) {
 	user, err := s.u.FindByUsername(username)
 	if err != nil {
-		return models.User{}, nil, errors.New("invalid username or password")
+		return dto.UserLoginResponse{}, nil, errors.New("invalid username or password")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		return models.User{}, nil, errors.New("invalid username or password")
+		return dto.UserLoginResponse{}, nil, errors.New("invalid username or password")
 	}
 	// create auth uuid
 	authD, _ := s.u.CreateAuth(user.ID)
 
 	tokenPair, err := utils.GenerateTokenUUID(&authD)
 	if err != nil {
-		return models.User{}, nil, err
+		return dto.UserLoginResponse{}, nil, err
 	}
 	user.Password = ""
 	user.AuthUuids = nil
-	return user, tokenPair, nil
+
+	menuGroup := utils.RoleID(*user.RoleID).GetMenu()
+	jsonData, err := json.Marshal(menuGroup)
+	if err != nil {
+		fmt.Println(err)
+		return dto.UserLoginResponse{}, nil, err
+	}
+
+	response := dto.UserLoginResponse{
+		ID:        user.ID,
+		Username:  user.Username,
+		Password:  user.Password,
+		Email:     user.Email,
+		RoleID:    user.RoleID,
+		AuthUuids: user.AuthUuids,
+		MenuGroup: datatypes.JSON(jsonData),
+	}
+
+	return response, tokenPair, nil
 }
 
 func (s *AuthService) RefreshToken(refreshToken string) (map[string]string, error) {
