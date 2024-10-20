@@ -225,8 +225,7 @@ func (s *SyncService) SyncUploadEventByID(uid int64) error {
 		return err
 	}
 
-	fmt.Println(string(body))
-
+	// fmt.Println(string(body))
 	client := &http.Client{
 		Timeout: 5 * time.Minute,
 	}
@@ -252,8 +251,11 @@ func (s *SyncService) SyncUploadEventByID(uid int64) error {
 	if res.StatusCode != http.StatusOK {
 		return errors.New(res.Status + " - " + response.Message)
 	}
-
 	return nil
+}
+
+func backgroundTask(data []byte) {
+	config.Logger.Info("Uploading from local to cloud")
 }
 
 func (s *SyncService) SyncUsers() error {

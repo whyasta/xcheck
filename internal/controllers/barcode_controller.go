@@ -170,7 +170,7 @@ func (r BarcodeController) SyncUploadBarcodes(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(string(jsons))
+	// fmt.Println(string(jsons))
 
 	if err := json.Unmarshal(jsons, &barcodeUpload); err != nil {
 		utils.PanicException(response.InvalidRequest, err.Error())

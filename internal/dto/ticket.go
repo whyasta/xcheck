@@ -8,7 +8,7 @@ type TicketRedeemDataRequest struct {
 	// OrderID          int64  `json:"order_id" validate:"required,numeric"`
 	// OrderBarcode     string `json:"order_barcode" validate:"required"`
 	ID               int64  `json:"id" validate:"required,numeric"`
-	AssociateBarcode string `json:"associate_barcode" validate:"required"`
+	AssociateBarcode string `json:"associate_barcode"`
 }
 
 type TicketRedeemRequest struct {
