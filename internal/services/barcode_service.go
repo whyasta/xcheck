@@ -218,9 +218,19 @@ func (s *BarcodeService) ScanBarcode(userID int64, eventID int64, gateID int64, 
 		return false, models.BarcodeLog{}, response.EC11, errors.New("EC11 - Barcode " + barcode + " not checked-in yet!")
 	}
 
-	if action == constant.BarcodeStatusIn && result.CurrentStatus == constant.BarcodeStatusIn {
-		s.r.CreateLog(eventID, userID, gateID, result.TicketTypeID, currentSession, barcode, result.CurrentStatus, action, device, "not allowed to re-enter!")
-		return false, models.BarcodeLog{}, response.EC03, errors.New("EC03 - Barcode " + barcode + " not allowed to re-enter!")
+	// get lastest log
+	latestScan, err := s.r.GetLatestScan(eventID, barcode)
+	if latestScan.ID > 0 {
+		// already checked-in
+		if action == constant.BarcodeStatusIn && result.CurrentStatus == constant.BarcodeStatusIn && latestScan.SessionID == currentSession {
+			s.r.CreateLog(eventID, userID, gateID, result.TicketTypeID, currentSession, barcode, result.CurrentStatus, action, device, "not allowed to re-enter!")
+			return false, models.BarcodeLog{}, response.EC03, errors.New("EC03 - Barcode " + barcode + " not allowed to re-enter!")
+		}
+	} else {
+		if action == constant.BarcodeStatusIn && result.CurrentStatus == constant.BarcodeStatusIn {
+			s.r.CreateLog(eventID, userID, gateID, result.TicketTypeID, currentSession, barcode, result.CurrentStatus, action, device, "not allowed to re-enter!")
+			return false, models.BarcodeLog{}, response.EC03, errors.New("EC03 - Barcode " + barcode + " not allowed to re-enter!")
+		}
 	}
 
 	// update barcode to valid

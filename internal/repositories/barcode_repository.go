@@ -27,6 +27,7 @@ type BarcodeRepository interface {
 	CreateLog(eventID int64, userID int64, gateID int64, ticketTypeID int64, sessionID int64, barcode string, currentStatus constant.BarcodeStatus, action constant.BarcodeStatus, device string, reason string) (models.BarcodeLog, bool, error)
 	CreateBulkLog(barcodes *[]models.BarcodeLog) error
 	CreateBulk(barcodes *[]models.Barcode) error
+	GetLatestScan(eventID int64, barcode string) (models.BarcodeLog, error)
 
 	UpdateSingleBarcode(eventID int64, barcodeID int64, sessions []int64, gates []int64) error
 	UpdateBulkBarcode(eventID int64, ticketTypeID int64, sessions []int64, gates []int64) error
@@ -385,6 +386,18 @@ func (repo *barcodeRepository) CreateLog(eventID int64, userID int64, gateID int
 
 	}
 	return log, firstCheckin, err
+}
+
+func (repo *barcodeRepository) GetLatestScan(eventID int64, barcode string) (models.BarcodeLog, error) {
+	var result models.BarcodeLog
+	err := repo.base.GetDB().
+		Table("barcode_logs").
+		Where("event_id = ?", eventID).
+		Where("barcode = ?", barcode).
+		Where("reason = ?", "").
+		Order("scanned_at DESC").
+		First(&result).Error
+	return result, err
 }
 
 func (repo *barcodeRepository) CreateBulkLog(logs *[]models.BarcodeLog) error {
