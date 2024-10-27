@@ -25,6 +25,8 @@ type Ticket struct {
 	Status           constant.TicketStatus `gorm:"column:status" json:"status" validate:"required"`
 	AssociateBarcode *string               `gorm:"column:associate_barcode" json:"associate_barcode"`
 	PhotoUrl         *string               `gorm:"column:photo_url" json:"photo_url"`
+	RedeemedBy       *int64                `gorm:"column:redeemed_by" mapstructure:"redeemed_by" json:"-"`
+	User             *User                 `gorm:"foreignKey:id;references:redeemed_by" json:"user"`
 	CommonModel
 }
 

@@ -2,6 +2,7 @@ package services
 
 import (
 	"bigmind/xcheck-be/internal/dto"
+	"bigmind/xcheck-be/internal/models"
 	"bigmind/xcheck-be/internal/repositories"
 )
 
@@ -48,4 +49,12 @@ func (r *ReportService) ReportUniqueVisitor(eventID int64, ticketTypeIds []int64
 
 func (r *ReportService) ReportGateIn(eventID int64) ([]dto.GateInChart, error) {
 	return r.r.GateIn(eventID)
+}
+
+func (r *ReportService) ReportRedemptionSummary(eventID int64, ticketTypeIds []int64, userIds []int64) ([]dto.RedemptionSummary, error) {
+	return r.r.RedemptionSummary(eventID, ticketTypeIds, userIds)
+}
+
+func (r *ReportService) ReportRedemptionLog(eventID int64, orderBarcode string, orderID string) ([]models.Ticket, error) {
+	return r.r.RedemptionLog(eventID, orderBarcode, orderID)
 }

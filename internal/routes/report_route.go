@@ -13,5 +13,8 @@ func ReportRoutes(group *gin.RouterGroup, controllers *controllers.Controller) {
 		group.GET("/traffic-visitor", controllers.ReportController.ReportTrafficVisitor)
 		group.GET("/unique-visitor", controllers.ReportController.ReportUniqueVisitor)
 		group.GET("/gate-in", controllers.ReportController.ReportGateIn)
+
+		group.GET("/redemption-summary", controllers.ReportController.ReportRedemptionSummary)
+		group.GET("/redemption-log", controllers.ReportController.ReportRedemptionLog)
 	}
 }

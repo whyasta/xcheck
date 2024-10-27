@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"bigmind/xcheck-be/internal/dto"
+	"bigmind/xcheck-be/internal/models"
 	"fmt"
 	"strconv"
 	"strings"
@@ -15,6 +16,9 @@ type ReportRepository interface {
 	TrafficByTicketType(eventID int64) ([]dto.TrafficVisitorTicketType, error)
 	UniqueByTicketType(eventID int64, ticketTypeIds []int64, gateIds []int64, sessionIds []int64) ([]dto.UniqueVisitorTicketType, error)
 	GateIn(eventID int64) ([]dto.GateInChart, error)
+
+	RedemptionSummary(eventID int64, ticketTypeIds []int64, userIds []int64) ([]dto.RedemptionSummary, error)
+	RedemptionLog(eventID int64, orderBarcode string, orderID string) ([]models.Ticket, error)
 }
 
 type reportRepository struct {
@@ -193,6 +197,66 @@ func (repo *reportRepository) GateIn(eventID int64) ([]dto.GateInChart, error) {
 			"SUM(CASE WHEN barcode_logs.action = 'IN' THEN 1 ELSE 0 END) as traffic_in_count").
 		Where("barcode_logs.event_id = ? AND barcode_logs.action = ? AND (barcode_logs.reason = '' OR barcode_logs.reason IS NULL)", eventID, "IN").
 		Group("DATE_FORMAT(scanned_at, '%Y-%m-%d %H.%i')").Scan(&data).Error
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (repo *reportRepository) RedemptionSummary(eventID int64, ticketTypeIds []int64, userIds []int64) ([]dto.RedemptionSummary, error) {
+	var data = make([]dto.RedemptionSummary, 0)
+
+	query := repo.db.Table("tickets").
+		Debug().
+		Select("ticket_type_id, ticket_type_name, count(order_barcode) as total").
+		Where("tickets.event_id = ? AND tickets.status = ?", eventID, "REDEEMED")
+
+	if len(ticketTypeIds) > 0 {
+		query = query.Where("tickets.ticket_type_id in (?)", ticketTypeIds)
+	}
+
+	if len(userIds) > 0 {
+		query = query.Where("tickets.redeemed_by in (?)", userIds)
+	}
+
+	err := query.Group("ticket_type_id, ticket_type_name").Scan(&data).Error
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (repo *reportRepository) RedemptionLog(eventID int64, orderBarcode string, orderID string) ([]models.Ticket, error) {
+	var data = make([]models.Ticket, 0)
+
+	query := repo.db.Table("tickets").
+		Debug().
+		Preload("User", func(tx2 *gorm.DB) *gorm.DB {
+			return tx2.Omit("Password", "AuthUuids")
+		}).
+		Select("tickets.*").
+		Where("tickets.event_id = ? AND tickets.status = ?", eventID, "REDEEMED")
+
+	subWhereClause := ""
+	if orderBarcode != "" {
+		subWhereClause = subWhereClause + fmt.Sprintf("tickets.order_barcode = '%s'", orderBarcode)
+	}
+
+	if orderID != "" {
+		if subWhereClause != "" {
+			subWhereClause = subWhereClause + " OR "
+		}
+		subWhereClause = subWhereClause + fmt.Sprintf("tickets.order_id = '%s'", orderID)
+	}
+
+	if subWhereClause != "" {
+		// subWhereClause = "(" + subWhereClause + ")"
+		query = query.Where(subWhereClause)
+	}
+
+	fmt.Println("mashok")
+
+	err := query.Find(&data).Error
 	if err != nil {
 		return nil, err
 	}

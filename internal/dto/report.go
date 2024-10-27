@@ -40,3 +40,9 @@ type GateInChart struct {
 	UniqueInCount  int64  `json:"unique_in_count"`
 	TrafficInCount int64  `json:"traffic_in_count"`
 }
+
+type RedemptionSummary struct {
+	TicketTypeID   int64  `json:"ticket_type_id"`
+	TicketTypeName string `json:"ticket_type_name"`
+	Total          int64  `json:"total"`
+}
