@@ -5,7 +5,6 @@ import (
 	"bigmind/xcheck-be/internal/services"
 	"bigmind/xcheck-be/utils"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -189,8 +188,8 @@ func (r ReportController) ReportRedemptionLog(c *gin.Context) {
 		}
 	}
 
-	fmt.Println("orderBarcode", orderBarcode)
-	fmt.Println("orderId", orderId)
+	// fmt.Println("orderBarcode", orderBarcode)
+	// fmt.Println("orderId", orderId)
 
 	data, err := r.service.ReportRedemptionLog(int64(eventID), orderBarcode, orderId)
 	if err != nil {

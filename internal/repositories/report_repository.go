@@ -254,8 +254,6 @@ func (repo *reportRepository) RedemptionLog(eventID int64, orderBarcode string, 
 		query = query.Where(subWhereClause)
 	}
 
-	fmt.Println("mashok")
-
 	err := query.Find(&data).Error
 	if err != nil {
 		return nil, err
