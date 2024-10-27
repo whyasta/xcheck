@@ -118,6 +118,11 @@ func GetAllMenu() []Menu {
 			Permission: []string{"ADMIN", "CHECKER"},
 		},
 		Menu{
+			Label:      "Redemption Config",
+			Slug:       "/event/${slug}/redemption/config",
+			Permission: []string{"ADMIN"},
+		},
+		Menu{
 			Label:      "Ticket File",
 			Slug:       "/event/${slug}/redemption/ticket-file",
 			Permission: []string{"ADMIN", "REDEMPTION"},
