@@ -16,6 +16,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/mitchellh/mapstructure"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserController struct {
@@ -122,6 +123,11 @@ func (r UserController) UpdateUser(c *gin.Context) {
 		errors := err.(validator.ValidationErrors)
 		utils.PanicException(response.InvalidRequest, fmt.Sprintf("Validation error: %s", errors))
 		return
+	}
+
+	if user.Password != "" {
+		hash, _ := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
+		request["password"] = string(hash)
 	}
 
 	result, err := r.service.UpdateUser(int64(uid), &request)
