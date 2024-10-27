@@ -405,16 +405,17 @@ func (r TicketController) Redeem(c *gin.Context) {
 		return
 	}
 
-	tempFile := utils.TempFileName("redeem", "photo_", filepath.Ext(photo.Filename))
-	err = c.SaveUploadedFile(photo, tempFile)
-	if err != nil {
-		utils.PanicException(response.InvalidRequest, fmt.Sprintf("upload file err: %s", err.Error()))
-		return
-	}
-
 	// upload to minio if valid
+	var tempFile string
 	var photoUrl string
 	if photo != nil {
+		tempFile := utils.TempFileName("redeem", "photo_", filepath.Ext(photo.Filename))
+		err = c.SaveUploadedFile(photo, tempFile)
+		if err != nil {
+			utils.PanicException(response.InvalidRequest, fmt.Sprintf("upload file err: %s", err.Error()))
+			return
+		}
+
 		bucketName := config.GetAppConfig().MinioBucket
 		photoUrl, err = r.importService.UploadToMinio(c, bucketName, photo, tempFile)
 		if err != nil {
@@ -428,7 +429,9 @@ func (r TicketController) Redeem(c *gin.Context) {
 
 	result, err := r.service.Redeem(int64(eventID), photoUrl, request)
 	if err != nil {
-		r.importService.RemoveFromMinio(c, config.GetAppConfig().MinioBucket, tempFile)
+		if tempFile != "" {
+			r.importService.RemoveFromMinio(c, config.GetAppConfig().MinioBucket, tempFile)
+		}
 		utils.PanicException(response.InvalidRequest, err.Error())
 		return
 	}
