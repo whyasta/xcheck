@@ -24,7 +24,7 @@ type TicketRepository interface {
 	// redemption
 	FindByOrderID(eventID int64, orderID string) (models.Ticket, error)
 	FindByBarcode(eventID int64, orderBarcode string) (models.Ticket, error)
-	Redeem(eventID int64, generateBarcode bool, photo string, note string, data []dto.TicketRedeemDataRequest) ([]models.Ticket, error)
+	Redeem(eventID int64, generateBarcode bool, photo string, note *string, data []dto.TicketRedeemDataRequest) ([]models.Ticket, error)
 }
 
 type ticketRepository struct {
@@ -183,7 +183,7 @@ func (repo *ticketRepository) ValidateImport(importID int64, eventID int64) erro
 	return err
 }
 
-func (repo *ticketRepository) Redeem(eventID int64, generateBarcode bool, photo string, note string, data []dto.TicketRedeemDataRequest) ([]models.Ticket, error) {
+func (repo *ticketRepository) Redeem(eventID int64, generateBarcode bool, photo string, note *string, data []dto.TicketRedeemDataRequest) ([]models.Ticket, error) {
 	var result []models.Ticket
 	var errorList []string
 

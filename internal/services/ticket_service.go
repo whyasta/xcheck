@@ -49,6 +49,6 @@ func (s *TicketService) Check(eventID int64, orderBarcode string) (models.Ticket
 
 func (s *TicketService) Redeem(eventID int64, photoUrl string, request dto.TicketRedeemRequest) ([]models.Ticket, error) {
 	fmt.Println(photoUrl)
-	result, err := s.r.Redeem(eventID, false, photoUrl, *request.Note, request.Data)
+	result, err := s.r.Redeem(eventID, false, photoUrl, request.Note, request.Data)
 	return result, err
 }

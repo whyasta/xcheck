@@ -354,6 +354,8 @@ func (r TicketController) Redeem(c *gin.Context) {
 
 	if len(form.Value["note"]) > 0 {
 		request.Note = &form.Value["note"][0]
+	} else {
+		request.Note = nil
 	}
 
 	var photo *multipart.FileHeader
