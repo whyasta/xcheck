@@ -293,6 +293,7 @@ func (r BarcodeController) ScanBarcode(c *gin.Context) {
 		SessionID:     result.SessionID,
 		ScannedBy:     result.ScannedBy,
 		ScannedAt:     result.ScannedAt,
+		Reason:        result.Reason,
 		Device:        scan.Device,
 		Action:        action,
 		CurrentStatus: action,
